@@ -386,65 +386,40 @@ The AI should prefer Business Memory over conversational memory whenever possibl
 
 # Model Selection Strategy
 
-Different requests may use different models.
+Google Gemini API (Primary MVP Provider)
 
-Fast Models
+↓
 
-Purpose:
+Provider Abstraction Layer
 
-General conversation
+↓
 
-Education
-
-Simple explanations
-
-Roadmap guidance
-
----
-
-Reasoning Models
-
-Purpose:
-
-Complex investment comparisons
-
-Multi-step reasoning
-
-Scam analysis
-
-Advanced financial planning
-
----
-
-Future
-
-Local Models
-
-Used for:
-
-Privacy-sensitive operations
-
-Offline deployments
-
-Enterprise installations
+Future Providers
+    • OpenRouter
+    • Self-hosted vLLM
+    • Ollama (Development)
+    • Enterprise Providers
 
 ---
 
 # Provider Abstraction
 
-The platform communicates through an AI Provider interface.
+FOS-AI must never depend directly on a specific LLM provider.
 
-Possible providers include:
+All AI communication passes through a Provider Abstraction Layer.
 
-OpenRouter
+Business domains, capabilities, services, and tools interact only with the AI Operating Layer.
 
-Self-hosted vLLM
+The AI Operating Layer selects the appropriate provider.
 
-Ollama
+Initial supported providers:
 
-Future enterprise providers
+- Google Gemini API (Primary MVP)
+- OpenRouter (Future)
+- Self-hosted vLLM (Future)
+- Ollama (Development)
 
-Changing providers should not require business logic changes.
+Changing providers should require configuration changes rather than business logic changes.
 
 ---
 
@@ -509,6 +484,50 @@ Track cost per capability.
 Track cost per user.
 
 ---
+
+# Model Routing
+
+Different tasks require different levels of reasoning.
+
+The AI Operating Layer should select models based on task complexity rather than using a single model for all requests.
+
+Examples:
+
+Simple Tasks
+
+- Financial definitions
+- Calculator explanations
+- General education
+
+Preferred Model:
+
+Gemini 2.5 Flash
+
+---
+
+Moderate Tasks
+
+- Investment comparison
+- Portfolio discussion
+- Roadmap explanations
+
+Preferred Model:
+
+Gemini 3.1 Flash Lite
+
+---
+
+Complex Tasks (Future)
+
+- Multi-step financial planning
+- Long-context analysis
+- Advanced investment reasoning
+
+Preferred Models:
+
+Higher-capability Gemini models or other premium providers as appropriate.
+
+The routing strategy should remain configurable and independent of business logic.
 
 # Failure Strategy
 
@@ -602,35 +621,100 @@ User satisfaction (future)
 
 # AI Evolution Strategy
 
-Stage 1
+## Stage 1 - MVP
 
-Hosted LLM through OpenRouter.
+Primary Provider:
 
-↓
+Google Gemini API
 
-Stage 2
+Objectives:
 
-Hybrid routing between hosted and local models.
-
-↓
-
-Stage 3
-
-Primary self-hosted inference.
-
-↓
-
-Stage 4
-
-Specialized financial models.
-
-↓
-
-Stage 5
-
-Fine-tuned proprietary models trained on anonymized platform interactions, business rules, and educational content.
+- Validate product-market fit
+- Minimize infrastructure cost
+- Rapid iteration
 
 ---
+
+## Stage 2 - Multi-Provider
+
+Introduce provider abstraction.
+
+Optional providers:
+
+- OpenRouter
+- Claude
+- GPT
+- Additional Gemini models
+
+Objectives:
+
+- Improve resilience
+- Evaluate model quality
+- Reduce vendor lock-in
+
+---
+
+## Stage 3 - Hybrid Intelligence
+
+Introduce self-hosted inference for selected workloads.
+
+Possible technologies:
+
+- vLLM
+- Ollama
+- Open-weight models (Gemma, Qwen, Llama)
+
+Objectives:
+
+- Lower inference cost
+- Increase privacy
+- Reduce latency
+
+---
+
+## Stage 4 - Specialized Intelligence
+
+Introduce domain-specific financial models.
+
+Potential capabilities:
+
+- Fine-tuned financial assistants
+- Portfolio reasoning
+- Personalized recommendation models
+- Internal retrieval systems
+
+---
+
+## Stage 5 - Intelligent Financial Platform
+
+The AI Operating Layer dynamically selects providers based on:
+
+- Capability
+- Latency
+- Cost
+- Context size
+- Privacy requirements
+- Model strengths
+
+Provider selection becomes automatic and transparent to users.
+
+---
+
+# AI Provider Interface
+
+Every provider must implement a common interface.
+
+Core operations include:
+
+- Chat Completion
+- Streaming Responses
+- Structured Output
+- Function / Tool Calling
+- Embeddings (Future)
+
+The remainder of the platform should remain unaware of which provider is executing inference.
+
+This enables provider replacement without affecting capabilities or business services.
 
 # Design Philosophy
 

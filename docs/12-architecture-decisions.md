@@ -1,53 +1,42 @@
 # ADR-001
 
-Title
+Title: AI performs reasoning only.
 
-AI performs reasoning only.
+Decision: All financial calculations are deterministic.
 
-Decision
+Reason: Mathematical accuracy.
 
-All financial calculations are deterministic.
-
-Reason
-
-Mathematical accuracy.
-
-Status
-
-Accepted.
+Status: Accepted.
 
 # ADR-002
 
-Title
+Title: Capability-Based Architecture
 
-Capability-Based Architecture
+Decision: The platform is organized around capabilities rather than pages.
 
-Decision
+Reason: Supports long-term scalability.
 
-The platform is organized around capabilities rather than pages.
-
-Reason
-
-Supports long-term scalability.
-
-Status
-
-Accepted.
+Status: Accepted.
 
 # ADR-003
 
-Title
+Title: Provider Abstraction
 
-Provider Abstraction
+Decision: Application code never communicates directly with OpenRouter.
 
-Decision
+Reason: Supports future self-hosting.
 
-Application code never communicates directly with OpenRouter.
+Status: Accepted.
 
-Reason
+# ADR-004
 
-Supports future self-hosting.
+Title: AI Provider Independence
 
-Status
+Decision:
 
-Accepted.
+    The platform must not depend directly on a single AI provider.
+    All inference passes through a provider abstraction.
+    Google Gemini API is the default provider during the MVP because it offers excellent capability with minimal cost.
+    Additional providers can be introduced without changing business logic.
+
+Status: Accepted.
