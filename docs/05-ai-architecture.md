@@ -411,7 +411,7 @@ All AI communication passes through a Provider Abstraction Layer.
 
 Business domains, capabilities, services, and tools interact only with the AI Operating Layer.
 
-The AI Operating Layer selects the appropriate provider.
+The AI Operating Layer selects an appropriate model configuration or model choice for the request.
 
 User
   ↓
@@ -455,7 +455,7 @@ It handles:
 
 The application does not implement a separate provider router.
 
-Provider selection is delegated to SDK configuration.
+Model choice and provider configuration are delegated to the SDK configuration, while the configured provider is used behind that abstraction.
 
 ---
 
@@ -716,7 +716,7 @@ Potential capabilities:
 
 ## Stage 5 - Intelligent Financial Platform
 
-The AI Operating Layer dynamically selects providers based on:
+The AI Operating Layer selects model configurations based on:
 
 - Capability
 - Latency
@@ -725,7 +725,7 @@ The AI Operating Layer dynamically selects providers based on:
 - Privacy requirements
 - Model strengths
 
-Provider selection becomes automatic and transparent to users.
+Provider choice remains transparent to users and is handled through the Vercel AI SDK configuration rather than by the application itself.
 
 ---
 

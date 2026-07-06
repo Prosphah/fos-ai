@@ -1,14 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("error") === "auth_callback_failed") {
+      setErrorMessage("We couldn't sign you in. Please try again.");
+    }
+  }, []);
 
   const signIn = async () => {
     setLoading(true);
+    setErrorMessage("");
 
     const supabase = createClient();
 
@@ -22,7 +31,7 @@ export default function LoginPage() {
     setLoading(false);
 
     if (error) {
-      console.error(error.message);
+      setErrorMessage(error.message);
     }
   };
 
@@ -36,6 +45,12 @@ export default function LoginPage() {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
       />
+
+      {errorMessage ? (
+        <p className="text-sm text-red-600" role="alert">
+          {errorMessage}
+        </p>
+      ) : null}
 
       <button
         className="bg-black text-white px-4 py-2"
