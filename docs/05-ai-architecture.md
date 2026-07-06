@@ -90,6 +90,7 @@ The AI selects tools rather than generating answers from memory whenever possibl
 # AI Operating Layer
 
 The AI Operating Layer acts as the intelligence kernel of FOS-AI.
+The AI Operating Layer selects models, not providers.
 
 Responsibilities include:
 
@@ -412,14 +413,49 @@ Business domains, capabilities, services, and tools interact only with the AI Op
 
 The AI Operating Layer selects the appropriate provider.
 
-Initial supported providers:
+User
+  ↓
+AI Operating Layer
+  ↓
+Model Selection Layer
+  ↓
+Vercel AI SDK (ai)
+  ↓
+Configured Provider (@ai-sdk/google in MVP)
+  ↓
+Gemini API
 
-- Google Gemini API (Primary MVP)
-- OpenRouter (Future)
-- Self-hosted vLLM (Future)
-- Ollama (Development)
+# Model Selection Layer
 
-Changing providers should require configuration changes rather than business logic changes.
+The AI Operating Layer is responsible for selecting the appropriate model based on:
+
+- Task complexity
+- Context size
+- Latency requirements
+- Cost sensitivity
+
+This selection is internal to the AI Operating Layer.
+
+The system does not route between providers directly.
+
+Instead, it selects a model configuration that is passed to the Vercel AI SDK.
+
+---
+
+# Provider Abstraction (Updated)
+
+The Vercel AI SDK serves as the provider abstraction layer.
+
+It handles:
+
+- API communication
+- Streaming
+- Tool calling
+- Provider-specific differences
+
+The application does not implement a separate provider router.
+
+Provider selection is delegated to SDK configuration.
 
 ---
 
@@ -635,41 +671,34 @@ Objectives:
 
 ---
 
-## Stage 2 - Multi-Provider
+## Stage 2 - Multi-Provider (Future)
 
-Introduce provider abstraction.
+Introduce additional providers via the Vercel AI SDK:
 
-Optional providers:
+- OpenAI
+- Anthropic
+- OpenRouter (optional)
+- Self-hosted models (vLLM)
 
-- OpenRouter
-- Claude
-- GPT
-- Additional Gemini models
+This is treated as a configuration-level expansion, not a core architectural change.
 
-Objectives:
-
-- Improve resilience
-- Evaluate model quality
-- Reduce vendor lock-in
-
+The AI Operating Layer remains provider-agnostic.
 ---
 
-## Stage 3 - Hybrid Intelligence
+## Stage 3 - AI Provider Interface (Conceptual)
 
-Introduce self-hosted inference for selected workloads.
+The application does not implement its own provider abstraction layer.
 
-Possible technologies:
+Instead, it relies on the Vercel AI SDK to standardize provider interactions.
 
-- vLLM
-- Ollama
-- Open-weight models (Gemma, Qwen, Llama)
+This section exists to document expected capabilities of any underlying provider:
 
-Objectives:
+- Chat completion
+- Streaming
+- Tool calling
+- Structured output support
 
-- Lower inference cost
-- Increase privacy
-- Reduce latency
-
+The implementation responsibility belongs to the AI SDK, not the application.
 ---
 
 ## Stage 4 - Specialized Intelligence
