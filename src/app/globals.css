@@ -1,26 +1,171 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@variant dark (&:where(.dark, .dark *));
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display-family);
+  --font-mono: var(--font-mono-family);
+  --color-bg-app: var(--bg);
+  --color-bg-card: var(--glass-bg);
+  --color-border: var(--glass-border);
+  --color-text-primary: var(--text-1);
+  --color-text-secondary: var(--text-2);
+  --color-accent: var(--accent);
+  --color-primary: var(--accent);
+  --color-primary-foreground: #FFFFFF;
+  --color-secondary: var(--glass-bg);
+  --color-secondary-foreground: var(--text-1);
+  --color-muted: var(--glass-bg);
+  --color-muted-foreground: var(--text-3);
+  --color-card: var(--glass-bg);
+  --color-card-foreground: var(--text-1);
+  --color-popover: var(--glass-bg);
+  --color-popover-foreground: var(--text-1);
+  --color-input: var(--glass-border);
+  --color-ring: var(--accent);
+  --color-destructive: var(--rose);
+  --color-mint: var(--mint);
+  --color-amber: var(--amber);
+  --color-rose: var(--rose);
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ── Shared (theme-independent) accent palette ── */
+:root {
+  --accent: #8B5CF6;
+  --accent-soft: rgba(139, 92, 246, 0.12);
+  --accent-softer: rgba(139, 92, 246, 0.06);
+  --accent-glow: rgba(139, 92, 246, 0.35);
+  --mint: #34D399;
+  --mint-soft: rgba(52, 211, 153, 0.12);
+  --amber: #FBBF24;
+  --amber-soft: rgba(251, 191, 36, 0.12);
+  --rose: #F87171;
+  --rose-soft: rgba(248, 113, 113, 0.12);
+  --radius: 20px;
+  --radius-sm: 14px;
+  --radius-xs: 10px;
+  --radius-full: 100px;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+  --sidebar-w: 220px;
 }
 
+/* ── Dark theme ── */
+.dark {
+  --bg: #08080F;
+  --bg-mesh-1: rgba(139, 92, 246, 0.07);
+  --bg-mesh-2: rgba(99, 102, 241, 0.04);
+  --glass-bg: rgba(255, 255, 255, 0.04);
+  --glass-bg-hover: rgba(255, 255, 255, 0.07);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-hover: rgba(255, 255, 255, 0.14);
+  --text-1: #F1F0F5;
+  --text-2: rgba(241, 240, 245, 0.55);
+  --text-3: rgba(241, 240, 245, 0.3);
+  --nav-bg: rgba(12, 12, 20, 0.92);
+  --nav-border: rgba(255, 255, 255, 0.06);
+  --gauge-track: rgba(255, 255, 255, 0.06);
+  --shadow-card: 0 2px 20px rgba(0, 0, 0, 0.25);
+  --shadow-glow: 0 0 40px rgba(139, 92, 246, 0.15);
+}
+
+/* ── Light theme ── */
+:root:not(.dark) {
+  --bg: #F0EEFF;
+  --bg-mesh-1: rgba(139, 92, 246, 0.08);
+  --bg-mesh-2: rgba(99, 102, 241, 0.05);
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-bg-hover: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.6);
+  --glass-border-hover: rgba(255, 255, 255, 0.85);
+  --text-1: #1A1625;
+  --text-2: rgba(26, 22, 37, 0.5);
+  --text-3: rgba(26, 22, 37, 0.25);
+  --nav-bg: rgba(240, 238, 255, 0.92);
+  --nav-border: rgba(255, 255, 255, 0.5);
+  --gauge-track: rgba(26, 22, 37, 0.08);
+  --shadow-card: 0 2px 20px rgba(139, 92, 246, 0.08);
+  --shadow-glow: 0 0 40px rgba(139, 92, 246, 0.08);
+  --accent-soft: rgba(139, 92, 246, 0.1);
+  --accent-softer: rgba(139, 92, 246, 0.05);
+  --mint-soft: rgba(52, 211, 153, 0.1);
+  --amber-soft: rgba(251, 191, 36, 0.1);
+  --rose-soft: rgba(248, 113, 113, 0.1);
+}
+
+/* ── Dark mode select/option ── */
+.dark select {
+  background-color: #1a1a2e !important;
+  color: #F1F0F5 !important;
+}
+.dark select option {
+  background-color: #1a1a2e !important;
+  color: #F1F0F5 !important;
+}
+
+/* ── Body ── */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
+  background: var(--bg);
+  min-height: 100vh;
+  color: var(--text-1);
+}
+
+/* ── Mesh background overlay ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 600px 500px at 80% 10%, var(--bg-mesh-1), transparent),
+    radial-gradient(ellipse 500px 400px at 20% 80%, var(--bg-mesh-2), transparent);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Glass card utility ── */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(1.3);
+  -webkit-backdrop-filter: blur(20px) saturate(1.3);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  transition: background 0.3s var(--ease), border-color 0.3s var(--ease), box-shadow 0.3s var(--ease);
+}
+
+/* ── Focus visible ── */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ── Entrance animation ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  animation: reveal 0.6s var(--ease-spring) forwards;
+}
+
+@keyframes reveal {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.delay-1 { animation-delay: 0.05s; }
+.delay-2 { animation-delay: 0.1s; }
+.delay-3 { animation-delay: 0.15s; }
+.delay-4 { animation-delay: 0.2s; }
+.delay-5 { animation-delay: 0.25s; }
+.delay-6 { animation-delay: 0.3s; }
+.delay-7 { animation-delay: 0.35s; }
+.delay-8 { animation-delay: 0.4s; }
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .reveal { animation: none; opacity: 1; transform: none; }
 }

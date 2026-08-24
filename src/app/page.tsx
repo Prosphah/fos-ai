@@ -4,16 +4,21 @@ import { redirect } from "next/navigation";
 export default async function Home() {
   const supabase = await createClient();
 
-  const { data } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  if (!data.user) {
+  if (!user) {
     redirect("/login");
   }
 
-  return (
-    <div className="p-6">
-      <h1>FOS-AI</h1>
-      <p>Welcome back</p>
-    </div>
-  );
+  const { data: profile } = await supabase
+    .from("financial_profiles")
+    .select("onboarding_completed, risk_score")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (!profile?.onboarding_completed && !profile?.risk_score) {
+    redirect("/onboarding");
+  }
+
+  redirect("/briefing");
 }
