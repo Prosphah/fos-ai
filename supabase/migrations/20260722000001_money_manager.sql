@@ -223,12 +223,12 @@ CREATE POLICY "Users can delete own savings goals"
 
 INSERT INTO categories (user_id, name, icon, color, type, is_system) VALUES
   (NULL, 'Salary',            'briefcase',      '#059669', 'income',   true),
-  (NULL, 'Freelance',         'code',           '#8B5CF6', 'income',   true),
+  (NULL, 'Freelance',         'code',           '#695AFF', 'income',   true),
   (NULL, 'Investment Returns','trending-up',    '#3B82F6', 'income',   true),
   (NULL, 'Other Income',      'plus-circle',    '#F59E0B', 'income',   true),
   (NULL, 'Food & Dining',     'utensils',       '#EF4444', 'expense',  true),
   (NULL, 'Transportation',    'car',            '#F97316', 'expense',  true),
-  (NULL, 'Housing',           'home',           '#8B5CF6', 'expense',  true),
+  (NULL, 'Housing',           'home',           '#695AFF', 'expense',  true),
   (NULL, 'Utilities',         'zap',            '#EAB308', 'expense',  true),
   (NULL, 'Entertainment',     'film',           '#EC4899', 'expense',  true),
   (NULL, 'Healthcare',        'heart',          '#14B8A6', 'expense',  true),

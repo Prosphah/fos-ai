@@ -10,7 +10,7 @@ export function InsightCard() {
         borderLeft: "3px solid var(--accent)",
         padding: "22px",
         boxShadow:
-          "0 0 0 1px rgba(139, 92, 246, 0.08), 0 0 20px -4px rgba(139, 92, 246, 0.12), 0 0 40px -8px rgba(139, 92, 246, 0.06)",
+          "0 0 0 1px rgba(105, 90, 255, 0.08), 0 0 20px -4px rgba(105, 90, 255, 0.12), 0 0 40px -8px rgba(105, 90, 255, 0.06)",
       }}
     >
       {/* Top-left radial glow */}
@@ -146,7 +146,7 @@ export function InsightCard() {
               width: "48px",
               height: "48px",
               borderRadius: "var(--radius-sm)",
-              background: "linear-gradient(135deg, var(--accent), #6D28D9)",
+              background: "linear-gradient(135deg, var(--accent), #4F3DC9)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",

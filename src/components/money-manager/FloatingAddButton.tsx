@@ -16,18 +16,18 @@ export function FloatingAddButton() {
           width: "54px",
           height: "54px",
           borderRadius: "16px",
-          background: "linear-gradient(135deg, var(--accent), #6D28D9)",
+          background: "var(--accent)",
           color: "#fff",
-          boxShadow: "0 4px 24px var(--accent-glow), 0 0 0 1px rgba(139, 92, 246, 0.3)",
+          boxShadow: "0 4px 24px var(--accent-glow), 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent)",
           transition: "transform 0.25s var(--ease), box-shadow 0.25s var(--ease)",
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = "scale(1.06)";
-          e.currentTarget.style.boxShadow = "0 6px 32px var(--accent-glow), 0 0 0 1px rgba(139, 92, 246, 0.4)";
+          e.currentTarget.style.boxShadow = "0 6px 32px var(--accent-glow), 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent)";
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.transform = "scale(1)";
-          e.currentTarget.style.boxShadow = "0 4px 24px var(--accent-glow), 0 0 0 1px rgba(139, 92, 246, 0.3)";
+          e.currentTarget.style.boxShadow = "0 4px 24px var(--accent-glow), 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent)";
         }}
         onMouseDown={(e) => { e.currentTarget.style.transform = "scale(0.96)"; }}
         onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1.06)"; }}

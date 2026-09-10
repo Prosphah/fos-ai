@@ -35,10 +35,10 @@
 
 /* ── Shared (theme-independent) accent palette ── */
 :root {
-  --accent: #8B5CF6;
-  --accent-soft: rgba(139, 92, 246, 0.12);
-  --accent-softer: rgba(139, 92, 246, 0.06);
-  --accent-glow: rgba(139, 92, 246, 0.35);
+  --accent: #695AFF;
+  --accent-soft: rgba(105, 90, 255, 0.12);
+  --accent-softer: rgba(105, 90, 255, 0.06);
+  --accent-glow: rgba(105, 90, 255, 0.35);
   --mint: #34D399;
   --mint-soft: rgba(52, 211, 153, 0.12);
   --amber: #FBBF24;
@@ -57,7 +57,7 @@
 /* ── Dark theme ── */
 .dark {
   --bg: #08080F;
-  --bg-mesh-1: rgba(139, 92, 246, 0.07);
+  --bg-mesh-1: rgba(105, 90, 255, 0.07);
   --bg-mesh-2: rgba(99, 102, 241, 0.04);
   --glass-bg: rgba(255, 255, 255, 0.04);
   --glass-bg-hover: rgba(255, 255, 255, 0.07);
@@ -70,13 +70,13 @@
   --nav-border: rgba(255, 255, 255, 0.06);
   --gauge-track: rgba(255, 255, 255, 0.06);
   --shadow-card: 0 2px 20px rgba(0, 0, 0, 0.25);
-  --shadow-glow: 0 0 40px rgba(139, 92, 246, 0.15);
+  --shadow-glow: 0 0 40px rgba(105, 90, 255, 0.15);
 }
 
 /* ── Light theme ── */
 :root:not(.dark) {
   --bg: #F0EEFF;
-  --bg-mesh-1: rgba(139, 92, 246, 0.08);
+  --bg-mesh-1: rgba(105, 90, 255, 0.08);
   --bg-mesh-2: rgba(99, 102, 241, 0.05);
   --glass-bg: rgba(255, 255, 255, 0.55);
   --glass-bg-hover: rgba(255, 255, 255, 0.75);
@@ -88,13 +88,16 @@
   --nav-bg: rgba(240, 238, 255, 0.92);
   --nav-border: rgba(255, 255, 255, 0.5);
   --gauge-track: rgba(26, 22, 37, 0.08);
-  --shadow-card: 0 2px 20px rgba(139, 92, 246, 0.08);
-  --shadow-glow: 0 0 40px rgba(139, 92, 246, 0.08);
-  --accent-soft: rgba(139, 92, 246, 0.1);
-  --accent-softer: rgba(139, 92, 246, 0.05);
-  --mint-soft: rgba(52, 211, 153, 0.1);
-  --amber-soft: rgba(251, 191, 36, 0.1);
-  --rose-soft: rgba(248, 113, 113, 0.1);
+  --shadow-card: 0 2px 20px rgba(105, 90, 255, 0.08);
+  --shadow-glow: 0 0 40px rgba(105, 90, 255, 0.08);
+  --accent-soft: rgba(105, 90, 255, 0.1);
+  --accent-softer: rgba(105, 90, 255, 0.05);
+  --mint: #059669;
+  --mint-soft: rgba(5, 150, 105, 0.1);
+  --amber: #D97706;
+  --amber-soft: rgba(217, 119, 6, 0.1);
+  --rose: #E11D48;
+  --rose-soft: rgba(225, 29, 72, 0.1);
 }
 
 /* ── Dark mode select/option ── */
@@ -165,7 +168,68 @@ body::before {
 .delay-7 { animation-delay: 0.35s; }
 .delay-8 { animation-delay: 0.4s; }
 
+/* ── Modal entrance ── */
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modal-pop {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-modal-overlay {
+  animation: overlay-in 0.25s var(--ease) forwards;
+}
+
+.animate-modal-panel {
+  animation: modal-pop 0.3s var(--ease-spring) forwards;
+}
+
+/* ── Thin scrollbar ── */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--accent) 40%, transparent) transparent;
+}
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--accent) 35%, transparent);
+  border-radius: var(--radius-full);
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   .reveal { animation: none; opacity: 1; transform: none; }
+  .animate-modal-overlay, .animate-modal-panel { animation: none; }
+}
+
+/* ── Spin animation ── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Calculator charts ── */
+@keyframes calculatorReveal {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes calculatorDraw {
+  from { stroke-dashoffset: 100; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes calculatorFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

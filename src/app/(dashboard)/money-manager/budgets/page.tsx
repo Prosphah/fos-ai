@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/format";
@@ -56,17 +56,31 @@ export default function BudgetsPage() {
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newBudgetAmount, setNewBudgetAmount] = useState(0);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
+  const [loadedKey, setLoadedKey] = useState<string | null>(null);
 
-  const loadBudgets = async () => {
-    setLoading(true);
+  const fetchBudgets = useCallback(async () => {
     const result = await listBudgets(month, year);
-    if (result.budgets) setBudgets(result.budgets);
-    setLoading(false);
-  };
+    return result.budgets ?? [];
+  }, [month, year]);
 
   useEffect(() => {
-    loadBudgets();
-  }, [month, year]);
+    let active = true;
+    fetchBudgets().then((rows) => {
+      if (!active) return;
+      setBudgets(rows);
+      setLoading(false);
+      setLoadedKey(`${month}-${year}`);
+    }).catch(() => {
+      if (!active) return;
+      setLoading(false);
+    });
+    return () => { active = false; };
+  }, [fetchBudgets, month, year]);
+
+  const reloadBudgets = async () => {
+    const rows = await fetchBudgets();
+    setBudgets(rows);
+  };
 
   useEffect(() => {
     async function loadCategories() {
@@ -101,12 +115,12 @@ export default function BudgetsPage() {
       amount,
     });
     setEditingId(null);
-    loadBudgets();
+    reloadBudgets();
   };
 
   const handleDelete = async (budgetId: string) => {
     await removeBudget(budgetId);
-    loadBudgets();
+    reloadBudgets();
   };
 
   const handleAddBudget = async () => {
@@ -119,13 +133,12 @@ export default function BudgetsPage() {
     setShowAddCategory(false);
     setNewBudgetAmount(0);
     setSelectedCategoryId("");
-    loadBudgets();
+    reloadBudgets();
   };
 
   const totalBudget = budgets.reduce((s, b) => s + b.amount, 0);
   const totalSpent = budgets.reduce((s, b) => s + b.spent, 0);
 
-  const usedCategoryIds = budgets.filter((b) => b.category_id).map((b) => b.category_id);
   const availableCategories = categories.filter(
     (c) => c.type === "expense" || c.type === "both"
   );
@@ -197,7 +210,7 @@ export default function BudgetsPage() {
           </Button>
         </div>
 
-        {loading ? (
+        {loading || loadedKey !== `${month}-${year}` ? (
           <div className="p-4 space-y-3">
             {[1, 2, 3].map((i) => (
               <div key={i} className="h-14 animate-pulse rounded-lg bg-muted" />

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 import { ProgressStepper } from "@/components/onboarding/ProgressStepper";
 import { StepPersonal } from "@/components/onboarding/StepPersonal";
@@ -29,6 +30,7 @@ import type {
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
+  const [direction, setDirection] = useState(1);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,6 +56,8 @@ export default function OnboardingPage() {
       if (sd) {
         if (sd.age) {
           setSavedPersonal({
+            firstName: (sd.first_name as string) ?? "",
+            lastName: (sd.last_name as string) ?? "",
             age: sd.age as number,
             country: sd.country as string,
             currency: sd.currency as string,
@@ -108,6 +112,11 @@ export default function OnboardingPage() {
     });
   }, [router]);
 
+  const goToStep = useCallback((nextStep: number) => {
+    setDirection(nextStep >= step ? 1 : -1);
+    setStep(nextStep);
+  }, [step]);
+
   const handleSave = useCallback(async (saveFn: () => Promise<{ error?: unknown; profileId?: string }>, nextStep: number) => {
     setSaving(true);
     setError(null);
@@ -129,13 +138,13 @@ export default function OnboardingPage() {
           setError(done.error ?? "Failed to complete onboarding");
         }
       } else {
-        setStep(nextStep);
+        goToStep(nextStep);
       }
     } catch {
       setError("Something went wrong. Please try again.");
     }
     setSaving(false);
-  }, [router, profileId]);
+  }, [goToStep, router, profileId]);
 
   const onNextPersonal = async (data: StepPersonalForm) => {
     setSavedPersonal(data);
@@ -172,62 +181,103 @@ export default function OnboardingPage() {
     );
   }
 
+  const slideVariants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 80 : -80,
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction: number) => ({
+      x: direction > 0 ? -80 : 80,
+      opacity: 0,
+    }),
+  };
+
   return (
     <OnboardingLayout>
       <ProgressStepper currentStep={step} />
 
-      {error && (
-        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </div>
-      )}
+      <AnimatePresence mode="wait" custom={direction}>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -8, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: "auto" }}
+            exit={{ opacity: 0, y: -8, height: 0 }}
+            className="mb-4 overflow-hidden rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+          >
+            {error}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {saving && (
-        <div className="mb-4 flex items-center gap-2 text-sm text-gray-500">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="mb-4 flex items-center gap-2 text-sm text-gray-500"
+        >
           <div className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
           Saving your progress...
-        </div>
+        </motion.div>
       )}
 
-      {step === 1 && (
-        <StepPersonal
-          key="step1"
-          defaultValues={savedPersonal}
-          onNext={onNextPersonal}
-        />
-      )}
-      {step === 2 && (
-        <StepCashflow
-          key="step2"
-          defaultValues={savedCashflow}
-          onNext={onNextCashflow}
-          onBack={() => setStep(1)}
-        />
-      )}
-      {step === 3 && (
-        <StepAssets
-          key="step3"
-          defaultValues={savedAssets}
-          onNext={onNextAssets}
-          onBack={() => setStep(2)}
-        />
-      )}
-      {step === 4 && (
-        <StepGoals
-          key="step4"
-          defaultValues={savedGoals}
-          onNext={onNextGoals}
-          onBack={() => setStep(3)}
-        />
-      )}
-      {step === 5 && (
-        <StepRisk
-          key="step5"
-          defaultValues={savedRisk}
-          onNext={onNextRisk}
-          onBack={() => setStep(4)}
-        />
-      )}
+      <AnimatePresence mode="wait" custom={direction}>
+        <motion.div
+          key={step}
+          custom={direction}
+          variants={slideVariants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={{
+            x: { type: "spring", stiffness: 300, damping: 30 },
+            opacity: { duration: 0.2 },
+          }}
+        >
+          {step === 1 && (
+            <StepPersonal
+              key="step1"
+              defaultValues={savedPersonal}
+              onNext={onNextPersonal}
+            />
+          )}
+          {step === 2 && (
+            <StepCashflow
+              key="step2"
+              defaultValues={savedCashflow}
+              onNext={onNextCashflow}
+              onBack={() => goToStep(1)}
+            />
+          )}
+          {step === 3 && (
+            <StepAssets
+              key="step3"
+              defaultValues={savedAssets}
+              onNext={onNextAssets}
+              onBack={() => goToStep(2)}
+            />
+          )}
+          {step === 4 && (
+            <StepGoals
+              key="step4"
+              defaultValues={savedGoals}
+              onNext={onNextGoals}
+              onBack={() => goToStep(3)}
+            />
+          )}
+          {step === 5 && (
+            <StepRisk
+              key="step5"
+              defaultValues={savedRisk}
+              onNext={onNextRisk}
+              onBack={() => goToStep(4)}
+            />
+          )}
+        </motion.div>
+      </AnimatePresence>
     </OnboardingLayout>
   );
 }

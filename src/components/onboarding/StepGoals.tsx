@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { stepGoalsSchema, type StepGoalsForm } from "@/lib/validation/onboarding";
 import { Button } from "@/components/ui/button";
-import { CurrencyInput } from "@/components/ui/currency-input";
 import { handleEnterToNext } from "@/lib/enter-to-next";
 import { Wallet, X, Plus } from "lucide-react";
 import type { Resolver } from "react-hook-form";
@@ -56,8 +55,7 @@ export function StepGoals({ defaultValues, onNext, onBack }: Props) {
   const {
     register,
     handleSubmit,
-    control,
-    formState: { errors, isSubmitting },
+    formState: { isSubmitting },
   } = useForm<StepGoalsForm>({
     resolver: zodResolver(clientGoalsSchema) as unknown as Resolver<StepGoalsForm>,
     defaultValues: {

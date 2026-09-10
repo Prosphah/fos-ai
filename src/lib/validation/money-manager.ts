@@ -42,7 +42,7 @@ export type RecordTransactionForm = z.infer<typeof recordTransactionSchema>;
 
 export const createAccountSchema = z.object({
   name: z.string().min(1, "Account name is required").max(50),
-  type: z.enum(["cash", "savings", "investment", "credit", "other"]),
+  type: z.enum(["cash", "current", "savings", "investment", "credit", "other"]),
   balance: z.coerce.number().default(0),
   currency: z.string().min(1).default("USD"),
   institution: z.string().max(100).nullable().optional(),

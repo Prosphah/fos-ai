@@ -1,24 +1,28 @@
 "use client";
 
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { Bell, Sun, Moon, Calendar, ChevronRight } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { getProfileName } from "@/app/actions/profile";
+
+const subscribeNoop = () => () => {};
 
 export function Topbar() {
   const { theme, setTheme } = useTheme();
-  const [today, setToday] = useState("");
-  const [mounted, setMounted] = useState(false);
+  const [userName, setUserName] = useState<string>("");
 
   useEffect(() => {
-    setMounted(true);
-    setToday(
-      new Intl.DateTimeFormat("en-US", {
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-      }).format(new Date())
-    );
+    getProfileName().then((p) => {
+      if (p.firstName) setUserName(p.firstName);
+    });
   }, []);
+
+  const today = useSyncExternalStore(subscribeNoop, () => new Intl.DateTimeFormat("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  }).format(new Date()), () => "");
+  const mounted = useSyncExternalStore(subscribeNoop, () => true, () => false);
 
   return (
     <header
@@ -44,7 +48,7 @@ export function Topbar() {
               width: "36px",
               height: "36px",
               borderRadius: "var(--radius-xs)",
-              background: "linear-gradient(135deg, var(--accent), #6D28D9)",
+              background: "var(--accent)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -55,7 +59,7 @@ export function Topbar() {
               flexShrink: 0,
             }}
           >
-            A
+            {(userName?.[0] ?? "U").toUpperCase()}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "1px" }}>
             <span
@@ -66,7 +70,7 @@ export function Topbar() {
                 color: "var(--text-1)",
               }}
             >
-              Alexander
+              {userName || "User"}
             </span>
             <a
               href="/settings"
@@ -108,7 +112,7 @@ export function Topbar() {
           }}
         >
           <Calendar size={18} />
-          {today}
+          {mounted && today}
         </button>
       </div>
 

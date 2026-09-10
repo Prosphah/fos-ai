@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
@@ -272,6 +273,13 @@ export default function LoginPage() {
             )}
           </div>
         </div>
+
+        <p style={{ marginTop: "24px", textAlign: "center", fontSize: "0.75rem", color: "var(--text-3)" }}>
+          By continuing, you agree to our{" "}
+          <Link href="/privacy" style={{ color: "var(--accent)", textDecoration: "none" }}>
+            Privacy Policy
+          </Link>
+        </p>
       </div>
     </main>
   );

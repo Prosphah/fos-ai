@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/server";
-import { randomUUID } from "crypto";
 import type {
   UserSettings,
   Category,
@@ -139,7 +138,7 @@ export async function createAccount(
   userId: string,
   data: {
     name: string;
-    type: "cash" | "savings" | "investment" | "credit" | "other";
+    type: "cash" | "current" | "savings" | "investment" | "credit" | "other";
     balance?: number;
     currency?: string;
     institution?: string | null;
@@ -168,7 +167,7 @@ export async function updateAccount(
   accountId: string,
   data: {
     name?: string;
-    type?: "cash" | "savings" | "investment" | "credit" | "other";
+    type?: "cash" | "current" | "savings" | "investment" | "credit" | "other";
     balance?: number;
     institution?: string | null;
     accountNumberLast4?: string | null;
@@ -633,15 +632,7 @@ export async function getMoneyManagerDashboard(userId: string): Promise<{
     .filter((t) => t.type === "expense")
     .reduce((s, t) => s + Number(t.amount), 0);
 
-  const savingsCategoryIds = new Set(
-    categoryNames
-      .filter((c) => c.name === "Savings" || c.name === "Investment")
-      .map((c) => c.id)
-  );
-  const categorySavings = transactions
-    .filter((t) => t.category_id && savingsCategoryIds.has(t.category_id))
-    .reduce((s, t) => s + Math.abs(Number(t.amount)), 0);
-  const savingsRate = income > 0 ? Math.round((categorySavings / income) * 100) : 0;
+  const savingsRate = income > 0 ? Math.round(((income - expenses) / income) * 100) : 0;
 
   const spendingByCategory = new Map<string, number>();
   for (const tx of transactions) {

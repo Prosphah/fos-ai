@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from "react";
 import type { LucideIcon } from "lucide-react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { recordTransactionSchema, type RecordTransactionForm } from "@/lib/validation/money-manager";
 import { Button } from "@/components/ui/button";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { formatCurrency } from "@/lib/format";
+import { toLocalDateString } from "@/lib/date";
 import { addTransaction, listCategories, listAccounts } from "@/app/money-manager/actions";
 import {
   ArrowRightLeft,
@@ -98,21 +99,18 @@ const inputStyle = {
   transition: "border-color 0.2s var(--ease), box-shadow 0.2s var(--ease)",
 };
 
-const inputFocusStyle = "focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15";
-
 export function TransactionForm({ onSuccess, defaultType = "expense", defaultDate }: Props) {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [serverError, setServerError] = useState<string | null>(null);
 
-  const today = defaultDate ?? new Date().toISOString().split("T")[0];
+  const today = defaultDate ?? toLocalDateString(new Date());
 
   const {
     register,
     handleSubmit,
     control,
-    watch,
     formState: { errors, isSubmitting },
   } = useForm<RecordTransactionForm>({
     resolver: zodResolver(recordTransactionSchema) as Resolver<RecordTransactionForm>,
@@ -131,9 +129,9 @@ export function TransactionForm({ onSuccess, defaultType = "expense", defaultDat
     },
   });
 
-  const txType = watch("type");
-  const isRecurring = watch("isRecurring");
-  const selectedCategoryId = watch("categoryId");
+  const txType = useWatch({ control, name: "type" });
+  const isRecurring = useWatch({ control, name: "isRecurring" });
+  const selectedCategoryId = useWatch({ control, name: "categoryId" });
 
   useEffect(() => {
     async function loadData() {

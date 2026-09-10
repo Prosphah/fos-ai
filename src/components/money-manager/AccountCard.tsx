@@ -1,12 +1,13 @@
 "use client";
 
-import { Landmark, Wallet, BarChart3, CreditCard, Banknote } from "lucide-react";
+import { Landmark, Wallet, BarChart3, CreditCard, Banknote, PiggyBank } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import type { Account } from "@/types/database";
 
 const typeIcons = {
   cash: Banknote,
-  savings: Wallet,
+  current: Wallet,
+  savings: PiggyBank,
   investment: BarChart3,
   credit: CreditCard,
   other: Landmark,
@@ -14,6 +15,7 @@ const typeIcons = {
 
 const typeLabels = {
   cash: "Cash",
+  current: "Current",
   savings: "Savings",
   investment: "Investment",
   credit: "Credit",
@@ -22,6 +24,7 @@ const typeLabels = {
 
 const typeColors: Record<string, { bg: string; color: string }> = {
   cash: { bg: "var(--accent-soft)", color: "var(--accent)" },
+  current: { bg: "var(--mint-soft)", color: "var(--mint)" },
   savings: { bg: "rgba(59, 130, 246, 0.12)", color: "#3B82F6" },
   investment: { bg: "rgba(168, 85, 247, 0.12)", color: "#A855F7" },
   credit: { bg: "var(--rose-soft)", color: "var(--rose)" },

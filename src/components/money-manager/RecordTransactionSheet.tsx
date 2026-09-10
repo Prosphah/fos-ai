@@ -23,9 +23,9 @@ export function RecordTransactionSheet({ open, onClose }: Props) {
         className="rounded-t-2xl border-t"
         style={{
           borderColor: "var(--glass-border)",
-          background: "var(--glass-bg)",
-          backdropFilter: "blur(24px) saturate(1.5)",
-          WebkitBackdropFilter: "blur(24px) saturate(1.5)",
+          background: "color-mix(in srgb, var(--bg) 88%, transparent)",
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
         }}
       >
         <SheetHeader className="px-5 pt-3 pb-0">

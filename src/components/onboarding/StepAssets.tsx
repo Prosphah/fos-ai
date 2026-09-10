@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { stepAssetsSchema, type StepAssetsForm } from "@/lib/validation/onboarding";
 import { Button } from "@/components/ui/button";
@@ -38,9 +38,7 @@ const inputStyle = {
 
 export function StepAssets({ defaultValues, onNext, onBack }: Props) {
   const {
-    register,
     handleSubmit,
-    watch,
     control,
     formState: { errors, isSubmitting },
   } = useForm<StepAssetsForm>({
@@ -61,7 +59,7 @@ export function StepAssets({ defaultValues, onNext, onBack }: Props) {
     },
   });
 
-  const values = watch();
+  const values = useWatch({ control });
 
   const totalAssetsVal =
     (Number(values.totalCash) || 0) +

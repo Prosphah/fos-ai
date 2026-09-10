@@ -59,7 +59,7 @@ export function calculateFinancialHealthScore(
   const srScore = Math.min(savingsRate, 100) * 0.3;
   const drScore = Math.max(0, (1 - debtRatio) * 100) * 0.25;
   const efScore = Math.min(emergencyFundMonths * 10, 100) * 0.25;
-  const rsScore = riskScore * 20 * 0.2;
+  const rsScore = riskScore * 0.2;
   return Math.round(Math.min(srScore + drScore + efScore + rsScore, 100));
 }
 
@@ -107,6 +107,8 @@ function resolveProfileId(
 export async function saveStepPersonal(
   userId: string,
   data: {
+    firstName: string;
+    lastName: string;
     age: number;
     country: string;
     currency: string;
@@ -123,6 +125,8 @@ export async function saveStepPersonal(
   const result = await supabase.from("financial_profiles").upsert({
     id,
     user_id: userId,
+    first_name: data.firstName,
+    last_name: data.lastName,
     age: data.age,
     country: data.country,
     currency: data.currency,

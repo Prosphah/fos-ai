@@ -44,6 +44,8 @@ export function StepPersonal({ defaultValues, onNext }: Props) {
   } = useForm<StepPersonalForm>({
     resolver: zodResolver(stepPersonalSchema) as Resolver<StepPersonalForm>,
     defaultValues: {
+      firstName: defaultValues?.firstName ?? "",
+      lastName: defaultValues?.lastName ?? "",
       age: defaultValues?.age ?? undefined,
       country: defaultValues?.country ?? "",
       currency: defaultValues?.currency ?? "",
@@ -62,6 +64,32 @@ export function StepPersonal({ defaultValues, onNext }: Props) {
         <p className="mt-1" style={{ fontSize: "0.875rem", color: "var(--text-2)" }}>
           Just a few quick questions so we can tailor everything to your situation.
         </p>
+      </div>
+
+      <div>
+        <label htmlFor="first-name" style={labelStyle}>What&apos;s your first name?</label>
+        <input
+          id="first-name"
+          type="text"
+          {...register("firstName")}
+          autoComplete="given-name"
+          placeholder="e.g. Michael"
+          style={inputStyle}
+        />
+        {errors.firstName && <p className="mt-1" style={{ fontSize: "0.75rem", color: "var(--rose)" }}>{errors.firstName.message}</p>}
+      </div>
+
+      <div>
+        <label htmlFor="last-name" style={labelStyle}>And your last name?</label>
+        <input
+          id="last-name"
+          type="text"
+          {...register("lastName")}
+          autoComplete="family-name"
+          placeholder="e.g. Johnson"
+          style={inputStyle}
+        />
+        {errors.lastName && <p className="mt-1" style={{ fontSize: "0.75rem", color: "var(--rose)" }}>{errors.lastName.message}</p>}
       </div>
 
       <div>

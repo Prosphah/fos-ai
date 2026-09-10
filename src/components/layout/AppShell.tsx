@@ -19,10 +19,11 @@ export function AppShell({ children }: AppShellProps) {
         <Topbar />
 
         <main
-          className="mx-auto flex w-full max-w-[520px] flex-col gap-6 pb-[32px] pt-6 lg:!max-w-[720px] lg:!px-10 lg:!pt-9 lg:pb-[60px]"
+          className="mx-auto flex w-full max-w-[520px] flex-col gap-6 pt-6 lg:!max-w-[720px] lg:!px-10 lg:!pt-9"
           style={{
             paddingLeft: "20px",
             paddingRight: "20px",
+            paddingBottom: "calc(80px + env(safe-area-inset-bottom, 0px))",
           }}
         >
           <div

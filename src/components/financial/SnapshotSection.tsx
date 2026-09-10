@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useEffect, useTransition, useRef } from "react";
 import { fetchSnapshotByPeriod } from "@/app/actions/snapshot";
 import { FinancialSnapshot } from "./FinancialSnapshot";
 import type { BriefingData, SnapshotPeriod, SnapshotMetric, ChartDataPoint } from "@/services/financial-health.service";
@@ -32,13 +32,23 @@ export function SnapshotSection({ userId, initialData }: Props) {
     currency: initialData.currency,
   });
   const [isPending, startTransition] = useTransition();
+  const requestVersion = useRef(0);
+
+  useEffect(() => {
+    const version = ++requestVersion.current;
+    startTransition(async () => {
+      const result = await fetchSnapshotByPeriod(userId, period);
+      if (version === requestVersion.current) setData(result);
+    });
+  }, [initialData, userId]); // eslint-disable-line react-hooks/exhaustive-deps -- period requests are guarded in handlePeriodChange
 
   function handlePeriodChange(newPeriod: SnapshotPeriod) {
     if (newPeriod === period) return;
     setPeriod(newPeriod);
+    const version = ++requestVersion.current;
     startTransition(async () => {
       const result = await fetchSnapshotByPeriod(userId, newPeriod);
-      setData(result);
+      if (version === requestVersion.current) setData(result);
     });
   }
 

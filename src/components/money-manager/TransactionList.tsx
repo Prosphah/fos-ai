@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { TransactionRow } from "./TransactionRow";
+import { toLocalDateString } from "@/lib/date";
 import type { Transaction, Category, Account } from "@/types/database";
 
 interface Props {
@@ -15,8 +16,8 @@ interface Props {
 function groupByDate(transactions: Transaction[]) {
   const groups: { date: string; label: string; items: Transaction[] }[] = [];
   const now = new Date();
-  const today = now.toISOString().split("T")[0];
-  const yesterday = new Date(now.setDate(now.getDate() - 1)).toISOString().split("T")[0];
+  const today = toLocalDateString(new Date(now.getFullYear(), now.getMonth(), now.getDate()));
+  const yesterday = toLocalDateString(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1));
 
   const map = new Map<string, Transaction[]>();
   for (const tx of transactions) {

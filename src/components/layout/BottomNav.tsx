@@ -7,12 +7,14 @@ import {
   Target,
   BrainCircuit,
   DollarSign,
+  Calculator,
 } from "lucide-react";
 
 const links = [
   { name: "Briefing", href: "/briefing", icon: LayoutDashboard },
   { name: "Accounts", href: "/money-manager", icon: DollarSign },
   { name: "Goals", href: "/goals", icon: Target },
+  { name: "Tools", href: "/tools", icon: Calculator },
   { name: "FOS AI", href: "/assistant", icon: BrainCircuit },
 ];
 

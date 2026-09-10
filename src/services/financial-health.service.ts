@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { formatCurrency, formatCompactValue, formatPercent } from "@/lib/format";
+import { toLocalDateString } from "@/lib/date";
 import type { FinancialProfile, FinancialGoal, RiskAssessment } from "@/types/database";
 import {
   calculateSavingsRate,
@@ -55,10 +56,12 @@ export interface BriefingData {
   riskItems: RiskItem[];
   actionItems: ActionItem[];
   financialHealthScore: number;
+  scoreDelta: number;
 }
 
 const emptyBriefing: BriefingData = {
   financialHealthScore: 0,
+  scoreDelta: 0,
   metrics: [],
   chartData: [],
   chartValue: "",
@@ -68,62 +71,161 @@ const emptyBriefing: BriefingData = {
   actionItems: [],
 };
 
-function netWorth(profile: FinancialProfile): number {
-  return (profile.total_savings ?? 0) - (profile.total_debt ?? 0);
-}
+async function buildMetrics(profile: FinancialProfile, currency: string, period: SnapshotPeriod): Promise<SnapshotMetric[]> {
+  const supabase = await createClient();
+  const userId = profile.user_id;
+  const now = new Date();
 
-function buildMetrics(profile: FinancialProfile, currency: string, period: SnapshotPeriod): SnapshotMetric[] {
-  const monthlyIncome = profile.monthly_income ?? 0;
-  const monthlyExpenses = profile.monthly_expenses ?? 0;
-  const nw = netWorth(profile);
-  const sr = profile.savings_rate ?? 0;
-
-  let income: number;
-  let expenses: number;
+  let periodStart: string;
+  let periodEnd: string;
+  let previousPeriodStart: string;
+  let previousPeriodEnd: string;
 
   switch (period) {
-    case "daily":
-      income = Math.round(monthlyIncome / 30);
-      expenses = Math.round(monthlyExpenses / 30);
+    case "daily": {
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+      const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+
+      periodStart = toLocalDateString(today);
+      periodEnd = toLocalDateString(tomorrow);
+
+      previousPeriodStart = toLocalDateString(yesterday);
+      previousPeriodEnd = toLocalDateString(today);
       break;
-    case "annually":
-      income = monthlyIncome * 12;
-      expenses = monthlyExpenses * 12;
+    }
+    case "annually": {
+      const currentYear = now.getFullYear();
+      periodStart = `${currentYear}-01-01`;
+      periodEnd = `${currentYear + 1}-01-01`;
+
+      const previousYear = currentYear - 1;
+      previousPeriodStart = `${previousYear}-01-01`;
+      previousPeriodEnd = `${previousYear + 1}-01-01`;
       break;
-    default:
-      income = monthlyIncome;
-      expenses = monthlyExpenses;
+    }
+    case "monthly": {
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      periodStart = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-01`;
+      periodEnd = `${currentYear}-${String(currentMonth + 2).padStart(2, "0")}-01`;
+
+      const previousMonth = currentMonth - 1 < 0 ? 11 : currentMonth - 1;
+      const previousYear = currentMonth - 1 < 0 ? currentYear - 1 : currentYear;
+      previousPeriodStart = `${previousYear}-${String(previousMonth + 1).padStart(2, "0")}-01`;
+      previousPeriodEnd = `${previousYear}-${String(previousMonth + 2).padStart(2, "0")}-01`;
+      break;
+    }
+    default: {
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      periodStart = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-01`;
+      periodEnd = `${currentYear}-${String(currentMonth + 2).padStart(2, "0")}-01`;
+      previousPeriodStart = `${currentYear}-01-01`;
+      previousPeriodEnd = `${currentYear + 1}-01-01`;
+    }
   }
 
+  const [currentResults, previousResults, { data: accounts }] = await Promise.all([
+    supabase
+      .from("transactions")
+      .select("type, amount")
+      .eq("user_id", userId)
+      .gte("transaction_date", periodStart)
+      .lt("transaction_date", periodEnd),
+    supabase
+      .from("transactions")
+      .select("type, amount")
+      .eq("user_id", userId)
+      .gte("transaction_date", previousPeriodStart)
+      .lt("transaction_date", previousPeriodEnd),
+    supabase.from("accounts").select("balance").eq("user_id", userId).eq("is_active", true),
+  ]);
+
+  const assets = (accounts ?? []).reduce((s, a) => s + Number(a.balance), 0);
+
+  const currentIncome = (currentResults.data ?? [])
+    .filter((t: { type: string }) => t.type === "income")
+    .reduce((s: number, t: { amount: number | string }) => s + Number(t.amount), 0);
+  const currentExpenses = (currentResults.data ?? [])
+    .filter((t: { type: string }) => t.type === "expense")
+    .reduce((s: number, t: { amount: number | string }) => s + Number(t.amount), 0);
+
+  const previousIncome = (previousResults.data ?? [])
+    .filter((t: { type: string }) => t.type === "income")
+    .reduce((s: number, t: { amount: number | string }) => s + Number(t.amount), 0);
+  const previousExpenses = (previousResults.data ?? [])
+    .filter((t: { type: string }) => t.type === "expense")
+    .reduce((s: number, t: { amount: number | string }) => s + Number(t.amount), 0);
+
+  const currentNetWorth = assets;
+  const previousNetWorth = assets - currentIncome + currentExpenses;
+
+  const incomeChange = previousIncome > 0 ? ((currentIncome - previousIncome) / previousIncome) * 100 : currentIncome > 0 ? 100 : 0;
+  const expensesChange = previousExpenses > 0 ? ((currentExpenses - previousExpenses) / previousExpenses) * 100 : currentExpenses > 0 ? 100 : 0;
+  const netWorthChange = previousNetWorth > 0 ? ((currentNetWorth - previousNetWorth) / previousNetWorth) * 100 : currentNetWorth > 0 ? 100 : 0;
+
+  const currentSavingsRate = currentIncome > 0
+      ? ((currentIncome - currentExpenses) / currentIncome) * 100
+      : 0;
+  const previousSavingsRate = previousIncome > 0
+    ? ((previousIncome - previousExpenses) / previousIncome) * 100
+    : 0;
+
   return [
-    { id: "income", title: "Income", value: formatCompactValue(income, currency), trend: "\u2014", positive: true, icon: "trending-up" },
-    { id: "expenses", title: "Expenses", value: formatCompactValue(expenses, currency), trend: "\u2014", positive: true, icon: "trending-down" },
-    { id: "savings", title: "Savings Rate", value: `${sr}%`, trend: "\u2014", positive: true, icon: "wallet" },
-    { id: "networth", title: "Net Worth", value: formatCompactValue(nw, currency), trend: "\u2014", positive: true, icon: "arrow-up-right" },
+    {
+      id: "income",
+      title: "Income",
+      value: formatCompactValue(currentIncome, currency),
+      trend: formatPercent(Math.round(incomeChange)),
+      positive: incomeChange >= 0,
+      icon: "trending-up",
+    },
+    {
+      id: "expenses",
+      title: "Expenses",
+      value: formatCompactValue(currentExpenses, currency),
+      trend: formatPercent(Math.round(expensesChange)),
+      positive: expensesChange <= 0,
+      icon: "trending-down",
+    },
+    {
+      id: "savings",
+      title: "Savings Rate",
+      value: `${Math.round(currentSavingsRate)}%`,
+      trend: formatPercent(Math.round(currentSavingsRate - previousSavingsRate)),
+      positive: currentSavingsRate >= previousSavingsRate,
+      icon: "wallet",
+    },
+    {
+      id: "networth",
+      title: "Net Worth",
+      value: formatCompactValue(currentNetWorth, currency),
+      trend: formatPercent(Math.round(netWorthChange)),
+      positive: netWorthChange >= 0,
+      icon: "arrow-up-right",
+    },
   ];
 }
 
 async function buildChartData(
   userId: string,
-  nw: number,
   currency: string,
   period: SnapshotPeriod
 ): Promise<{ chartData: ChartDataPoint[]; chartValue: string; chartTrend: string }> {
   const supabase = await createClient();
   const now = new Date();
 
-  let buckets: { label: string; startDate: string; endDate: string }[] = [];
+  const buckets: { label: string; startDate: string; endDate: string }[] = [];
 
   if (period === "daily") {
     for (let i = 6; i >= 0; i--) {
-      const d = new Date(now);
-      d.setDate(d.getDate() - i);
-      const nextDay = new Date(d);
-      nextDay.setDate(nextDay.getDate() + 1);
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+      const nextDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i + 1);
       buckets.push({
         label: d.toLocaleString("en-US", { weekday: "short" }),
-        startDate: d.toISOString().split("T")[0],
-        endDate: nextDay.toISOString().split("T")[0],
+        startDate: toLocalDateString(d),
+        endDate: toLocalDateString(nextDay),
       });
     }
   } else if (period === "annually") {
@@ -141,56 +243,84 @@ async function buildChartData(
       const nextMonth = new Date(d.getFullYear(), d.getMonth() + 1, 1);
       buckets.push({
         label: d.toLocaleString("en-US", { month: "short" }),
-        startDate: d.toISOString().split("T")[0],
-        endDate: nextMonth.toISOString().split("T")[0],
+        startDate: toLocalDateString(d),
+        endDate: toLocalDateString(nextMonth),
       });
     }
   }
 
-  const results = await Promise.all(
-    buckets.map((b) =>
-      supabase
-        .from("transactions")
-        .select("type, amount")
-        .eq("user_id", userId)
-        .gte("transaction_date", b.startDate)
-        .lt("transaction_date", b.endDate)
-    )
-  );
+  const graphStart = buckets[0].startDate;
+  const graphEnd = buckets[buckets.length - 1].endDate;
 
-  const bucketNet = results.map((res, i) => {
-    const txs = res.data ?? [];
-    const income = txs
-      .filter((t) => t.type === "income")
-      .reduce((s, t) => s + Number(t.amount), 0);
-    const expenses = txs
-      .filter((t) => t.type === "expense")
-      .reduce((s, t) => s + Number(t.amount), 0);
-    return { label: buckets[i].label, net: income - expenses };
-  });
+  const [{ data: accounts }, { data: transactions }] = await Promise.all([
+    supabase
+      .from("accounts")
+      .select("id, balance, created_at")
+      .eq("user_id", userId)
+      .eq("is_active", true),
+    supabase
+      .from("transactions")
+      .select("account_id, transfer_to_id, type, amount, transaction_date")
+      .eq("user_id", userId)
+      .gte("transaction_date", graphStart)
+      .lte("transaction_date", graphEnd),
+  ]);
 
-  const hasRealData = bucketNet.some((m) => m.net !== 0);
+  const accountList = (accounts ?? []).map((a) => ({
+    id: a.id,
+    balance: Number(a.balance),
+    createdDate: a.created_at ? a.created_at.split("T")[0] : "0000-01-01",
+  }));
 
-  let chartData: ChartDataPoint[];
-  if (hasRealData) {
-    const base = nw > 0 ? nw : 0;
-    let cumulative = base - bucketNet.reduce((s, m) => s + m.net, 0);
-    chartData = bucketNet.map((m) => {
-      cumulative += m.net;
-      return { month: m.label, value: Math.max(cumulative, 0) };
-    });
-  } else {
-    const base = nw > 0 ? nw : 48200;
-    const start = Math.round(base * 0.8);
-    const step = Math.round((base - start) / (buckets.length - 1 || 1));
-    chartData = buckets.map((m, i) => ({ month: m.label, value: start + step * i }));
+  const txByAccount = new Map<string, { date: string; delta: number }[]>();
+  for (const tx of transactions ?? []) {
+    if (!tx.account_id) continue;
+    const amount = Number(tx.amount);
+    const deltas = tx.type === "transfer"
+      ? [{ accountId: tx.account_id, delta: -amount }, ...(tx.transfer_to_id ? [{ accountId: tx.transfer_to_id, delta: amount }] : [])]
+      : [{ accountId: tx.account_id, delta: tx.type === "income" ? amount : -amount }];
+    for (const { accountId, delta } of deltas) {
+      const existing = txByAccount.get(accountId) ?? [];
+      existing.push({ date: tx.transaction_date, delta });
+      txByAccount.set(accountId, existing);
+    }
+  }
+  for (const [, txs] of txByAccount) {
+    txs.sort((a, b) => b.date.localeCompare(a.date));
   }
 
-  const chartValue = formatCompactValue(nw > 0 ? nw : chartData[chartData.length - 1]?.value ?? 0, currency);
+  const chartData: ChartDataPoint[] = buckets.map((bucket) => {
+    const endpoint = bucket.endDate;
+    let netWorth = 0;
+
+    for (const account of accountList) {
+      if (account.createdDate > endpoint) continue;
+
+      const txs = txByAccount.get(account.id) ?? [];
+      let futureDeltaSum = 0;
+      for (const tx of txs) {
+        if (tx.date > endpoint) {
+          futureDeltaSum += tx.delta;
+        } else {
+          break;
+        }
+      }
+
+      netWorth += account.balance - futureDeltaSum;
+    }
+
+    return { month: bucket.label, value: Math.max(netWorth, 0) };
+  });
+
+  const latestNetWorth = chartData.length > 0 ? chartData[chartData.length - 1].value : 0;
+  const chartValue = formatCompactValue(latestNetWorth, currency);
+
   const firstVal = chartData[0]?.value ?? 0;
   const lastVal = chartData[chartData.length - 1]?.value ?? 0;
   const pctChange = firstVal > 0 ? ((lastVal - firstVal) / firstVal) * 100 : 0;
-  const chartTrend = hasRealData ? formatPercent(pctChange) : "\u2014";
+  const chartTrend = chartData.length > 0 && (firstVal > 0 || lastVal > 0)
+    ? formatPercent(pctChange)
+    : "\u2014";
 
   return { chartData, chartValue, chartTrend };
 }
@@ -293,11 +423,14 @@ export async function getBriefingData(userId?: string): Promise<BriefingData> {
   }
 
   const currency = profile.currency ?? "USD";
-  const metrics = buildMetrics(profile as FinancialProfile, currency, "monthly");
-  const nw = netWorth(profile as FinancialProfile);
-  const { chartData, chartValue, chartTrend } = await buildChartData(userId, nw, currency, "monthly");
+  const [metrics, { chartData, chartValue, chartTrend }] = await Promise.all([
+    buildMetrics(profile as FinancialProfile, currency, "monthly"),
+    buildChartData(userId, currency, "monthly"),
+  ]);
   const riskItems = buildRiskItems(risk);
   const actionItems = buildActionItems(goals, currency);
+
+  const scoreDelta = (profile.financial_health_score ?? 0) - (profile.previous_financial_health_score ?? profile.financial_health_score ?? 0);
 
   return {
     metrics,
@@ -308,6 +441,7 @@ export async function getBriefingData(userId?: string): Promise<BriefingData> {
     riskItems,
     actionItems,
     financialHealthScore: profile.financial_health_score ?? 0,
+    scoreDelta,
   };
 }
 
@@ -320,9 +454,10 @@ export async function getBriefingDataByPeriod(userId: string, period: SnapshotPe
   if (!profile) return { metrics: [], chartData: [], chartValue: "", chartTrend: "", currency: "USD" };
 
   const currency = profile.currency ?? "USD";
-  const metrics = buildMetrics(profile as FinancialProfile, currency, period);
-  const nw = netWorth(profile as FinancialProfile);
-  const { chartData, chartValue, chartTrend } = await buildChartData(userId, nw, currency, period);
+  const [metrics, { chartData, chartValue, chartTrend }] = await Promise.all([
+    buildMetrics(profile as FinancialProfile, currency, period),
+    buildChartData(userId, currency, period),
+  ]);
 
   return { metrics, chartData, chartValue, chartTrend, currency };
 }

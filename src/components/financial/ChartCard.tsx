@@ -52,7 +52,7 @@ function CustomTooltip({
   );
 }
 
-export function ChartCard({ data, value, trend, currency = "USD" }: Props) {
+export function ChartCard({ data, trend, currency = "USD" }: Props) {
   if (!data.length) return null;
 
   return (
@@ -108,8 +108,15 @@ export function ChartCard({ data, value, trend, currency = "USD" }: Props) {
           {trend}
         </span>
       </div>
-
-      {/* Chart — explicit height, no flex-1 */}
+<p
+        style={{
+          fontSize: "0.625rem",
+          color: "var(--text-3)",
+          marginTop: "4px",
+        }}
+      >
+        Card: Net worth at end of period. Graph: Overall trend across all periods shown.
+      </p>
       <div style={{ width: "100%", height: "120px" }} className="lg:!h-[160px]">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart

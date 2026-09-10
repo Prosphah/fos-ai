@@ -36,7 +36,7 @@ function ProgressBar({ spent, limit }: { spent: number; limit: number }) {
           height: "100%",
           borderRadius: "999px",
           width: `${pct}%`,
-          background: pct >= 90 ? "var(--rose)" : pct >= 70 ? "var(--amber)" : "linear-gradient(90deg, var(--accent), #A78BFA)",
+          background: pct >= 90 ? "var(--rose)" : pct >= 70 ? "var(--amber)" : "linear-gradient(90deg, var(--accent), #9185FF)",
           transition: "width 0.4s var(--ease)",
         }}
       />

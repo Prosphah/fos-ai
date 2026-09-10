@@ -125,7 +125,7 @@ export function StepRisk({ defaultValues, onNext, onBack }: Props) {
                     border: `1px solid ${isSelected ? "var(--accent)" : "var(--glass-border)"}`,
                     background: isSelected ? "var(--accent-soft)" : "var(--glass-bg)",
                     color: isSelected ? "var(--accent)" : "var(--text-2)",
-                    boxShadow: isSelected ? "0 2px 8px rgba(139, 92, 246, 0.12)" : "none",
+                    boxShadow: isSelected ? "0 2px 8px rgba(105, 90, 255, 0.12)" : "none",
                     transition: "all 0.2s var(--ease)",
                   }}
                 >

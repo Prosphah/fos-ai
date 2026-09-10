@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
 interface Props {
   name: string;
@@ -14,12 +14,10 @@ function getTimeGreeting(): string {
   return "Good evening";
 }
 
-export function GreetingHeader({ name, stage = "Building Emergency Fund" }: Props) {
-  const [greeting, setGreeting] = useState("Good morning");
+const subscribeNoop = () => () => {};
 
-  useEffect(() => {
-    setGreeting(getTimeGreeting());
-  }, []);
+export function GreetingHeader({ name, stage = "Building Emergency Fund" }: Props) {
+  const greeting = useSyncExternalStore(subscribeNoop, getTimeGreeting, () => "Good morning");
 
   return (
     <div style={{ marginBottom: "28px" }}>
@@ -62,7 +60,7 @@ export function GreetingHeader({ name, stage = "Building Emergency Fund" }: Prop
             alignItems: "center",
             gap: "7px",
             background: "var(--accent-soft)",
-            border: "1px solid rgba(139, 92, 246, 0.2)",
+            border: "1px solid rgba(105, 90, 255, 0.2)",
             color: "var(--accent)",
             fontFamily: "var(--font-mono-family)",
             fontSize: "0.75rem",

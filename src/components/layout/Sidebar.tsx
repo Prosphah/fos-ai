@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   Target,
@@ -11,18 +11,29 @@ import {
   Settings,
   LogOut,
   DollarSign,
+  Calculator,
 } from "lucide-react";
+import { getProfileName } from "@/app/actions/profile";
 
 const links = [
   { name: "Briefing", href: "/briefing", icon: LayoutDashboard },
   { name: "Accounts", href: "/money-manager", icon: DollarSign },
   { name: "Goals", href: "/goals", icon: Target },
+  { name: "Tools", href: "/tools", icon: Calculator },
   { name: "FOS AI", href: "/assistant", icon: BrainCircuit },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { theme } = useTheme();
+  const [userName, setUserName] = useState<string>("");
+
+  useEffect(() => {
+    getProfileName().then((p) => {
+      if (p.firstName) setUserName(p.firstName);
+    }).catch(() => {
+      setUserName("");
+    });
+  }, []);
 
   return (
     <aside
@@ -49,7 +60,7 @@ export function Sidebar() {
           }}
         >
           <Image
-            src="/logo-light.png"
+            src="/logo-all.png"
             alt="FOS·AI"
             width={44}
             height={44}
@@ -136,7 +147,7 @@ export function Sidebar() {
               width: "34px",
               height: "34px",
               borderRadius: "var(--radius-xs)",
-              background: "linear-gradient(135deg, var(--accent), #6D28D9)",
+              background: "var(--accent)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -147,7 +158,7 @@ export function Sidebar() {
               flexShrink: 0,
             }}
           >
-            A
+            {(userName?.[0] ?? "U").toUpperCase()}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <p
@@ -160,7 +171,7 @@ export function Sidebar() {
                 whiteSpace: "nowrap",
               }}
             >
-              Alexander
+              {userName || "User"}
             </p>
             <p
               style={{

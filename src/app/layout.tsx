@@ -1,6 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Sora, Inter, JetBrains_Mono } from "next/font/google";
 import { Providers } from "@/components/providers";
+import { SWRegister } from "@/components/sw-register";
 import "./globals.css";
 
 const sora = Sora({
@@ -22,8 +23,28 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FOS-AI",
-  description: "Financial Operating System AI",
+  title: "FOS·AI",
+  description: "Your AI-powered financial operating system",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "FOS·AI",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#695AFF",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({
@@ -37,13 +58,12 @@ export default function RootLayout({
       className={`${sora.variable} ${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
+      <head>
+        <link rel="apple-touch-icon" href="/logo.png" />
+      </head>
       <body className="min-h-full flex flex-col">
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem("theme")||"light";document.documentElement.classList.add(t)}catch(e){}})()`,
-          }}
-        />
         <Providers>{children}</Providers>
+        <SWRegister />
       </body>
     </html>
   );

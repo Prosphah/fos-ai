@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 
 const STEPS = [
@@ -27,7 +28,16 @@ export function ProgressStepper({ currentStep }: Props) {
           return (
             <div key={step.num} className="flex items-center">
               <div className="flex flex-col items-center">
-                <div
+                <motion.div
+                  animate={{
+                    scale: isCurrent ? 1.1 : 1,
+                    backgroundColor: isCompleted
+                      ? "var(--accent)"
+                      : isCurrent
+                        ? "var(--accent-soft)"
+                        : "transparent",
+                  }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
                   style={{
                     width: "28px",
                     height: "28px",
@@ -37,15 +47,23 @@ export function ProgressStepper({ currentStep }: Props) {
                     justifyContent: "center",
                     fontSize: "0.6875rem",
                     fontWeight: 600,
-                    transition: "all 0.2s var(--ease)",
-                    background: isCompleted ? "var(--accent)" : isCurrent ? "var(--accent-soft)" : "transparent",
                     color: isCompleted ? "#fff" : isCurrent ? "var(--accent)" : "var(--text-3)",
                     border: isCurrent ? "2px solid var(--accent)" : isCompleted ? "none" : "2px solid var(--glass-border)",
                   }}
                   className="sm:!w-8 sm:!h-8 sm:!text-xs"
                 >
-                  {isCompleted ? <Check style={{ width: "14px", height: "14px" }} /> : step.num}
-                </div>
+                  {isCompleted ? (
+                    <motion.div
+                      initial={{ scale: 0, rotate: -90 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ type: "spring", stiffness: 500, damping: 20 }}
+                    >
+                      <Check style={{ width: "14px", height: "14px" }} />
+                    </motion.div>
+                  ) : (
+                    step.num
+                  )}
+                </motion.div>
                 <span
                   style={{
                     marginTop: "4px",
@@ -67,11 +85,27 @@ export function ProgressStepper({ currentStep }: Props) {
                     marginTop: "-1.25rem",
                     height: "2px",
                     width: "24px",
-                    background: isCompleted ? "var(--accent)" : "var(--glass-border)",
-                    transition: "background 0.2s var(--ease)",
+                    background: "var(--glass-border)",
+                    overflow: "hidden",
+                    position: "relative",
                   }}
                   className="sm:!mx-3 sm:!w-12 lg:!w-20"
-                />
+                >
+                  <motion.div
+                    initial={false}
+                    animate={{
+                      width: isCompleted ? "100%" : "0%",
+                    }}
+                    transition={{ duration: 0.4, ease: "easeInOut" }}
+                    style={{
+                      height: "100%",
+                      background: "var(--accent)",
+                      position: "absolute",
+                      left: 0,
+                      top: 0,
+                    }}
+                  />
+                </div>
               )}
             </div>
           );

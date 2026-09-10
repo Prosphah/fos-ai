@@ -4,15 +4,26 @@ import { useEffect, useRef, useState } from "react";
 
 interface Props {
   score?: number;
+  scoreDelta?: number;
 }
 
-export function FinancialHealthHero({ score = 82 }: Props) {
+export function FinancialHealthHero({ score = 82, scoreDelta = 0 }: Props) {
   const radius = 65;
   const circumference = 2 * Math.PI * radius;
   const targetOffset = circumference * (1 - score / 100);
 
+  const status =
+    score >= 80
+      ? { label: "Strong", color: "var(--mint)", bg: "var(--mint-soft)" }
+      : score >= 60
+      ? { label: "Good", color: "var(--accent)", bg: "var(--accent-soft)" }
+      : score >= 40
+      ? { label: "Fair", color: "var(--amber)", bg: "var(--amber-soft)" }
+      : { label: "Needs Attention", color: "var(--rose)", bg: "var(--rose-soft)" };
+
   const [displayScore, setDisplayScore] = useState(0);
   const [arcOffset, setArcOffset] = useState(circumference);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const animated = useRef(false);
 
   useEffect(() => {
@@ -20,16 +31,14 @@ export function FinancialHealthHero({ score = 82 }: Props) {
     animated.current = true;
 
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    if (prefersReduced) {
-      setArcOffset(targetOffset);
-      setDisplayScore(score);
-      return;
-    }
+    setPrefersReducedMotion(prefersReduced);
 
     requestAnimationFrame(() => {
       setArcOffset(targetOffset);
+      if (prefersReduced) setDisplayScore(score);
     });
+
+    if (prefersReduced) return;
 
     const duration = 1300;
     const start = performance.now() + 80;
@@ -63,7 +72,7 @@ export function FinancialHealthHero({ score = 82 }: Props) {
           transform: "translateX(-50%)",
           width: "250px",
           height: "250px",
-          background: "radial-gradient(circle, var(--accent-softer), transparent 70%)",
+          background: `radial-gradient(circle, ${status.bg}, transparent 70%)`,
           pointerEvents: "none",
         }}
       />
@@ -112,14 +121,14 @@ export function FinancialHealthHero({ score = 82 }: Props) {
             cy="80"
             r={radius}
             fill="none"
-            stroke="var(--accent)"
+            stroke={status.color}
             strokeWidth="10"
             strokeDasharray={circumference}
             strokeDashoffset={arcOffset}
             strokeLinecap="round"
             style={{
-              filter: "drop-shadow(0 0 10px var(--accent-glow))",
-              transition: "stroke-dashoffset 1.5s cubic-bezier(0.22, 1, 0.36, 1)",
+              filter: `drop-shadow(0 0 10px ${status.bg})`,
+              transition: prefersReducedMotion ? "none" : "stroke-dashoffset 1.5s cubic-bezier(0.22, 1, 0.36, 1)",
             }}
           />
         </svg>
@@ -179,11 +188,11 @@ export function FinancialHealthHero({ score = 82 }: Props) {
             padding: "4px 11px",
             borderRadius: "var(--radius-full)",
             letterSpacing: "0.02em",
-            background: "var(--mint-soft)",
-            color: "var(--mint)",
+            background: status.bg,
+            color: status.color,
           }}
         >
-          {score >= 80 ? "Strong" : score >= 60 ? "Good" : score >= 40 ? "Fair" : "Needs Attention"}
+          {status.label}
         </span>
         <span
           style={{
@@ -193,11 +202,11 @@ export function FinancialHealthHero({ score = 82 }: Props) {
             padding: "4px 11px",
             borderRadius: "var(--radius-full)",
             letterSpacing: "0.02em",
-            background: "var(--accent-soft)",
-            color: "var(--accent)",
+            background: scoreDelta > 0 ? "var(--accent-soft)" : scoreDelta < 0 ? "var(--rose-soft)" : "var(--amber-soft)",
+            color: scoreDelta > 0 ? "var(--accent)" : scoreDelta < 0 ? "var(--rose)" : "var(--amber)",
           }}
         >
-          +3 this month
+          {scoreDelta > 0 ? `+${scoreDelta}` : scoreDelta} this month
         </span>
       </div>
     </div>

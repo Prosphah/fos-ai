@@ -44,7 +44,6 @@ export function StepCashflow({ defaultValues, onNext, onBack }: Props) {
   const [tagInput, setTagInput] = useState("");
 
   const {
-    register,
     handleSubmit,
     control,
     formState: { errors, isSubmitting },

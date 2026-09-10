@@ -100,7 +100,7 @@ export async function getOnboardingStatus() {
 
     const { data } = await supabase
       .from("financial_profiles")
-      .select("id, onboarding_completed, age, country, currency, employment_status, income_frequency, monthly_income, monthly_living_expenses, debt_repayments_monthly, monthly_savings, other_income, expected_major_expenses, total_cash, total_investments, total_retirement_accounts, total_property_value, total_business_ownership, total_other_assets, credit_card_debt, personal_loan_debt, student_loan_debt, mortgage_debt, car_loan_debt, other_debts, retirement_age_target, emergency_fund_target_months, investment_horizon_years, major_purchases_planned, risk_answers, risk_score, risk_profile")
+      .select("id, onboarding_completed, first_name, last_name, age, country, currency, employment_status, income_frequency, monthly_income, monthly_living_expenses, debt_repayments_monthly, monthly_savings, other_income, expected_major_expenses, total_cash, total_investments, total_retirement_accounts, total_property_value, total_business_ownership, total_other_assets, credit_card_debt, personal_loan_debt, student_loan_debt, mortgage_debt, car_loan_debt, other_debts, retirement_age_target, emergency_fund_target_months, investment_horizon_years, major_purchases_planned, risk_answers, risk_score, risk_profile")
       .eq("user_id", user.id)
       .maybeSingle();
 

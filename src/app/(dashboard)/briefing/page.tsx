@@ -6,6 +6,7 @@ import { SnapshotSection } from "@/components/financial/SnapshotSection";
 import { InsightCard } from "@/components/financial/InsightCard";
 import { RiskOverview } from "@/components/financial/RiskOverview";
 import { RecommendedActions } from "@/components/financial/RecommendedActions";
+import { QuickActions } from "@/components/financial/QuickActions";
 import { getBriefingData } from "@/services/financial-health.service";
 import { createClient } from "@/lib/supabase/server";
 
@@ -14,14 +15,22 @@ export default async function BriefingPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const data = await getBriefingData(user.id);
-  const name = user.user_metadata?.full_name ?? user.email?.split("@")[0] ?? "there";
+  const [data, { data: profile }] = await Promise.all([
+    getBriefingData(user.id),
+    supabase
+      .from("financial_profiles")
+      .select("first_name")
+      .eq("user_id", user.id)
+      .maybeSingle(),
+  ]);
+
+  const name = profile?.first_name || user.email?.split("@")[0] || "there";
 
   return (
     <AppShell>
       <GreetingHeader name={name} />
 
-      <FinancialHealthHero score={data.financialHealthScore} />
+      <FinancialHealthHero score={data.financialHealthScore} scoreDelta={data.scoreDelta} />
 
       <SnapshotSection userId={user.id} initialData={data} />
 
@@ -30,6 +39,8 @@ export default async function BriefingPage() {
       <RiskOverview items={data.riskItems} />
 
       <RecommendedActions items={data.actionItems} />
+
+      <QuickActions />
     </AppShell>
   );
 }

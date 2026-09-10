@@ -5,6 +5,8 @@ export interface FinancialProfile {
   updated_at: string | null;
 
   // Personal Snapshot
+  first_name: string | null;
+  last_name: string | null;
   age: number | null;
   country: string | null;
   currency: string | null;
@@ -57,6 +59,8 @@ export interface FinancialProfile {
   investment_experience: string | null;
   financial_goals: string | null;
   financial_health_score: number | null;
+  previous_financial_health_score: number | null;
+  previous_score_month: string | null;
   onboarding_completed: boolean | null;
   onboarding_completed_at: string | null;
 }
@@ -99,7 +103,7 @@ export interface FinancialEvent {
 // =============================================
 
 export type CategoryType = "income" | "expense" | "both";
-export type AccountType = "cash" | "savings" | "investment" | "credit" | "other";
+export type AccountType = "cash" | "current" | "savings" | "investment" | "credit" | "other";
 export type TransactionType = "income" | "expense" | "transfer";
 export type SavingsGoalStatus = "active" | "completed" | "paused";
 
