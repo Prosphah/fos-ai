@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Sora, Inter, JetBrains_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { Providers } from "@/components/providers";
 import { SWRegister } from "@/components/sw-register";
 import "./globals.css";
@@ -64,6 +65,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>
         <SWRegister />
+        <Analytics />
       </body>
     </html>
   );
