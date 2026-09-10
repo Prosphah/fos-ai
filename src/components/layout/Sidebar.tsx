@@ -7,20 +7,22 @@ import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   Target,
-  BrainCircuit,
   Settings,
   LogOut,
   DollarSign,
   Calculator,
+  MessageSquare,
+  type LucideIcon,
 } from "lucide-react";
+import { LogoIcon } from "@/components/brand/LogoIcon";
 import { getProfileName } from "@/app/actions/profile";
 
-const links = [
+const links: { name: string; href: string; icon?: LucideIcon; isLogo?: boolean }[] = [
   { name: "Briefing", href: "/briefing", icon: LayoutDashboard },
   { name: "Accounts", href: "/money-manager", icon: DollarSign },
+  { name: "FOS AI", href: "/assistant", isLogo: true },
   { name: "Goals", href: "/goals", icon: Target },
   { name: "Tools", href: "/tools", icon: Calculator },
-  { name: "FOS AI", href: "/assistant", icon: BrainCircuit },
 ];
 
 export function Sidebar() {
@@ -93,12 +95,13 @@ export function Sidebar() {
               className="relative flex items-center"
               style={{
                 gap: "11px",
-                padding: "10px 12px",
+                padding: "10px 14px",
                 borderRadius: "var(--radius-xs)",
                 fontSize: "0.8125rem",
                 fontWeight: isActive ? 600 : 500,
                 color: isActive ? "var(--text-1)" : "var(--text-2)",
                 background: isActive ? "var(--accent-soft)" : "transparent",
+                boxShadow: isActive && item.isLogo ? "var(--shadow-glow)" : "none",
                 transition: "color 0.2s var(--ease), background 0.2s var(--ease)",
               }}
               onMouseEnter={(e) => {
@@ -114,12 +117,66 @@ export function Sidebar() {
                 }
               }}
             >
-              <Icon size={18} style={isActive ? { color: "var(--accent)" } : undefined} />
+              {item.isLogo ? (
+                <span
+                  className={isActive ? "brand-breathe" : undefined}
+                  style={{
+                    width: 22,
+                    height: 22,
+                    flexShrink: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: "var(--radius-xs)",
+                    position: "relative",
+                    background: isActive ? "var(--accent)" : "transparent",
+                    transition: "background 0.2s var(--ease)",
+                  }}
+                >
+                  {isActive && (
+                    <span className="brand-chip-aura" aria-hidden />
+                  )}
+                  <LogoIcon
+                    size={16}
+                    style={{
+                      position: "relative",
+                      color: isActive ? "#FFFFFF" : undefined,
+                      transition: "color 0.2s var(--ease)",
+                    }}
+                  />
+                </span>
+              ) : Icon ? (
+                <Icon size={18} style={isActive ? { color: "var(--accent)" } : undefined} />
+              ) : null}
               {item.name}
             </Link>
           );
         })}
       </nav>
+
+      <Link
+        href="/feedback"
+        aria-label="Send product feedback"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "11px",
+          margin: "0 0 16px",
+          padding: "13px 14px",
+          borderRadius: "var(--radius-xs)",
+          border: "1px solid var(--accent-soft)",
+          background: pathname === "/feedback" ? "var(--accent)" : "var(--accent-soft)",
+          color: pathname === "/feedback" ? "#fff" : "var(--accent)",
+          boxShadow: "var(--shadow-glow)",
+          transition: "color 0.2s var(--ease), background 0.2s var(--ease)",
+        }}
+      >
+        <MessageSquare size={18} />
+        <span style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+          <span style={{ fontSize: "0.8125rem", fontWeight: 700 }}>Share feedback</span>
+          <span style={{ fontSize: "0.625rem", opacity: 0.8 }}>Help shape FOS·AI</span>
+        </span>
+      </Link>
 
       {/* Footer */}
       <div
@@ -194,6 +251,7 @@ export function Sidebar() {
           style={{
             display: "flex",
             justifyContent: "space-between",
+            alignItems: "center",
             padding: "0 12px",
           }}
         >

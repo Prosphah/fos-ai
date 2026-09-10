@@ -5,17 +5,18 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Target,
-  BrainCircuit,
   DollarSign,
   Calculator,
+  type LucideIcon,
 } from "lucide-react";
+import { LogoIcon } from "@/components/brand/LogoIcon";
 
-const links = [
+const links: { name: string; href: string; icon?: LucideIcon; isLogo?: boolean }[] = [
   { name: "Briefing", href: "/briefing", icon: LayoutDashboard },
   { name: "Accounts", href: "/money-manager", icon: DollarSign },
+  { name: "FOS AI", href: "/assistant", isLogo: true },
   { name: "Goals", href: "/goals", icon: Target },
   { name: "Tools", href: "/tools", icon: Calculator },
-  { name: "FOS AI", href: "/assistant", icon: BrainCircuit },
 ];
 
 export function BottomNav() {
@@ -49,8 +50,46 @@ export function BottomNav() {
               WebkitTapHighlightColor: "transparent",
             }}
           >
-            <Icon size={22} style={{ transition: "transform 0.2s var(--ease)" }} />
-            {item.name}
+            <span
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "3px",
+              }}
+            >
+              {item.isLogo ? (
+                <span
+                  className={isActive ? "brand-breathe" : undefined}
+                  style={{
+                    width: 26,
+                    height: 26,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: "var(--radius-xs)",
+                    position: "relative",
+                    background: isActive ? "var(--accent)" : "transparent",
+                    transition: "background 0.2s var(--ease)",
+                  }}
+                >
+                  {isActive && (
+                    <span className="brand-chip-aura" aria-hidden />
+                  )}
+                  <LogoIcon
+                    size={18}
+                    style={{
+                      position: "relative",
+                      color: isActive ? "#FFFFFF" : undefined,
+                      transition: "color 0.2s var(--ease)",
+                    }}
+                  />
+                </span>
+              ) : Icon ? (
+                <Icon size={22} style={{ transition: "transform 0.2s var(--ease)" }} />
+              ) : null}
+              {item.name}
+            </span>
           </Link>
         );
       })}

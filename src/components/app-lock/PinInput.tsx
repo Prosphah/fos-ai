@@ -18,10 +18,20 @@ export const PinInput = forwardRef<PinInputHandle, Props>(function PinInput(
   ref
 ) {
   const [digits, setDigits] = useState<string[]>(Array(length).fill(""));
+  const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    inputRefs.current[0]?.focus();
+    const firstInput = inputRefs.current[0];
+    firstInput?.focus();
+    const t = setTimeout(() => {
+      firstInput?.focus();
+    }, 200);
+    return () => {
+      clearTimeout(t);
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
   }, []);
 
   const handleChange = (index: number, value: string) => {
@@ -38,7 +48,10 @@ export const PinInput = forwardRef<PinInputHandle, Props>(function PinInput(
 
     const pin = newDigits.join("");
     if (pin.length === length && !newDigits.includes("")) {
-      onComplete(pin);
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => {
+        onComplete(pin);
+      }, 300);
     }
   };
 
@@ -65,11 +78,13 @@ export const PinInput = forwardRef<PinInputHandle, Props>(function PinInput(
 
     const pin = newDigits.join("");
     if (pin.length === length && !newDigits.includes("")) {
+      if (timerRef.current) clearTimeout(timerRef.current);
       onComplete(pin);
     }
   };
 
   const clearPin = useCallback(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
     setDigits(Array(length).fill(""));
     inputRefs.current[0]?.focus();
   }, [length]);
@@ -87,9 +102,12 @@ export const PinInput = forwardRef<PinInputHandle, Props>(function PinInput(
             inputMode="numeric"
             maxLength={1}
             value={digit}
+            autoFocus={i === 0}
             onChange={(e) => handleChange(i, e.target.value)}
             onKeyDown={(e) => handleKeyDown(i, e)}
             onPaste={handlePaste}
+            onFocus={() => setFocusedIndex(i)}
+            onBlur={() => setFocusedIndex(null)}
             disabled={disabled}
             style={{
               width: "56px",
@@ -99,10 +117,11 @@ export const PinInput = forwardRef<PinInputHandle, Props>(function PinInput(
               fontWeight: 600,
               fontFamily: "var(--font-display-family)",
               borderRadius: "var(--radius-sm)",
-              border: `1.5px solid ${error ? "var(--rose)" : digit ? "var(--accent)" : "var(--glass-border)"}`,
+              border: `1.5px solid ${error ? "var(--rose)" : focusedIndex === i || digit ? "var(--accent)" : "var(--glass-border)"}`,
               background: digit ? "var(--accent-soft)" : "var(--glass-bg)",
               color: "var(--text-1)",
               outline: "none",
+              boxShadow: focusedIndex === i ? "0 0 0 3px var(--accent-soft)" : "none",
               transition: "all 0.2s var(--ease)",
               caretColor: "transparent",
             }}

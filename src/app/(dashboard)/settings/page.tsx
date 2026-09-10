@@ -1,10 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { useAppLock } from "@/hooks/use-app-lock";
 import { getProfile, updateProfile } from "@/app/actions/profile";
-import { ShieldCheck, Fingerprint, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { useTheme } from "next-themes";
+import { ShieldCheck, Fingerprint, Trash2, MessageSquare, ChevronRight, Sun, Moon, LogOut, Plus } from "lucide-react";
+import { PinSetup, PinInput, type PinInputHandle } from "@/components/app-lock";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 
 const inputStyle = {
   display: "block",
@@ -40,7 +45,37 @@ export default function SettingsPage() {
   const [hasPin, setHasPin] = useState(false);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [biometricRegistered, setBiometricRegistered] = useState(false);
-  const { verifyPin, authenticateBiometric, removePin } = useAppLock();
+  const { theme, setTheme } = useTheme();
+  const { verifyPin, removePin, setupPin, registerBiometric } = useAppLock();
+  const [showPinSetup, setShowPinSetup] = useState(false);
+  const [showRemovePinModal, setShowRemovePinModal] = useState(false);
+  const [removePinError, setRemovePinError] = useState("");
+  const [securityError, setSecurityError] = useState("");
+  const removePinRef = useRef<PinInputHandle>(null);
+  const router = useRouter();
+
+  const closePinSetup = useCallback(() => setShowPinSetup(false), []);
+  const closeRemovePinModal = useCallback(() => setShowRemovePinModal(false), []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      if (showRemovePinModal) closeRemovePinModal();
+      else if (showPinSetup) closePinSetup();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [showRemovePinModal, showPinSetup, closeRemovePinModal, closePinSetup]);
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      setError("Could not log out. Please try again.");
+      return;
+    }
+    router.replace("/login");
+  };
 
   useEffect(() => {
     void Promise.resolve().then(() => {
@@ -65,7 +100,7 @@ export default function SettingsPage() {
       PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().then(
         setBiometricAvailable
       ).catch(() => {
-        setError("Could not check biometric availability. Please try again.");
+        setSecurityError("Could not check biometric availability. Please try again.");
       });
     }
   }, []);
@@ -245,6 +280,90 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        <div className="lg:hidden">
+          <Link
+            href="/feedback"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "16px",
+              padding: "16px",
+              borderRadius: "var(--radius)",
+              border: "1px solid var(--accent-soft)",
+              background: "var(--accent-soft)",
+              color: "var(--accent)",
+            }}
+          >
+            <span style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <MessageSquare size={20} />
+              <span>
+                <span style={{ display: "block", fontSize: "0.9375rem", fontWeight: 700 }}>Share feedback</span>
+                <span style={{ display: "block", marginTop: "3px", fontSize: "0.75rem", color: "var(--text-2)" }}>
+                  Help us improve FOS·AI
+                </span>
+              </span>
+            </span>
+            <ChevronRight size={18} />
+          </Link>
+        </div>
+
+        <div
+          style={{
+            borderRadius: "var(--radius)",
+            border: "1px solid var(--glass-border)",
+            background: "var(--glass-bg)",
+            padding: "24px",
+            marginTop: "16px",
+          }}
+        >
+          <h2
+            style={{
+              fontFamily: "var(--font-mono-family)",
+              fontSize: "0.6875rem",
+              fontWeight: 600,
+              color: "var(--text-3)",
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              marginBottom: "20px",
+            }}
+          >
+            Appearance
+          </h2>
+          <button
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              width: "100%",
+              padding: "14px 16px",
+              borderRadius: "var(--radius-sm)",
+              border: "1px solid var(--glass-border)",
+              background: "var(--glass-bg)",
+              color: "var(--text-1)",
+              textAlign: "left",
+              cursor: "pointer",
+            }}
+            aria-label="Toggle theme"
+          >
+            <span style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+              <span>
+                <span style={{ display: "block", fontSize: "0.875rem", fontWeight: 500 }}>
+                  Theme
+                </span>
+                <span style={{ display: "block", marginTop: "3px", fontSize: "0.75rem", color: "var(--text-3)" }}>
+                  Switch between light and dark mode
+                </span>
+              </span>
+            </span>
+            <span style={{ fontSize: "0.75rem", color: "var(--text-3)", textTransform: "capitalize" }}>
+              {theme === "dark" ? "Dark" : "Light"}
+            </span>
+          </button>
+        </div>
+
         {/* Security Section */}
         <div
           style={{
@@ -270,46 +389,129 @@ export default function SettingsPage() {
           </h2>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "14px 16px",
-                borderRadius: "var(--radius-sm)",
-                border: "1px solid var(--glass-border)",
-                background: "var(--glass-bg)",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <ShieldCheck size={18} style={{ color: hasPin ? "var(--mint)" : "var(--text-3)" }} />
-                <div>
-                  <p style={{ fontSize: "0.875rem", fontWeight: 500, color: "var(--text-1)" }}>
-                    App PIN
-                  </p>
-                  <p style={{ fontSize: "0.75rem", color: "var(--text-3)" }}>
-                    {hasPin ? "4-digit PIN is set" : "No PIN configured"}
-                  </p>
+            {!hasPin && !showPinSetup && (
+              <button
+                onClick={() => setShowPinSetup(true)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  width: "100%",
+                  padding: "14px 16px",
+                  borderRadius: "var(--radius-sm)",
+                  border: "1px solid var(--accent-soft)",
+                  background: "var(--accent-soft)",
+                  color: "var(--accent)",
+                  textAlign: "left",
+                  cursor: "pointer",
+                }}
+              >
+                <span style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <ShieldCheck size={18} />
+                  <span>
+                    <span style={{ display: "block", fontSize: "0.875rem", fontWeight: 600 }}>Set up App PIN</span>
+                    <span style={{ display: "block", marginTop: "3px", fontSize: "0.75rem", color: "var(--text-2)" }}>
+                      Secure your app with a 4-digit PIN
+                    </span>
+                  </span>
+                </span>
+                <Plus size={18} />
+              </button>
+            )}
+
+            {showPinSetup && !hasPin && (
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-label="Set up App PIN"
+                onClick={(e) => { if (e.target === e.currentTarget) setShowPinSetup(false); }}
+                style={{
+                  position: "fixed",
+                  inset: 0,
+                  zIndex: 9999,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "24px",
+                  background: "rgba(0, 0, 0, 0.5)",
+                  backdropFilter: "blur(8px)",
+                  WebkitBackdropFilter: "blur(8px)",
+                  animation: "overlay-in 0.2s var(--ease) forwards",
+                }}
+              >
+                <div
+                  style={{
+                    width: "100%",
+                    maxWidth: "360px",
+                    background: "var(--bg)",
+                    border: "1px solid var(--glass-border)",
+                    borderRadius: "var(--radius)",
+                    padding: "32px 24px",
+                    animation: "modal-pop 0.3s var(--ease-spring) forwards",
+                  }}
+                >
+                  <PinSetup
+                    biometricAvailable={biometricAvailable}
+                    onSetupComplete={async (pin, enableBiometric) => {
+                      await setupPin(pin);
+                      if (enableBiometric) {
+                        const ok = await registerBiometric();
+                        if (!ok) {
+                          setSecurityError("PIN set, but biometric registration failed. You can enable it later.");
+                        }
+                      }
+                      setHasPin(true);
+                      setBiometricRegistered(!!localStorage.getItem("fos-ai-biometric-cred"));
+                      setShowPinSetup(false);
+                    }}
+                  />
+                  <button
+                    onClick={() => setShowPinSetup(false)}
+                    style={{
+                      display: "block",
+                      margin: "20px auto 0",
+                      padding: "8px 20px",
+                      borderRadius: "var(--radius-sm)",
+                      border: "1px solid var(--glass-border)",
+                      background: "transparent",
+                      color: "var(--text-3)",
+                      fontSize: "0.8125rem",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Cancel
+                  </button>
                 </div>
               </div>
-              {hasPin && (
+            )}
+
+            {hasPin && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "14px 16px",
+                  borderRadius: "var(--radius-sm)",
+                  border: "1px solid var(--glass-border)",
+                  background: "var(--glass-bg)",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <ShieldCheck size={18} style={{ color: "var(--mint)" }} />
+                  <div>
+                    <p style={{ fontSize: "0.875rem", fontWeight: 500, color: "var(--text-1)" }}>
+                      App PIN
+                    </p>
+                    <p style={{ fontSize: "0.75rem", color: "var(--text-3)" }}>
+                      4-digit PIN is set
+                    </p>
+                  </div>
+                </div>
                 <button
                   onClick={() => {
-                    if (window.confirm("Remove your PIN? You'll need to set it up again on next launch.")) {
-                      const enteredPin = window.prompt("Enter your PIN to confirm removal:");
-                      void (async () => {
-                        const verified = enteredPin
-                          ? await verifyPin(enteredPin)
-                          : biometricRegistered && await authenticateBiometric();
-                        if (!verified) {
-                          setError("PIN or biometric verification failed.");
-                          return;
-                        }
-                        removePin();
-                      setHasPin(false);
-                      setBiometricRegistered(false);
-                      })();
-                    }
+                    setShowRemovePinModal(true);
+                    setRemovePinError("");
                   }}
                   style={{
                     display: "flex",
@@ -328,8 +530,8 @@ export default function SettingsPage() {
                   <Trash2 size={14} />
                   Remove
                 </button>
-              )}
-            </div>
+              </div>
+            )}
 
             {biometricAvailable && (
               <div
@@ -350,10 +552,38 @@ export default function SettingsPage() {
                       Biometric Unlock
                     </p>
                     <p style={{ fontSize: "0.75rem", color: "var(--text-3)" }}>
-                      {biometricRegistered ? "Enabled" : "Not configured"}
+                      {biometricRegistered ? "Enabled" : hasPin ? "Not configured" : "Set up a PIN first"}
                     </p>
                   </div>
                 </div>
+                {!biometricRegistered && hasPin && (
+                  <button
+                    onClick={async () => {
+                      const ok = await registerBiometric();
+                      if (ok) {
+                        setBiometricRegistered(true);
+                      } else {
+                        setSecurityError("Biometric registration failed. Ensure your device supports fingerprint/Face ID.");
+                      }
+                    }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      padding: "8px 12px",
+                      borderRadius: "var(--radius-sm)",
+                      border: "1px solid var(--accent-soft)",
+                      background: "var(--accent-soft)",
+                      color: "var(--accent)",
+                      fontSize: "0.8125rem",
+                      fontWeight: 500,
+                      cursor: "pointer",
+                    }}
+                  >
+                    <Fingerprint size={14} />
+                    Enable
+                  </button>
+                )}
                 {biometricRegistered && (
                   <button
                     onClick={() => {
@@ -381,8 +611,155 @@ export default function SettingsPage() {
               </div>
             )}
           </div>
+
+          {securityError && (
+            <p style={{ marginTop: "12px", fontSize: "0.875rem", color: "var(--rose)" }}>
+              {securityError}
+            </p>
+          )}
+        </div>
+
+        <div
+          style={{
+            borderRadius: "var(--radius)",
+            border: "1px solid var(--glass-border)",
+            background: "var(--glass-bg)",
+            padding: "24px",
+            marginTop: "16px",
+          }}
+        >
+          <h2
+            style={{
+              fontFamily: "var(--font-mono-family)",
+              fontSize: "0.6875rem",
+              fontWeight: 600,
+              color: "var(--text-3)",
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              marginBottom: "20px",
+            }}
+          >
+            Account
+          </h2>
+          <button
+            onClick={handleLogout}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              width: "100%",
+              padding: "14px 16px",
+              borderRadius: "var(--radius-sm)",
+              border: "1px solid var(--rose-soft)",
+              background: "var(--rose-soft)",
+              color: "var(--rose)",
+              textAlign: "left",
+              cursor: "pointer",
+              fontWeight: 500,
+              fontSize: "0.875rem",
+            }}
+          >
+            <span style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <LogOut size={18} />
+              <span>
+                <span style={{ display: "block", fontWeight: 600 }}>Log out</span>
+                <span style={{ display: "block", marginTop: "3px", fontSize: "0.75rem", color: "var(--text-3)" }}>
+                  Sign out of your account
+                </span>
+              </span>
+            </span>
+            <ChevronRight size={18} />
+          </button>
         </div>
         </>
+      )}
+
+      {showRemovePinModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Remove PIN"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowRemovePinModal(false); }}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "24px",
+            background: "rgba(0, 0, 0, 0.5)",
+            backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)",
+            animation: "overlay-in 0.2s var(--ease) forwards",
+          }}
+        >
+          <div
+            style={{
+              width: "100%",
+              maxWidth: "360px",
+              background: "var(--bg)",
+              border: "1px solid var(--glass-border)",
+              borderRadius: "var(--radius)",
+              padding: "32px 24px",
+              textAlign: "center",
+              animation: "modal-pop 0.3s var(--ease-spring) forwards",
+            }}
+          >
+            <div
+              style={{
+                width: "48px",
+                height: "48px",
+                borderRadius: "12px",
+                background: "var(--rose-soft)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 16px",
+              }}
+            >
+              <Trash2 size={24} style={{ color: "var(--rose)" }} />
+            </div>
+            <h2 style={{ fontFamily: "var(--font-display-family)", fontSize: "1.125rem", fontWeight: 700, color: "var(--text-1)", marginBottom: "8px" }}>
+              Remove your PIN?
+            </h2>
+            <p style={{ fontSize: "0.875rem", color: "var(--text-2)", marginBottom: "24px" }}>
+              Enter your current PIN to confirm removal. You&apos;ll need to set it up again on next launch.
+            </p>
+            <PinInput
+              ref={removePinRef}
+              onComplete={async (pin) => {
+                const verified = await verifyPin(pin);
+                if (!verified) {
+                  setRemovePinError("Incorrect PIN. Try again.");
+                  removePinRef.current?.clear();
+                  return;
+                }
+                removePin();
+                setHasPin(false);
+                setBiometricRegistered(false);
+                setShowRemovePinModal(false);
+              }}
+              error={removePinError}
+            />
+            <button
+              onClick={() => setShowRemovePinModal(false)}
+              style={{
+                display: "block",
+                margin: "20px auto 0",
+                padding: "8px 20px",
+                borderRadius: "var(--radius-sm)",
+                border: "1px solid var(--glass-border)",
+                background: "transparent",
+                color: "var(--text-3)",
+                fontSize: "0.8125rem",
+                cursor: "pointer",
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
       )}
     </AppShell>
   );

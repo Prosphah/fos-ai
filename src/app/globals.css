@@ -211,11 +211,124 @@ body::before {
 @media (prefers-reduced-motion: reduce) {
   .reveal { animation: none; opacity: 1; transform: none; }
   .animate-modal-overlay, .animate-modal-panel { animation: none; }
+  .animate-orb-drift, .animate-orb-drift-reverse,
+  .animate-ping-soft, .animate-typing { animation: none; }
+  .brand-breathe { animation: none !important; box-shadow: none !important; transform: none !important; }
+  .brand-chip-aura { animation: none !important; opacity: 0 !important; }
 }
 
 /* ── Spin animation ── */
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* ── Coming-soon orb drift ── */
+@keyframes orb-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(14px, -18px) scale(1.08); }
+}
+
+@keyframes orb-drift-reverse {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-18px, 14px) scale(1.12); }
+}
+
+.animate-orb-drift { animation: orb-drift 10s var(--ease) infinite; }
+.animate-orb-drift-reverse { animation: orb-drift-reverse 14s var(--ease) infinite; }
+
+/* ── Status ping dot ── */
+@keyframes ping-soft {
+  0% { transform: scale(1); opacity: 0.8; }
+  70%, 100% { transform: scale(2.4); opacity: 0; }
+}
+
+.animate-ping-soft { animation: ping-soft 1.6s var(--ease) infinite; }
+
+/* ── Typing indicator ── */
+@keyframes typing-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.35; }
+  30% { transform: translateY(-3px); opacity: 1; }
+}
+
+.animate-typing { animation: typing-bounce 1.2s ease-in-out infinite; }
+
+/* ── Nav logo breathing ── */
+@keyframes brand-breathe {
+  0%, 100% {
+    background: var(--accent);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 30%, transparent),
+                0 0 12px 0 color-mix(in srgb, var(--accent) 24%, transparent),
+                inset 0 1px 0 color-mix(in srgb, white 26%, transparent);
+    transform: scale(1);
+  }
+  18% {
+    background: color-mix(in srgb, var(--accent) 92%, white);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 24%, transparent),
+                0 0 18px 2px color-mix(in srgb, var(--accent) 30%, transparent),
+                inset 0 1px 0 color-mix(in srgb, white 34%, transparent);
+    transform: scale(1.035);
+  }
+  34% {
+    background: var(--accent);
+    box-shadow: 0 0 0 7px color-mix(in srgb, var(--accent) 12%, transparent),
+                0 0 24px 4px color-mix(in srgb, var(--accent) 22%, transparent),
+                inset 0 1px 0 color-mix(in srgb, white 26%, transparent);
+    transform: scale(1.01);
+  }
+  49% {
+    background: color-mix(in srgb, var(--accent) 88%, var(--mint));
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--mint) 20%, transparent),
+                0 0 20px 3px color-mix(in srgb, var(--mint) 24%, transparent),
+                inset 0 1px 0 color-mix(in srgb, white 32%, transparent);
+    transform: scale(1.025);
+  }
+  68% {
+    background: var(--accent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 18%, transparent),
+                0 0 15px 1px color-mix(in srgb, var(--accent) 24%, transparent),
+                inset 0 1px 0 color-mix(in srgb, white 26%, transparent);
+    transform: scale(1.01);
+  }
+}
+.brand-breathe {
+  animation: brand-breathe 4.8s var(--ease) infinite;
+  will-change: transform, background, box-shadow;
+}
+
+@keyframes brand-aura-breathe {
+  0%, 100% {
+    opacity: 0.3;
+    border-radius: 42% 58% 64% 36% / 48% 38% 62% 52%;
+    transform: scale(0.78) rotate(0deg);
+  }
+  26% {
+    opacity: 0.68;
+    border-radius: 68% 32% 45% 55% / 38% 62% 42% 58%;
+    transform: scale(1.22) rotate(105deg);
+  }
+  48% {
+    opacity: 0.42;
+    border-radius: 35% 65% 54% 46% / 62% 44% 56% 38%;
+    transform: scale(0.95) rotate(195deg);
+  }
+  70% {
+    opacity: 0.58;
+    border-radius: 57% 43% 33% 67% / 45% 57% 43% 55%;
+    transform: scale(1.1) rotate(285deg);
+  }
+}
+.brand-chip-aura {
+  position: absolute;
+  inset: -80%;
+  border-radius: 42% 58% 64% 36% / 48% 38% 62% 52%;
+  background: conic-gradient(from 210deg,
+    color-mix(in srgb, var(--accent) 46%, transparent),
+    color-mix(in srgb, var(--mint) 32%, transparent) 34%,
+    color-mix(in srgb, var(--accent) 22%, transparent) 66%,
+    transparent 88%);
+  filter: blur(12px);
+  animation: brand-aura-breathe 4.8s var(--ease) infinite;
+  pointer-events: none;
 }
 
 /* ── Calculator charts ── */

@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Active State — Breathing Animation</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: #060912;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+      overflow: hidden;
+    }
+
+    /* Ambient page gradient */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse 80% 55% at 50% 110%, rgba(63,140,255,0.07) 0%, transparent 65%),
+        radial-gradient(ellipse 40% 25% at 15% 15%, rgba(139,92,246,0.04) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    /* ─── SCENE ─── */
+    .scene {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+      position: relative;
+      z-index: 1;
+      user-select: none;
+    }
+
+    .page-title {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.14);
+    }
+
+    /* ─── STAGE ─── */
+    .stage {
+      position: relative;
+      width: 300px;
+      height: 300px;
+    }
+
+    /* ─── AMBIENT BLOOM ─── */
+    .ambient {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 360px; height: 360px;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      animation: ambientPulse var(--bd, 4.2s) cubic-bezier(0.4,0,0.3,1) infinite;
+      pointer-events: none;
+    }
+    @keyframes ambientPulse {
+      0%, 100% { transform: translate(-50%,-50%) scale(0.88); opacity: 0.55; }
+      36%       { transform: translate(-50%,-50%) scale(1.2);  opacity: 1;    }
+      44%       { transform: translate(-50%,-50%) scale(1.2);  opacity: 1;    }
+    }
+
+    /* ─── PULSE RINGS ─── */
+    .ring {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 102px; height: 102px;
+      border-radius: 50%;
+      animation: ringOut var(--rd, 3.2s) cubic-bezier(0.1,0.5,0.35,1) infinite;
+      pointer-events: none;
+    }
+    .ring:nth-child(2) { animation-delay: 0s;    border-width: 1.4px; }
+    .ring:nth-child(3) { animation-delay: calc(var(--rd, 3.2s) / 4);   border-width: 1px; }
+    .ring:nth-child(4) { animation-delay: calc(var(--rd, 3.2s) / 2);   border-width: 0.75px; }
+    .ring:nth-child(5) { animation-delay: calc(var(--rd, 3.2s) * 0.75); border-width: 0.5px; }
+
+    @keyframes ringOut {
+      0%   { transform: translate(-50%,-50%) scale(0.82); opacity: 0.9; }
+      100% { transform: translate(-50%,-50%) scale(3.6);  opacity: 0;   }
+    }
+
+    /* ─── SATELLITE ORBITERS ─── */
+    .orbit-track {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 0; height: 0;
+      transform-origin: 0 0;
+    }
+    .orbit-track::before {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      background: white;
+    }
+    .orbit-a {
+      animation: orbitSpin 10s linear infinite;
+    }
+    .orbit-a::before {
+      width: 5px; height: 5px;
+      top: -2.5px; left: 72px;
+      box-shadow: 0 0 6px rgba(255,255,255,0.9), 0 0 14px rgba(120,180,255,0.7);
+      opacity: 0.85;
+    }
+    .orbit-b {
+      animation: orbitSpin 16s linear infinite reverse;
+    }
+    .orbit-b::before {
+      width: 3.5px; height: 3.5px;
+      top: -1.75px; left: 96px;
+      box-shadow: 0 0 5px rgba(255,255,255,0.8), 0 0 10px rgba(120,180,255,0.6);
+      opacity: 0.55;
+    }
+    @keyframes orbitSpin {
+      from { transform: translate(-50%,-50%) rotate(0deg); }
+      to   { transform: translate(-50%,-50%) rotate(360deg); }
+    }
+
+    /* ─── BLOB CONTAINER (breathing scale) ─── */
+    .blob-wrap {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 100px; height: 100px;
+      transform: translate(-50%,-50%);
+      display: flex; align-items: center; justify-content: center;
+      animation: breatheWrap var(--bd, 4.2s) cubic-bezier(0.4,0,0.2,1) infinite;
+    }
+    @keyframes breatheWrap {
+      0%    { transform: translate(-50%,-50%) scale(1.0);  }
+      34%   { transform: translate(-50%,-50%) scale(1.11); }
+      44%   { transform: translate(-50%,-50%) scale(1.11); }
+      100%  { transform: translate(-50%,-50%) scale(1.0);  }
+    }
+
+    /* ─── BLOB ─── */
+    .blob {
+      width: 96px; height: 96px;
+      background: radial-gradient(circle at 36% 33%, #ffffff 0%, #c8e6ff 20%, #4facfe 50%, #00b4d8 100%);
+      animation:
+        morphBlob 13s ease-in-out infinite,
+        hueShift  var(--cd, 8s) ease-in-out infinite;
+      position: relative;
+    }
+
+    @keyframes morphBlob {
+      0%   { border-radius: 62% 38% 34% 66% / 58% 34% 66% 42%; }
+      12%  { border-radius: 44% 56% 50% 50% / 36% 54% 46% 64%; }
+      27%  { border-radius: 56% 44% 38% 62% / 52% 40% 60% 48%; }
+      43%  { border-radius: 36% 64% 64% 36% / 46% 64% 36% 54%; }
+      58%  { border-radius: 52% 48% 44% 56% / 42% 52% 48% 58%; }
+      72%  { border-radius: 48% 52% 30% 70% / 54% 36% 64% 46%; }
+      88%  { border-radius: 58% 42% 46% 54% / 40% 50% 50% 60%; }
+      100% { border-radius: 62% 38% 34% 66% / 58% 34% 66% 42%; }
+    }
+
+    @keyframes hueShift {
+      0%, 100% { filter: hue-rotate(0deg)        brightness(1);    }
+      50%       { filter: hue-rotate(var(--ht,0deg)) brightness(var(--bt,1)); }
+    }
+
+    /* Glint */
+    .glint {
+      position: absolute;
+      top: 17%; left: 22%;
+      width: 20px; height: 10px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.55);
+      filter: blur(4px);
+      pointer-events: none;
+      animation: glintBreathe var(--bd, 4.2s) cubic-bezier(0.4,0,0.2,1) infinite;
+    }
+    @keyframes glintBreathe {
+      0%,100% { opacity: 0.4;  transform: scale(0.85); }
+      36%     { opacity: 0.88; transform: scale(1.15); }
+    }
+
+    /* ─── FLOATING PARTICLES ─── */
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      animation: particleDrift var(--dur) ease-in-out var(--del) infinite;
+    }
+    @keyframes particleDrift {
+      0%   { opacity: 0; transform: translate(0,0) scale(1); }
+      10%  { opacity: var(--op, 0.6); }
+      85%  { opacity: calc(var(--op, 0.6) * 0.2); }
+      100% { opacity: 0; transform: translate(var(--dx),var(--dy)) scale(0.05); }
+    }
+
+    /* ─── WAVEFORM ─── */
+    .waveform {
+      display: flex;
+      align-items: center;
+      gap: 3.5px;
+      height: 26px;
+    }
+    .waveform span {
+      display: block;
+      width: 2.5px;
+      border-radius: 2px;
+      animation: waveBar var(--wd,1s) ease-in-out var(--wdel,0s) infinite;
+    }
+    @keyframes waveBar {
+      0%, 100% { height: 3px;          opacity: 0.3; }
+      50%       { height: var(--wh,14px); opacity: 0.82; }
+    }
+
+    /* ─── STATE LABEL ─── */
+    .state-label {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-top: -8px;
+    }
+    .state-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      animation: dotBreath var(--bd, 4.2s) cubic-bezier(0.4,0,0.2,1) infinite;
+    }
+    @keyframes dotBreath {
+      0%,100% { opacity: 0.35; transform: scale(0.75); }
+      36%     { opacity: 1;    transform: scale(1.35); }
+    }
+    .state-text {
+      font-size: 10px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      font-weight: 500;
+      opacity: 0.7;
+    }
+
+    /* ─── SWITCHER ─── */
+    .switcher {
+      display: flex;
+      gap: 6px;
+      background: rgba(255,255,255,0.025);
+      padding: 5px;
+      border-radius: 100px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .s-btn {
+      padding: 7px 20px;
+      border-radius: 100px;
+      border: none;
+      background: transparent;
+      color: rgba(255,255,255,0.28);
+      font-size: 10.5px;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.4s ease, color 0.4s ease;
+      font-family: inherit;
+      font-weight: 500;
+    }
+    .s-btn:not(.active):hover { color: rgba(255,255,255,0.5); }
+    .s-btn.active {
+      background: rgba(79,172,254,0.13);
+      color: #4facfe;
+    }
+
+    /* ─── TRANSITION OVERLAY (for smooth state change) ─── */
+    .stage::after {
+      content: '';
+      position: absolute; inset: 0;
+      border-radius: 50%;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .stage.switching::after { opacity: 0.08; }
+
+  </style>
+</head>
+<body>
+
+<div class="scene">
+  <p class="page-title">AI Active State</p>
+
+  <!-- ── ANIMATION STAGE ── -->
+  <div class="stage" id="stage">
+    <div class="ambient"     id="ambient"></div>
+    <div class="ring"        id="r0"></div>
+    <div class="ring"        id="r1"></div>
+    <div class="ring"        id="r2"></div>
+    <div class="ring"        id="r3"></div>
+    <div class="orbit-track orbit-a"></div>
+    <div class="orbit-track orbit-b"></div>
+    <div class="blob-wrap"   id="blobWrap">
+      <div class="blob"  id="blob"></div>
+      <div class="glint" id="glint"></div>
+    </div>
+    <!-- particles generated below -->
+  </div>
+
+  <!-- ── WAVEFORM ── -->
+  <div class="waveform" id="waveform"></div>
+
+  <!-- ── LABEL ── -->
+  <div class="state-label">
+    <div class="state-dot"  id="dot"></div>
+    <span class="state-text" id="labelText">Listening</span>
+  </div>
+
+  <!-- ── SWITCHER ── -->
+  <div class="switcher">
+    <button class="s-btn active" data-state="listening">Listening</button>
+    <button class="s-btn"        data-state="thinking">Thinking</button>
+    <button class="s-btn"        data-state="responding">Responding</button>
+  </div>
+</div>
+
+<script>
+  /* ════════════════════════════════════════
+     STATE DEFINITIONS
+  ════════════════════════════════════════ */
+  const STATES = {
+    listening: {
+      label        : 'Listening',
+      bd           : '4.2s',       // breathe duration
+      rd           : '3.2s',       // ring duration
+      cd           : '8s',         // color-shift duration
+      ht           : '0deg',       // hue target
+      bt           : '1',          // brightness target
+      accentHex    : '#4facfe',
+      ambientColor : 'rgba(63,140,255,0.13)',
+      ringBorder   : 'rgba(63,140,255,0.52)',
+      glowNear     : 'rgba(63,140,255,0.95)',
+      glowMid      : 'rgba(63,140,255,0.48)',
+      glowFar      : 'rgba(0,180,216,0.17)',
+      particleRGB  : '130,195,255',
+      waveRGBA     : 'rgba(79,172,254,0.65)',
+      waveBars     : [7,12,17,21,15,19,17,13,19,15,11,17,21,15,9],
+    },
+    thinking: {
+      label        : 'Thinking',
+      bd           : '1.9s',
+      rd           : '1.55s',
+      cd           : '3.6s',
+      ht           : '72deg',
+      bt           : '1.1',
+      accentHex    : '#a78bfa',
+      ambientColor : 'rgba(139,92,246,0.13)',
+      ringBorder   : 'rgba(139,92,246,0.52)',
+      glowNear     : 'rgba(139,92,246,0.95)',
+      glowMid      : 'rgba(139,92,246,0.48)',
+      glowFar      : 'rgba(167,139,250,0.17)',
+      particleRGB  : '195,160,255',
+      waveRGBA     : 'rgba(167,139,250,0.65)',
+      waveBars     : [17,21,19,23,19,21,17,23,19,15,21,23,19,17,21],
+    },
+    responding: {
+      label        : 'Responding',
+      bd           : '5.6s',
+      rd           : '4.8s',
+      cd           : '11s',
+      ht           : '-125deg',
+      bt           : '1.05',
+      accentHex    : '#34d399',
+      ambientColor : 'rgba(52,211,153,0.11)',
+      ringBorder   : 'rgba(52,211,153,0.45)',
+      glowNear     : 'rgba(52,211,153,0.85)',
+      glowMid      : 'rgba(52,211,153,0.44)',
+      glowFar      : 'rgba(16,225,130,0.15)',
+      particleRGB  : '130,255,205',
+      waveRGBA     : 'rgba(52,211,153,0.65)',
+      waveBars     : [5,9,7,11,8,6,10,7,9,5,8,10,7,6,8],
+    }
+  };
+
+  /* ════════════════════════════════════════
+     BUILD WAVEFORM
+  ════════════════════════════════════════ */
+  const wf = document.getElementById('waveform');
+  for (let i = 0; i < 15; i++) {
+    const s = document.createElement('span');
+    s.style.setProperty('--wd',   `${(0.8 + Math.random() * 0.55).toFixed(2)}s`);
+    s.style.setProperty('--wdel', `${(i * 0.058).toFixed(3)}s`);
+    wf.appendChild(s);
+  }
+
+  /* ════════════════════════════════════════
+     BUILD PARTICLES
+  ════════════════════════════════════════ */
+  const stage = document.getElementById('stage');
+  const CX = 150, CY = 150;
+
+  for (let i = 0; i < 26; i++) {
+    const p  = document.createElement('div');
+    p.className = 'particle';
+
+    // Spawn on a soft ring around the blob core
+    const spawnAngle = (i / 26) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+    const spawnR     = 44 + Math.random() * 30;
+    const driftAngle = spawnAngle + (Math.random() - 0.5) * 0.9;
+    const driftR     = 65 + Math.random() * 80;
+
+    p.style.left = `${CX + Math.cos(spawnAngle) * spawnR}px`;
+    p.style.top  = `${CY + Math.sin(spawnAngle) * spawnR}px`;
+    p.style.setProperty('--dx',  `${(Math.cos(driftAngle) * driftR).toFixed(1)}px`);
+    p.style.setProperty('--dy',  `${(Math.sin(driftAngle) * driftR).toFixed(1)}px`);
+    p.style.setProperty('--dur', `${(3.2 + Math.random() * 3.8).toFixed(2)}s`);
+    p.style.setProperty('--del', `${(Math.random() * 7).toFixed(2)}s`);
+    p.style.setProperty('--op',  `${(0.35 + Math.random() * 0.45).toFixed(2)}`);
+
+    const sz = (1 + Math.random() * 2.5).toFixed(1);
+    p.style.width = p.style.height = `${sz}px`;
+    p.dataset.idx = i;
+
+    stage.insertBefore(p, stage.firstChild);
+  }
+
+  /* ════════════════════════════════════════
+     APPLY STATE
+  ════════════════════════════════════════ */
+  let currentState = 'listening';
+
+  function applyState(name) {
+    const s   = STATES[name];
+    const stg = document.getElementById('stage');
+
+    // Brief flash to signal transition
+    stg.classList.add('switching');
+    setTimeout(() => stg.classList.remove('switching'), 320);
+
+    // Custom props cascade to all children via .stage
+    const props = {
+      '--bd': s.bd, '--rd': s.rd, '--cd': s.cd,
+      '--ht': s.ht, '--bt': s.bt,
+    };
+    Object.entries(props).forEach(([k,v]) => stg.style.setProperty(k, v));
+
+    // Ambient bloom color
+    document.getElementById('ambient').style.background =
+      `radial-gradient(circle, ${s.ambientColor} 0%, ${s.ambientColor.replace('0.1','0.04')} 45%, transparent 70%)`;
+
+    // Ring colors
+    stg.querySelectorAll('.ring').forEach(r => {
+      r.style.borderColor = s.ringBorder;
+      r.style.borderStyle = 'solid';
+    });
+
+    // Blob box-shadow glow
+    document.getElementById('blob').style.boxShadow = [
+      'inset 0 0 18px rgba(255,255,255,0.28)',
+      'inset 0 6px 14px rgba(255,255,255,0.16)',
+      `0 0 22px ${s.glowNear}`,
+      `0 0 52px ${s.glowMid}`,
+      `0 0 95px ${s.glowFar}`,
+    ].join(', ');
+
+    // Particles
+    stg.querySelectorAll('.particle').forEach(p => {
+      const op = parseFloat(p.style.getPropertyValue('--op')) || 0.55;
+      p.style.background = `rgba(${s.particleRGB},${op.toFixed(2)})`;
+    });
+
+    // Waveform bars
+    wf.querySelectorAll('span').forEach((bar, i) => {
+      bar.style.setProperty('--wh', `${s.waveBars[i] || 10}px`);
+      bar.style.background = s.waveRGBA;
+    });
+
+    // Label + dot
+    const dot   = document.getElementById('dot');
+    const label = document.getElementById('labelText');
+    dot.style.background = s.accentHex;
+    label.style.color    = s.accentHex;
+    label.textContent    = s.label;
+
+    // Switcher buttons
+    document.querySelectorAll('.s-btn').forEach(btn => {
+      const isActive = btn.dataset.state === name;
+      btn.classList.toggle('active', isActive);
+      btn.style.background = isActive ? `${s.accentHex}22` : '';
+      btn.style.color      = isActive ? s.accentHex : '';
+    });
+
+    currentState = name;
+
+    // Restart animations on key elements so timing resets cleanly
+    const animated = [
+      document.getElementById('blobWrap'),
+      document.getElementById('blob'),
+      document.getElementById('glint'),
+      document.getElementById('ambient'),
+      ...stg.querySelectorAll('.ring'),
+      ...stg.querySelectorAll('.orbit-track'),
+    ];
+    animated.forEach(el => {
+      el.style.animationPlayState = 'paused';
+      void el.offsetWidth; // reflow
+      el.style.animationPlayState = 'running';
+    });
+  }
+
+  /* ════════════════════════════════════════
+     WIRE UP SWITCHER
+  ════════════════════════════════════════ */
+  document.querySelectorAll('.s-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.state !== currentState) applyState(btn.dataset.state);
+    });
+  });
+
+  /* Init */
+  applyState('listening');
+</script>
+</body>
+</html>

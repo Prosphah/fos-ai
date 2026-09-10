@@ -1,14 +1,12 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { Bell, Sun, Moon, Calendar, ChevronRight } from "lucide-react";
-import { useTheme } from "next-themes";
+import { Bell, Calendar, ChevronRight, MessageSquare } from "lucide-react";
 import { getProfileName } from "@/app/actions/profile";
 
 const subscribeNoop = () => () => {};
 
 export function Topbar() {
-  const { theme, setTheme } = useTheme();
   const [userName, setUserName] = useState<string>("");
 
   useEffect(() => {
@@ -116,10 +114,11 @@ export function Topbar() {
         </button>
       </div>
 
-      {/* Right side: theme + notifications */}
+      {/* Right side: feedback + notifications */}
       <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-        <button
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+        <a
+          href="/feedback"
+          title="Share feedback"
           style={{
             width: "38px",
             height: "38px",
@@ -131,7 +130,6 @@ export function Topbar() {
             border: "1px solid var(--glass-border)",
             color: "var(--text-2)",
             transition: "all 0.2s var(--ease)",
-            position: "relative",
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = "var(--glass-bg-hover)";
@@ -143,10 +141,10 @@ export function Topbar() {
             e.currentTarget.style.borderColor = "var(--glass-border)";
             e.currentTarget.style.color = "var(--text-2)";
           }}
-          aria-label="Toggle theme"
+          aria-label="Share feedback"
         >
-          {mounted && theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-        </button>
+          <MessageSquare size={18} />
+        </a>
 
         <button
           style={{
