@@ -25,6 +25,7 @@ export function BackButton() {
         padding: 0,
         background: "transparent",
         cursor: "pointer",
+        borderRadius: "999px",
       }}
     >
       <ArrowLeft size={16} />

@@ -68,7 +68,7 @@ export function TransactionFilters({ categories, accounts, onFilterChange }: Pro
             alignItems: "center",
             gap: "6px",
             padding: "6px 12px",
-            borderRadius: "var(--radius-xs)",
+            borderRadius: "999px",
             fontSize: "0.75rem",
             fontWeight: 600,
             border: `1px solid ${showFilters || hasActiveFilters ? "var(--accent)" : "var(--glass-border)"}`,
@@ -105,7 +105,7 @@ export function TransactionFilters({ categories, accounts, onFilterChange }: Pro
               onClick={() => applyFilters({ type: t })}
               style={{
                 padding: "6px 10px",
-                borderRadius: "var(--radius-xs)",
+                borderRadius: "999px",
                 fontSize: "0.75rem",
                 fontWeight: 600,
                 textTransform: "capitalize",
@@ -127,6 +127,7 @@ export function TransactionFilters({ categories, accounts, onFilterChange }: Pro
               gap: "4px",
               fontSize: "0.75rem",
               color: "var(--text-3)",
+              borderRadius: "999px",
             }}
           >
             <X size={12} />

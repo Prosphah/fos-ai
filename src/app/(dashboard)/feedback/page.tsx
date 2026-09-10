@@ -117,7 +117,7 @@ export default function FeedbackPage() {
           style={{
             alignSelf: "flex-end",
             padding: "10px 24px",
-            borderRadius: "var(--radius-sm)",
+            borderRadius: "999px",
             background: "var(--accent)",
             color: "#fff",
             fontSize: "0.875rem",

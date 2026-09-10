@@ -175,7 +175,7 @@ export default function OnboardingPage() {
     return (
       <OnboardingLayout>
         <div className="flex items-center justify-center py-20">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-accent/25 border-t-accent" />
         </div>
       </OnboardingLayout>
     );
@@ -219,7 +219,7 @@ export default function OnboardingPage() {
           animate={{ opacity: 1 }}
           className="mb-4 flex items-center gap-2 text-sm text-gray-500"
         >
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-accent/25 border-t-accent" />
           Saving your progress...
         </motion.div>
       )}

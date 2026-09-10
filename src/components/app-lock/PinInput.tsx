@@ -38,6 +38,8 @@ export const PinInput = forwardRef<PinInputHandle, Props>(function PinInput(
     if (disabled) return;
     if (!/^\d*$/.test(value)) return;
 
+    if (timerRef.current) clearTimeout(timerRef.current);
+
     const newDigits = [...digits];
     newDigits[index] = value.slice(-1);
     setDigits(newDigits);

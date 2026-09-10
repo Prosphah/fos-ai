@@ -75,6 +75,7 @@ export function AppLockScreen({
             width={48}
             height={48}
             priority
+            style={{ borderRadius: "14px" }}
           />
         </div>
 
@@ -103,7 +104,7 @@ export function AppLockScreen({
             gap: "6px",
             marginTop: "16px",
             padding: "8px 12px",
-            borderRadius: "var(--radius-sm)",
+            borderRadius: "999px",
             border: "none",
             background: "transparent",
             color: "var(--text-3)",

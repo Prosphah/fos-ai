@@ -159,6 +159,7 @@ export default function BudgetsPage() {
         <button
           onClick={() => navigateMonth(-1)}
           className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-text-secondary transition-colors hover:bg-muted"
+          style={{ borderRadius: "999px" }}
         >
           <ChevronLeft size={16} />
         </button>
@@ -170,6 +171,7 @@ export default function BudgetsPage() {
         <button
           onClick={() => navigateMonth(1)}
           className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-text-secondary transition-colors hover:bg-muted"
+          style={{ borderRadius: "999px" }}
         >
           <ChevronRight size={16} />
         </button>

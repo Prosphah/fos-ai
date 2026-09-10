@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { LogoIcon } from "@/components/brand/LogoIcon";
+import { Button } from "@/components/ui/button";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -70,16 +71,20 @@ export default function LoginPage() {
       });
 
       if (signInError) {
-        setSuccess(
-          "Account created! Check your email for a confirmation link, then sign in."
+        setError(
+          "An account with this email already exists. Log in with your password, or try a different email."
         );
         setLoading(false);
         return;
       }
 
+      setSuccess("Welcome back! Signing you in…");
       router.replace("/");
     }
   };
+
+  const inputClass =
+    "focus:border-[var(--accent)] focus:shadow-[0_0_0_3px_var(--accent-soft)]";
 
   const inputStyle: React.CSSProperties = {
     display: "block",
@@ -94,6 +99,12 @@ export default function LoginPage() {
     transition: "border-color 0.2s var(--ease), box-shadow 0.2s var(--ease)",
   };
 
+  const toggleMode = () => {
+    setMode((m) => (m === "signin" ? "signup" : "signin"));
+    setError("");
+    setSuccess("");
+  };
+
   return (
     <main
       style={{
@@ -104,16 +115,39 @@ export default function LoginPage() {
         padding: "32px 16px",
       }}
     >
-      <div style={{ width: "100%", maxWidth: "24rem" }}>
-        {/* Logo */}
-        <div style={{ textAlign: "center", marginBottom: "32px" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "12px" }}>
-            <Image
-              src="/logo.png"
-              alt="FOS·AI"
-              width={48}
-              height={48}
-            />
+      <div style={{ position: "relative", width: "100%", maxWidth: "24rem" }}>
+        {/* Ambient glow behind the card */}
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            inset: "0 -40px",
+            background:
+              "radial-gradient(ellipse 480px 360px at 50% 30%, var(--accent-soft), transparent 70%)",
+            pointerEvents: "none",
+          }}
+        />
+
+        <div style={{ position: "relative" }}>
+          {/* Logo */}
+          <div style={{ textAlign: "center", marginBottom: "32px" }}>
+            <div
+              className="mx-auto mb-5"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "64px",
+                height: "64px",
+                borderRadius: "20px",
+                background: "var(--glass-bg)",
+                border: "1px solid var(--glass-border)",
+                boxShadow: "var(--shadow-card), 0 0 32px var(--accent-glow)",
+                backdropFilter: "blur(16px) saturate(1.3)",
+              }}
+            >
+              <LogoIcon size={36} style={{ color: "var(--accent)" }} />
+            </div>
             <span
               style={{
                 fontFamily: "var(--font-display-family)",
@@ -123,163 +157,170 @@ export default function LoginPage() {
                 color: "var(--text-1)",
               }}
             >
-              fos.ai
+              FOS·AI
             </span>
-          </div>
-          <p style={{ marginTop: "8px", fontSize: "0.875rem", color: "var(--text-3)" }}>
-            Your Financial Operating System
-          </p>
-        </div>
-
-        {/* Form card */}
-        <div
-          style={{
-            borderRadius: "var(--radius-lg)",
-            border: "1px solid var(--glass-border)",
-            background: "var(--glass-bg)",
-            padding: "32px",
-            backdropFilter: "blur(24px) saturate(1.5)",
-            WebkitBackdropFilter: "blur(24px) saturate(1.5)",
-          }}
-        >
-          <h2 style={{ fontSize: "1.125rem", fontWeight: 600, color: "var(--text-1)" }}>
-            {mode === "signin" ? "Welcome back" : "Create your account"}
-          </h2>
-          <p style={{ marginTop: "4px", fontSize: "0.875rem", color: "var(--text-3)" }}>
-            {mode === "signin"
-              ? "Sign in to your account to continue."
-              : "Get started with your financial profile."}
-          </p>
-
-          <form onSubmit={handleSubmit} style={{ marginTop: "24px", display: "flex", flexDirection: "column", gap: "16px" }}>
-            <div>
-              <label htmlFor="email" style={{ display: "block", fontSize: "0.875rem", fontWeight: 500, color: "var(--text-2)", marginBottom: "6px" }}>
-                Email address
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                style={inputStyle}
-                onFocus={(e) => { e.currentTarget.style.borderColor = "var(--accent)"; e.currentTarget.style.boxShadow = "0 0 0 3px var(--accent-soft)"; }}
-                onBlur={(e) => { e.currentTarget.style.borderColor = "var(--glass-border)"; e.currentTarget.style.boxShadow = "none"; }}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" style={{ display: "block", fontSize: "0.875rem", fontWeight: 500, color: "var(--text-2)", marginBottom: "6px" }}>
-                Password
-              </label>
-              <div style={{ position: "relative" }}>
-                <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  required
-                  minLength={6}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder={mode === "signup" ? "At least 6 characters" : "Enter your password"}
-                  style={{ ...inputStyle, paddingRight: "40px" }}
-                  onFocus={(e) => { e.currentTarget.style.borderColor = "var(--accent)"; e.currentTarget.style.boxShadow = "0 0 0 3px var(--accent-soft)"; }}
-                  onBlur={(e) => { e.currentTarget.style.borderColor = "var(--glass-border)"; e.currentTarget.style.boxShadow = "none"; }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  style={{
-                    position: "absolute",
-                    right: "12px",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    color: "var(--text-3)",
-                    display: "flex",
-                    alignItems: "center",
-                  }}
-                >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-            </div>
-
-            {error && (
-              <div style={{ borderRadius: "var(--radius-sm)", border: "1px solid var(--rose-soft)", background: "var(--rose-soft)", padding: "12px 16px", fontSize: "0.875rem", color: "var(--rose)" }}>
-                {error}
-              </div>
-            )}
-
-            {success && (
-              <div style={{ borderRadius: "var(--radius-sm)", border: "1px solid var(--accent-soft)", background: "var(--accent-soft)", padding: "12px 16px", fontSize: "0.875rem", color: "var(--accent)" }}>
-                {success}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
+            <p
               style={{
-                display: "flex",
-                width: "100%",
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: "var(--radius-sm)",
-                background: "var(--accent)",
-                padding: "12px 16px",
-                fontSize: "0.875rem",
+                marginTop: "6px",
+                fontFamily: "var(--font-mono-family)",
+                fontSize: "0.6875rem",
                 fontWeight: 600,
-                color: "#fff",
-                border: "none",
-                cursor: loading ? "not-allowed" : "pointer",
-                opacity: loading ? 0.6 : 1,
-                transition: "background 0.2s var(--ease), opacity 0.2s var(--ease)",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "var(--text-3)",
               }}
             >
-              {loading ? (
+              Your Financial Operating System
+            </p>
+          </div>
+
+          {/* Form card */}
+          <div className="glass" style={{ padding: "32px" }}>
+            <p
+              style={{
+                fontFamily: "var(--font-mono-family)",
+                fontSize: "0.625rem",
+                fontWeight: 600,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "var(--text-3)",
+              }}
+            >
+              {mode === "signin" ? "Secure access" : "New account"}
+            </p>
+            <h2
+              style={{
+                marginTop: "6px",
+                fontFamily: "var(--font-display-family)",
+                fontSize: "1.25rem",
+                fontWeight: 700,
+                letterSpacing: "-0.02em",
+                color: "var(--text-1)",
+              }}
+            >
+              {mode === "signin" ? "Welcome back" : "Create your account"}
+            </h2>
+            <p style={{ marginTop: "4px", fontSize: "0.875rem", color: "var(--text-3)" }}>
+              {mode === "signin"
+                ? "Sign in to your account to continue."
+                : "Get started with your financial profile."}
+            </p>
+
+            <form onSubmit={handleSubmit} style={{ marginTop: "24px", display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div>
+                <label htmlFor="email" style={{ display: "block", fontSize: "0.875rem", fontWeight: 500, color: "var(--text-2)", marginBottom: "6px" }}>
+                  Email address
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  required
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  style={inputStyle}
+                  className={inputClass}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="password" style={{ display: "block", fontSize: "0.875rem", fontWeight: 500, color: "var(--text-2)", marginBottom: "6px" }}>
+                  Password
+                </label>
+                <div style={{ position: "relative" }}>
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    required
+                    minLength={6}
+                    autoComplete={mode === "signin" ? "current-password" : "new-password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder={mode === "signup" ? "At least 6 characters" : "Enter your password"}
+                    style={{ ...inputStyle, paddingRight: "44px" }}
+                    className={inputClass}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    style={{
+                      position: "absolute",
+                      right: "12px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      color: "var(--text-3)",
+                      display: "flex",
+                      alignItems: "center",
+                      padding: "4px",
+                      borderRadius: "var(--radius-xs)",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              {error && (
+                <div role="alert" style={{ borderRadius: "var(--radius-sm)", border: "1px solid var(--rose-soft)", background: "var(--rose-soft)", padding: "12px 16px", fontSize: "0.875rem", color: "var(--rose)" }}>
+                  {error}
+                </div>
+              )}
+
+              {success && (
+                <div role="status" style={{ borderRadius: "var(--radius-sm)", border: "1px solid var(--accent-soft)", background: "var(--accent-soft)", padding: "12px 16px", fontSize: "0.875rem", color: "var(--accent)" }}>
+                  {success}
+                </div>
+              )}
+
+              <Button
+                type="submit"
+                disabled={loading}
+                size="lg"
+                className="w-full"
+                style={{ minHeight: "44px" }}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    {mode === "signin" ? "Signing in\u2026" : "Creating account\u2026"}
+                  </>
+                ) : (
+                  <>{mode === "signin" ? "Sign in" : "Create account"}</>
+                )}
+              </Button>
+            </form>
+
+            <div style={{ marginTop: "24px", textAlign: "center", fontSize: "0.875rem", color: "var(--text-3)" }}>
+              {mode === "signin" ? (
                 <>
-                  <Loader2 size={16} style={{ marginRight: "8px", animation: "spin 1s linear infinite" }} />
-                  {mode === "signin" ? "Signing in\u2026" : "Creating account\u2026"}
+                  Don&apos;t have an account?{" "}
+                  <Button type="button" variant="link" className="h-auto p-0" onClick={toggleMode}>
+                    Create one
+                  </Button>
                 </>
               ) : (
-                <>{mode === "signin" ? "Sign in" : "Create account"}</>
+                <>
+                  Already have an account?{" "}
+                  <Button type="button" variant="link" className="h-auto p-0" onClick={toggleMode}>
+                    Sign in
+                  </Button>
+                </>
               )}
-            </button>
-          </form>
-
-          <div style={{ marginTop: "24px", textAlign: "center", fontSize: "0.875rem", color: "var(--text-3)" }}>
-            {mode === "signin" ? (
-              <>
-                Don&apos;t have an account?{" "}
-                <button
-                  type="button"
-                  onClick={() => { setMode("signup"); setError(""); setSuccess(""); }}
-                  style={{ fontWeight: 600, color: "var(--accent)", background: "none", border: "none", cursor: "pointer", padding: 0 }}
-                >
-                  Create one
-                </button>
-              </>
-            ) : (
-              <>
-                Already have an account?{" "}
-                <button
-                  type="button"
-                  onClick={() => { setMode("signin"); setError(""); setSuccess(""); }}
-                  style={{ fontWeight: 600, color: "var(--accent)", background: "none", border: "none", cursor: "pointer", padding: 0 }}
-                >
-                  Sign in
-                </button>
-              </>
-            )}
+            </div>
           </div>
-        </div>
 
-        <p style={{ marginTop: "24px", textAlign: "center", fontSize: "0.75rem", color: "var(--text-3)" }}>
-          By continuing, you agree to our{" "}
-          <Link href="/privacy" style={{ color: "var(--accent)", textDecoration: "none" }}>
-            Privacy Policy
-          </Link>
-        </p>
+          <p style={{ marginTop: "24px", textAlign: "center", fontSize: "0.75rem", color: "var(--text-3)" }}>
+            By continuing, you agree to our{" "}
+            <Link href="/privacy" style={{ color: "var(--accent)", textDecoration: "none", fontWeight: 500 }}>
+              Privacy Policy
+            </Link>
+          </p>
+        </div>
       </div>
     </main>
   );

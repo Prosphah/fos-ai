@@ -20,7 +20,7 @@ export async function joinWaitlist(input: unknown) {
 
   const { error } = await supabase.from("waitlist").insert({
     user_id: user.id,
-    email: parsed.data.email,
+    email: user.email!,
     feature: parsed.data.feature,
   });
 

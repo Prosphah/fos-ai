@@ -204,7 +204,7 @@ export function RoiCalculator() {
               style={{
                 flexShrink: 0,
                 padding: "0 12px",
-                borderRadius: "var(--radius-xs)",
+                borderRadius: "999px",
                 border: "1px solid var(--glass-border)",
                 background: "var(--glass-bg)",
                 fontSize: "0.75rem",

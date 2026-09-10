@@ -15,9 +15,9 @@ import {
   TrendingUp,
   Loader2,
   Search,
-  Sparkles,
   Inbox,
 } from "lucide-react";
+import { LogoIcon } from "@/components/brand/LogoIcon";
 import { getStockAnalysisData, searchStocksAction } from "@/app/actions/investment-research";
 import type { InvestmentAnalysis } from "@/services/investment-analysis.service";
 import type { StockSearchResult } from "@/services/market-data.service";
@@ -502,7 +502,7 @@ export function StockAnalyzerSheet({ open, onOpenChange }: StockAnalyzerSheetPro
               disabled={busy || !symbol.trim()}
               style={{ height: "44px", paddingInline: "18px" }}
             >
-              {busy ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+              {busy ? <Loader2 size={16} className="animate-spin" /> : <LogoIcon size={18} />}
               {busy ? "Analyzing" : "Analyze"}
             </Button>
           </div>

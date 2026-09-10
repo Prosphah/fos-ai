@@ -84,7 +84,7 @@ export function RecommendedActions({ items }: Props) {
 
                 <button
                   style={{
-                    borderRadius: "var(--radius-xs)",
+                    borderRadius: "999px",
                     border: "1px solid var(--glass-border)",
                     padding: "6px 14px",
                     fontSize: "0.75rem",

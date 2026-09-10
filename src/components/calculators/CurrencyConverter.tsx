@@ -163,7 +163,7 @@ export function CurrencyConverter() {
           style={{
             width: "40px",
             height: "40px",
-            borderRadius: "var(--radius-sm)",
+            borderRadius: "999px",
             border: "1px solid var(--glass-border)",
             background: "var(--glass-bg)",
             display: "flex",

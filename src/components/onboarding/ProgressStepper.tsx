@@ -16,93 +16,108 @@ interface Props {
 }
 
 export function ProgressStepper({ currentStep }: Props) {
+  const active = Math.min(Math.max(currentStep, 1), STEPS.length);
+  const currentLabel = STEPS[active - 1].label;
+
   return (
-    <div style={{ margin: "-8px -8px 32px", padding: "0 8px", overflowX: "auto" }} className="sm:!mx-0 sm:!mb-10 sm:!overflow-visible sm:!px-0">
-      <div
-        className="flex w-max min-w-full items-center justify-between sm:w-full"
-      >
+    <div className="mb-8 sm:mb-10">
+      {/* HUD row: current step readout + mono counter */}
+      <div className="mb-4 flex items-center justify-between">
+        <span
+          style={{
+            fontFamily: "var(--font-mono-family)",
+            fontSize: "0.625rem",
+            fontWeight: 600,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            color: "var(--accent)",
+          }}
+        >
+          {currentLabel}
+        </span>
+        <span
+          style={{
+            fontFamily: "var(--font-mono-family)",
+            fontSize: "0.625rem",
+            fontWeight: 600,
+            letterSpacing: "0.06em",
+            padding: "3px 10px",
+            borderRadius: "var(--radius-full)",
+            background: "var(--accent-soft)",
+            color: "var(--accent)",
+          }}
+        >
+          {String(active).padStart(2, "0")} / {String(STEPS.length).padStart(2, "0")}
+        </span>
+      </div>
+
+      {/* Track: square tiles + gauge connectors */}
+      <div className="flex items-center" role="list" aria-label="Onboarding steps">
         {STEPS.map((step, i) => {
-          const isCompleted = currentStep > step.num;
-          const isCurrent = currentStep === step.num;
+          const isCompleted = active > step.num;
+          const isCurrent = active === step.num;
+          const filled = isCompleted || isCurrent;
 
           return (
-            <div key={step.num} className="flex items-center">
-              <div className="flex flex-col items-center">
-                <motion.div
-                  animate={{
-                    scale: isCurrent ? 1.1 : 1,
-                    backgroundColor: isCompleted
-                      ? "var(--accent)"
-                      : isCurrent
-                        ? "var(--accent-soft)"
-                        : "transparent",
-                  }}
-                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                  style={{
-                    width: "28px",
-                    height: "28px",
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "0.6875rem",
-                    fontWeight: 600,
-                    color: isCompleted ? "#fff" : isCurrent ? "var(--accent)" : "var(--text-3)",
-                    border: isCurrent ? "2px solid var(--accent)" : isCompleted ? "none" : "2px solid var(--glass-border)",
-                  }}
-                  className="sm:!w-8 sm:!h-8 sm:!text-xs"
-                >
-                  {isCompleted ? (
-                    <motion.div
-                      initial={{ scale: 0, rotate: -90 }}
-                      animate={{ scale: 1, rotate: 0 }}
-                      transition={{ type: "spring", stiffness: 500, damping: 20 }}
-                    >
-                      <Check style={{ width: "14px", height: "14px" }} />
-                    </motion.div>
-                  ) : (
-                    step.num
-                  )}
-                </motion.div>
-                <span
-                  style={{
-                    marginTop: "4px",
-                    fontSize: "0.625rem",
-                    fontWeight: 500,
-                    lineHeight: 1.2,
-                    color: isCurrent ? "var(--accent)" : "var(--text-3)",
-                  }}
-                  className="sm:!mt-1.5 sm:!text-xs"
-                >
-                  {step.label}
-                </span>
-              </div>
+            <div
+              key={step.num}
+              role="listitem"
+              aria-current={isCurrent ? "step" : undefined}
+              aria-label={`${step.label}, ${
+                isCompleted ? "completed" : isCurrent ? "current step" : "not completed"
+              }`}
+              className="flex items-center"
+              style={{ flexBasis: 0, flexGrow: 1, minWidth: 0 }}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 320, damping: 22, delay: i * 0.05 }}
+                className="flex h-[30px] w-[30px] shrink-0 items-center justify-center"
+                style={{
+                  borderRadius: "var(--radius-xs)",
+                  background: filled
+                    ? "linear-gradient(135deg, var(--accent), #4F3DC9)"
+                    : "var(--glass-bg)",
+                  border: filled ? "1px solid rgba(105, 90, 255, 0.4)" : "1px solid var(--glass-border)",
+                  boxShadow: filled
+                    ? "0 2px 12px var(--accent-glow)"
+                    : "inset 0 1px 0 rgba(255,255,255,0.4)",
+                  color: "#FFFFFF",
+                }}
+              >
+                {isCompleted ? (
+                  <Check className="h-3.5 w-3.5 text-white" strokeWidth={3} />
+                ) : (
+                  <span
+                    style={{
+                      fontFamily: "var(--font-mono-family)",
+                      fontSize: "0.75rem",
+                      fontWeight: 600,
+                      color: filled ? "#fff" : "var(--text-3)",
+                    }}
+                  >
+                    {step.num}
+                  </span>
+                )}
+              </motion.div>
+
               {i < STEPS.length - 1 && (
                 <div
+                  className="ml-1.5 h-1 flex-1 overflow-hidden"
                   style={{
-                    marginLeft: "6px",
-                    marginRight: "6px",
-                    marginTop: "-1.25rem",
-                    height: "2px",
-                    width: "24px",
-                    background: "var(--glass-border)",
-                    overflow: "hidden",
-                    position: "relative",
+                    borderRadius: "999px",
+                    background: "var(--gauge-track)",
                   }}
-                  className="sm:!mx-3 sm:!w-12 lg:!w-20"
                 >
                   <motion.div
                     initial={false}
-                    animate={{
-                      width: isCompleted ? "100%" : "0%",
-                    }}
-                    transition={{ duration: 0.4, ease: "easeInOut" }}
+                    animate={{ width: isCompleted ? "100%" : "0%" }}
+                    transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                    className="h-full"
                     style={{
-                      height: "100%",
-                      background: "var(--accent)",
-                      position: "absolute",
-                      left: 0,
-                      top: 0,
+                      borderRadius: "999px",
+                      background: "linear-gradient(90deg, var(--accent), #9185FF)",
                     }}
                   />
                 </div>

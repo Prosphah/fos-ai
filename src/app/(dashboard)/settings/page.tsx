@@ -264,7 +264,7 @@ export default function SettingsPage() {
               disabled={saving}
               style={{
                 padding: "10px 24px",
-                borderRadius: "var(--radius-sm)",
+                borderRadius: "999px",
                 background: "var(--accent)",
                 color: "#fff",
                 fontSize: "0.875rem",
@@ -458,6 +458,8 @@ export default function SettingsPage() {
                         const ok = await registerBiometric();
                         if (!ok) {
                           setSecurityError("PIN set, but biometric registration failed. You can enable it later.");
+                        } else {
+                          setSecurityError("");
                         }
                       }
                       setHasPin(true);
@@ -471,7 +473,7 @@ export default function SettingsPage() {
                       display: "block",
                       margin: "20px auto 0",
                       padding: "8px 20px",
-                      borderRadius: "var(--radius-sm)",
+                      borderRadius: "999px",
                       border: "1px solid var(--glass-border)",
                       background: "transparent",
                       color: "var(--text-3)",
@@ -518,7 +520,7 @@ export default function SettingsPage() {
                     alignItems: "center",
                     gap: "6px",
                     padding: "8px 12px",
-                    borderRadius: "var(--radius-sm)",
+                    borderRadius: "999px",
                     border: "1px solid var(--rose-soft)",
                     background: "var(--rose-soft)",
                     color: "var(--rose)",
@@ -562,6 +564,7 @@ export default function SettingsPage() {
                       const ok = await registerBiometric();
                       if (ok) {
                         setBiometricRegistered(true);
+                        setSecurityError("");
                       } else {
                         setSecurityError("Biometric registration failed. Ensure your device supports fingerprint/Face ID.");
                       }
@@ -571,7 +574,7 @@ export default function SettingsPage() {
                       alignItems: "center",
                       gap: "6px",
                       padding: "8px 12px",
-                      borderRadius: "var(--radius-sm)",
+                      borderRadius: "999px",
                       border: "1px solid var(--accent-soft)",
                       background: "var(--accent-soft)",
                       color: "var(--accent)",
@@ -595,7 +598,7 @@ export default function SettingsPage() {
                       alignItems: "center",
                       gap: "6px",
                       padding: "8px 12px",
-                      borderRadius: "var(--radius-sm)",
+                      borderRadius: "999px",
                       border: "1px solid var(--rose-soft)",
                       background: "var(--rose-soft)",
                       color: "var(--rose)",
@@ -748,7 +751,7 @@ export default function SettingsPage() {
                 display: "block",
                 margin: "20px auto 0",
                 padding: "8px 20px",
-                borderRadius: "var(--radius-sm)",
+                borderRadius: "999px",
                 border: "1px solid var(--glass-border)",
                 background: "transparent",
                 color: "var(--text-3)",

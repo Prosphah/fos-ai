@@ -36,7 +36,7 @@ export function BiometricButton({ onAuthenticate }: Props) {
         alignItems: "center",
         gap: "8px",
         padding: "16px 24px",
-        borderRadius: "var(--radius-sm)",
+        borderRadius: "999px",
         border: `1px solid ${error ? "var(--rose-soft)" : "var(--glass-border)"}`,
         background: error ? "var(--rose-soft)" : "var(--glass-bg)",
         cursor: loading ? "not-allowed" : "pointer",

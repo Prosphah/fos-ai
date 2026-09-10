@@ -71,12 +71,16 @@ function NotifyForm() {
       onSubmit={async (e) => {
         e.preventDefault();
         setWaitlistError("");
-        const result = await joinWaitlist({ email, feature: "goals" as const });
-        if (result.error) {
-          setWaitlistError(result.error);
-          return;
+        try {
+          const result = await joinWaitlist({ email, feature: "goals" as const });
+          if (result.error) {
+            setWaitlistError(result.error);
+            return;
+          }
+          setJoined(true);
+        } catch {
+          setWaitlistError("Something went wrong. Please try again.");
         }
-        setJoined(true);
       }}
       style={{ display: "flex", gap: "8px" }}
     >
