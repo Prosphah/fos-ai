@@ -128,18 +128,18 @@ const overlayStyle: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  padding: "32px",
+  padding: "20px",
   background: "var(--bg)",
   animation: "overlay-in 0.3s var(--ease) forwards",
 };
 
 const containerStyle: React.CSSProperties = {
   width: "100%",
-  maxWidth: "360px",
+  maxWidth: "340px",
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
-  gap: "24px",
+  gap: "20px",
   animation: "modal-pop 0.4s var(--ease-spring) forwards",
 };
 

@@ -296,7 +296,7 @@ export default function BudgetsPage() {
                 <select
                   value={selectedCategoryId}
                   onChange={(e) => setSelectedCategoryId(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
+                  className="mt-1 w-full rounded-lg border border-border bg-bg-card px-3 py-2 text-sm text-text-primary outline-none focus:border-accent select-chevron"
                 >
                   <option value="">Total Budget (all categories)</option>
                   {availableCategories.map((c) => (

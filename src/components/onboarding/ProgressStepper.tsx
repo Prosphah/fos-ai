@@ -104,7 +104,7 @@ export function ProgressStepper({ currentStep }: Props) {
 
               {i < STEPS.length - 1 && (
                 <div
-                  className="ml-1.5 h-1 flex-1 overflow-hidden"
+                  className="mx-1 h-1 flex-1 overflow-hidden"
                   style={{
                     borderRadius: "999px",
                     background: "var(--gauge-track)",

@@ -57,7 +57,7 @@ export function Topbar() {
               flexShrink: 0,
             }}
           >
-            {(userName?.[0] ?? "U").toUpperCase()}
+            {(userName?.[0] ?? "T").toUpperCase()}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "1px" }}>
             <span
@@ -68,7 +68,7 @@ export function Topbar() {
                 color: "var(--text-1)",
               }}
             >
-              {userName || "User"}
+              {userName || "there"}
             </span>
             <a
               href="/settings"

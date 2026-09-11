@@ -215,7 +215,7 @@ export function Sidebar() {
               flexShrink: 0,
             }}
           >
-            {(userName?.[0] ?? "U").toUpperCase()}
+            {(userName?.[0] ?? "T").toUpperCase()}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <p
@@ -228,7 +228,7 @@ export function Sidebar() {
                 whiteSpace: "nowrap",
               }}
             >
-              {userName || "User"}
+              {userName || "there"}
             </p>
             <p
               style={{

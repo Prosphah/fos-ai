@@ -172,21 +172,21 @@ export function StepAssets({ defaultValues, onNext, onBack }: Props) {
         }}
       >
         <div className="grid grid-cols-3 gap-2 text-center">
-          <div>
-            <p style={{ fontSize: "0.75rem", color: "var(--text-3)" }}>Total Assets</p>
-            <p className="mt-0.5" style={{ fontFamily: "var(--font-display-family)", fontSize: "1.125rem", fontWeight: 600, color: "var(--text-1)" }}>
+          <div style={{ minWidth: 0, overflow: "hidden" }}>
+            <p style={{ fontSize: "0.75rem", color: "var(--text-3)" }}>Assets</p>
+            <p className="mt-0.5" style={{ fontFamily: "var(--font-display-family)", fontSize: "clamp(0.875rem, 2.5vw, 1.125rem)", fontWeight: 600, color: "var(--text-1)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {totalAssetsVal.toLocaleString()}
             </p>
           </div>
-          <div>
-            <p style={{ fontSize: "0.75rem", color: "var(--text-3)" }}>Total Liabilities</p>
-            <p className="mt-0.5" style={{ fontFamily: "var(--font-display-family)", fontSize: "1.125rem", fontWeight: 600, color: "var(--text-1)" }}>
+          <div style={{ minWidth: 0, overflow: "hidden" }}>
+            <p style={{ fontSize: "0.75rem", color: "var(--text-3)" }}>Liabilities</p>
+            <p className="mt-0.5" style={{ fontFamily: "var(--font-display-family)", fontSize: "clamp(0.875rem, 2.5vw, 1.125rem)", fontWeight: 600, color: "var(--text-1)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {totalLiabilitiesVal.toLocaleString()}
             </p>
           </div>
-          <div>
+          <div style={{ minWidth: 0, overflow: "hidden" }}>
             <p style={{ fontSize: "0.75rem", color: "var(--text-3)" }}>Net Worth</p>
-            <p className="mt-0.5" style={{ fontFamily: "var(--font-display-family)", fontSize: "1.125rem", fontWeight: 600, color: netWorth >= 0 ? "var(--accent)" : "var(--rose)" }}>
+            <p className="mt-0.5" style={{ fontFamily: "var(--font-display-family)", fontSize: "clamp(0.875rem, 2.5vw, 1.125rem)", fontWeight: 600, color: netWorth >= 0 ? "var(--accent)" : "var(--rose)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {netWorth.toLocaleString()}
             </p>
           </div>

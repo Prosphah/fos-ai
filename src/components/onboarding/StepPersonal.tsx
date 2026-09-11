@@ -116,7 +116,7 @@ export function StepPersonal({ defaultValues, onNext }: Props) {
 
       <div>
         <label style={labelStyle}>What currency do you use?</label>
-        <select {...register("currency")} style={{ ...inputStyle, appearance: "none" }}>
+        <select {...register("currency")} style={inputStyle} className="select-chevron">
           <option value="">Select currency</option>
           <option value="USD">USD — US Dollar</option>
           <option value="EUR">EUR — Euro</option>
@@ -136,7 +136,7 @@ export function StepPersonal({ defaultValues, onNext }: Props) {
 
       <div>
         <label style={labelStyle}>What&apos;s your employment status?</label>
-        <select {...register("employmentStatus")} style={{ ...inputStyle, appearance: "none" }}>
+        <select {...register("employmentStatus")} style={inputStyle} className="select-chevron">
           <option value="">Select status</option>
           <option value="employed">Employed (full-time)</option>
           <option value="employed_part_time">Employed (part-time)</option>
@@ -173,7 +173,7 @@ export function StepPersonal({ defaultValues, onNext }: Props) {
 
       <div>
         <label style={labelStyle}>How often are you paid?</label>
-        <select {...register("incomeFrequency")} style={{ ...inputStyle, appearance: "none" }}>
+        <select {...register("incomeFrequency")} style={inputStyle} className="select-chevron">
           <option value="">Select frequency</option>
           <option value="weekly">Weekly</option>
           <option value="biweekly">Every two weeks</option>

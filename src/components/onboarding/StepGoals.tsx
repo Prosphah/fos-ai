@@ -143,7 +143,7 @@ export function StepGoals({ defaultValues, onNext, onBack }: Props) {
                   type="text"
                   value={goal.title}
                   onChange={(e) => updateGoal(i, "title", e.target.value)}
-                  placeholder="e.g., Buy a house, Build emergency fund"
+                  placeholder="e.g., Build emergency savings, Build investment portfolio"
                   style={{ ...inputStyle, marginTop: 0 }}
                 />
                 <div className="relative">
@@ -240,7 +240,7 @@ export function StepGoals({ defaultValues, onNext, onBack }: Props) {
         <label style={labelStyle}>
           What&apos;s your investment horizon? (How many years until you need this money?)
         </label>
-        <select {...register("investmentHorizonYears")} style={{ ...inputStyle, marginTop: "4px", appearance: "none" }}>
+        <select {...register("investmentHorizonYears")} style={{ ...inputStyle, marginTop: "4px" }} className="select-chevron">
           <option value="">Select horizon</option>
           <option value="1">Less than 3 years (Short-term)</option>
           <option value="5">3-10 years (Medium-term)</option>

@@ -69,7 +69,7 @@ export default function FeedbackPage() {
       >
         <div>
           <label htmlFor="feedback-area" style={labelStyle}>What part of FOS·AI is this about?</label>
-          <select id="feedback-area" value={area} onChange={(event) => setArea(event.target.value)} style={inputStyle} className="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+          <select id="feedback-area" value={area} onChange={(event) => setArea(event.target.value)} style={inputStyle} className="select-chevron focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
             <option value="briefing">Briefing</option>
             <option value="money_manager">Money Manager</option>
             <option value="assistant">FOS AI assistant</option>
@@ -81,7 +81,7 @@ export default function FeedbackPage() {
 
         <div>
           <label htmlFor="feedback-type" style={labelStyle}>What kind of feedback is this?</label>
-          <select id="feedback-type" value={feedbackType} onChange={(event) => setFeedbackType(event.target.value)} style={inputStyle} className="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+          <select id="feedback-type" value={feedbackType} onChange={(event) => setFeedbackType(event.target.value)} style={inputStyle} className="select-chevron focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
             <option value="improvement">An improvement</option>
             <option value="feature_request">A feature request</option>
             <option value="bug">A problem or bug</option>

@@ -115,6 +115,7 @@ export default function OnboardingPage() {
   const goToStep = useCallback((nextStep: number) => {
     setDirection(nextStep >= step ? 1 : -1);
     setStep(nextStep);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, [step]);
 
   const handleSave = useCallback(async (saveFn: () => Promise<{ error?: unknown; profileId?: string }>, nextStep: number) => {

@@ -230,7 +230,8 @@ export default function SettingsPage() {
                 id="currency"
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value)}
-                style={{ ...inputStyle, appearance: "none" }}
+                style={inputStyle}
+                className="select-chevron"
               >
                 <option value="">Select currency</option>
                 <option value="USD">USD — US Dollar</option>

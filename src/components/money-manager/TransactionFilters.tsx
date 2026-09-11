@@ -155,6 +155,7 @@ export function TransactionFilters({ categories, accounts, onFilterChange }: Pro
             <select
               value={categoryId}
               onChange={(e) => applyFilters({ categoryId: e.target.value })}
+              className="select-chevron"
               style={{
                 display: "block",
                 width: "100%",
@@ -162,7 +163,7 @@ export function TransactionFilters({ categories, accounts, onFilterChange }: Pro
                 padding: "6px 10px",
                 borderRadius: "var(--radius-xs)",
                 border: "1px solid var(--glass-border)",
-                background: "var(--glass-bg)",
+                backgroundColor: "var(--glass-bg)",
                 fontSize: "0.75rem",
                 color: "var(--text-1)",
                 outline: "none",
@@ -182,6 +183,7 @@ export function TransactionFilters({ categories, accounts, onFilterChange }: Pro
             <select
               value={accountId}
               onChange={(e) => applyFilters({ accountId: e.target.value })}
+              className="select-chevron"
               style={{
                 display: "block",
                 width: "100%",
@@ -189,7 +191,7 @@ export function TransactionFilters({ categories, accounts, onFilterChange }: Pro
                 padding: "6px 10px",
                 borderRadius: "var(--radius-xs)",
                 border: "1px solid var(--glass-border)",
-                background: "var(--glass-bg)",
+                backgroundColor: "var(--glass-bg)",
                 fontSize: "0.75rem",
                 color: "var(--text-1)",
                 outline: "none",
