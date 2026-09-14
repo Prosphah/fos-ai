@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
+import { useUserName } from "@/components/user-name-context";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
 import { BottomNav } from "./BottomNav";
@@ -11,12 +12,13 @@ interface AppShellProps {
 }
 
 export function AppShell({ children }: AppShellProps) {
+  const userName = useUserName();
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--text-1)" }}>
-      <Sidebar />
+      <Sidebar userName={userName} />
 
       <div className="lg:pl-[220px]">
-        <Topbar />
+        <Topbar userName={userName} />
 
         <main
           className="mx-auto flex w-full max-w-[520px] flex-col gap-6 pt-6 lg:!max-w-[720px] lg:!px-10 lg:!pt-9"

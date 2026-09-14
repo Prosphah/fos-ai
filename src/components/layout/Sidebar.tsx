@@ -3,7 +3,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   Target,
@@ -15,7 +14,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { LogoIcon } from "@/components/brand/LogoIcon";
-import { getProfileName } from "@/app/actions/profile";
 
 const links: { name: string; href: string; icon?: LucideIcon; isLogo?: boolean }[] = [
   { name: "Briefing", href: "/briefing", icon: LayoutDashboard },
@@ -25,17 +23,8 @@ const links: { name: string; href: string; icon?: LucideIcon; isLogo?: boolean }
   { name: "Tools", href: "/tools", icon: Calculator },
 ];
 
-export function Sidebar() {
+export function Sidebar({ userName }: { userName?: string }) {
   const pathname = usePathname();
-  const [userName, setUserName] = useState<string>("");
-
-  useEffect(() => {
-    getProfileName().then((p) => {
-      if (p.firstName) setUserName(p.firstName);
-    }).catch(() => {
-      setUserName("");
-    });
-  }, []);
 
   return (
     <aside

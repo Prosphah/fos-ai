@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Sora, Inter, JetBrains_Mono } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { SWRegister } from "@/components/sw-register";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
+import { NotificationPrompt } from "@/components/NotificationPrompt";
 import "./globals.css";
 
 const sora = Sora({
@@ -64,6 +66,8 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>
         <SWRegister />
+        <PWAInstallPrompt />
+        <NotificationPrompt />
       </body>
     </html>
   );

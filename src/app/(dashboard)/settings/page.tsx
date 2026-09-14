@@ -6,7 +6,7 @@ import { useAppLock } from "@/hooks/use-app-lock";
 import { getProfile, updateProfile } from "@/app/actions/profile";
 import Link from "next/link";
 import { useTheme } from "next-themes";
-import { ShieldCheck, Fingerprint, Trash2, MessageSquare, ChevronRight, Sun, Moon, LogOut, Plus } from "lucide-react";
+import { ShieldCheck, Fingerprint, Trash2, MessageSquare, ChevronRight, Sun, Moon, LogOut, Plus, Bell } from "lucide-react";
 import { PinSetup, PinInput, type PinInputHandle } from "@/components/app-lock";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -53,19 +53,37 @@ export default function SettingsPage() {
   const [securityError, setSecurityError] = useState("");
   const removePinRef = useRef<PinInputHandle>(null);
   const router = useRouter();
+  const [reminderEnabled, setReminderEnabled] = useState(true);
+  const [reminderTime, setReminderTime] = useState("19:00");
+  const [reminderDays, setReminderDays] = useState<number[]>([0, 1, 2, 3, 4, 5, 6]);
+  const [reminderDraftEnabled, setReminderDraftEnabled] = useState(true);
+  const [reminderDraftTime, setReminderDraftTime] = useState("19:00");
+  const [reminderDraftDays, setReminderDraftDays] = useState<number[]>([0, 1, 2, 3, 4, 5, 6]);
+  const [reminderSaving, setReminderSaving] = useState(false);
+  const [reminderError, setReminderError] = useState("");
+  const [showReminderModal, setShowReminderModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   const closePinSetup = useCallback(() => setShowPinSetup(false), []);
   const closeRemovePinModal = useCallback(() => setShowRemovePinModal(false), []);
+  const closeReminderModal = useCallback(() => {
+    setReminderDraftEnabled(reminderEnabled);
+    setReminderDraftTime(reminderTime);
+    setReminderDraftDays([...reminderDays]);
+    setShowReminderModal(false);
+  }, [reminderEnabled, reminderTime, reminderDays]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       if (showRemovePinModal) closeRemovePinModal();
       else if (showPinSetup) closePinSetup();
+      else if (showReminderModal) closeReminderModal();
+      else if (showProfileModal) setShowProfileModal(false);
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [showRemovePinModal, showPinSetup, closeRemovePinModal, closePinSetup]);
+  }, [showRemovePinModal, showPinSetup, showReminderModal, showProfileModal, closeRemovePinModal, closePinSetup, closeReminderModal]);
 
   const handleLogout = async () => {
     const supabase = createClient();
@@ -96,6 +114,15 @@ export default function SettingsPage() {
       setLoading(false);
     });
 
+    fetch("/api/user-settings/reminder")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.reminder_enabled !== undefined) setReminderEnabled(data.reminder_enabled);
+        if (data.reminder_time) setReminderTime(data.reminder_time);
+        if (data.reminder_days) setReminderDays(data.reminder_days);
+      })
+      .catch(() => {});
+
     if (window.PublicKeyCredential) {
       PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().then(
         setBiometricAvailable
@@ -105,7 +132,7 @@ export default function SettingsPage() {
     }
   }, []);
 
-  const handleSave = async () => {
+  const handleSave = async (): Promise<boolean> => {
     setSaving(true);
     setError("");
     setSuccess(false);
@@ -121,16 +148,73 @@ export default function SettingsPage() {
 
       if (result.error) {
         setError(result.error);
+        return false;
       } else {
         setSuccess(true);
         setTimeout(() => setSuccess(false), 3000);
+        return true;
       }
     } catch {
       setError("Could not save your changes. Please try again.");
+      return false;
     } finally {
       setSaving(false);
     }
   };
+
+  const handleReminderSave = async (): Promise<boolean> => {
+    setReminderSaving(true);
+    setReminderError("");
+    try {
+      const response = await fetch("/api/user-settings/reminder", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          reminder_enabled: reminderDraftEnabled,
+          reminder_time: reminderDraftTime,
+          reminder_days: reminderDraftDays,
+        }),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to save reminder settings");
+      }
+      setReminderEnabled(reminderDraftEnabled);
+      setReminderTime(reminderDraftTime);
+      setReminderDays(reminderDraftDays);
+      return true;
+    } catch {
+      setReminderError("Could not save your reminder settings. Please try again.");
+      return false;
+    } finally {
+      setReminderSaving(false);
+    }
+  };
+
+  const openReminderModal = () => {
+    setReminderDraftEnabled(reminderEnabled);
+    setReminderDraftTime(reminderTime);
+    setReminderDraftDays([...reminderDays]);
+    setShowReminderModal(true);
+  };
+
+  function formatTimeDisplay(time: string): string {
+    const [h, m] = time.split(":").map(Number);
+    const period = h >= 12 ? "PM" : "AM";
+    const hour = h % 12 || 12;
+    return `${hour}:${String(m).padStart(2, "0")} ${period}`;
+  }
+
+  function formatDaysDisplay(days: number[]): string {
+    if (days.length === 7) return "Every day";
+    if (days.length === 0) return "No days";
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const sorted = [...days].sort();
+    const consecutive = sorted.every((d, i) => i === 0 || d === sorted[i - 1] + 1);
+    if (consecutive && sorted.length > 2) {
+      return `${dayNames[sorted[0]]} – ${dayNames[sorted[sorted.length - 1]]}`;
+    }
+    return sorted.map((d) => dayNames[d]).join(", ");
+  }
 
   return (
     <AppShell>
@@ -156,128 +240,122 @@ export default function SettingsPage() {
             borderRadius: "var(--radius)",
             border: "1px solid var(--glass-border)",
             background: "var(--glass-bg)",
-            padding: "24px",
+            padding: "32px 28px",
           }}
         >
-          <h2
-            style={{
-              fontFamily: "var(--font-mono-family)",
-              fontSize: "0.6875rem",
-              fontWeight: 600,
-              color: "var(--text-3)",
-              textTransform: "uppercase",
-              letterSpacing: "0.1em",
-              marginBottom: "20px",
-            }}
-          >
-            Profile
-          </h2>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-              <div>
-                <label htmlFor="first-name" style={labelStyle}>First name</label>
-                <input
-                  id="first-name"
-                  type="text"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  placeholder="e.g. Michael"
-                  style={inputStyle}
-                />
-              </div>
-              <div>
-                <label htmlFor="last-name" style={labelStyle}>Last name</label>
-                <input
-                  id="last-name"
-                  type="text"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  placeholder="e.g. Johnson"
-                  style={inputStyle}
-                />
-              </div>
-            </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-              <div>
-                <label htmlFor="age" style={labelStyle}>Age</label>
-                <input
-                  id="age"
-                  type="number"
-                  value={age}
-                  onChange={(e) => setAge(e.target.value)}
-                  placeholder="e.g. 30"
-                  style={inputStyle}
-                />
-              </div>
-              <div>
-                <label htmlFor="country" style={labelStyle}>Country</label>
-                <input
-                  id="country"
-                  type="text"
-                  value={country}
-                  onChange={(e) => setCountry(e.target.value)}
-                  placeholder="e.g. Nigeria"
-                  style={inputStyle}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="currency" style={labelStyle}>Currency</label>
-              <select
-                id="currency"
-                value={currency}
-                onChange={(e) => setCurrency(e.target.value)}
-                style={inputStyle}
-                className="select-chevron"
-              >
-                <option value="">Select currency</option>
-                <option value="USD">USD — US Dollar</option>
-                <option value="EUR">EUR — Euro</option>
-                <option value="GBP">GBP — British Pound</option>
-                <option value="CAD">CAD — Canadian Dollar</option>
-                <option value="AUD">AUD — Australian Dollar</option>
-                <option value="JPY">JPY — Japanese Yen</option>
-                <option value="NGN">NGN — Nigerian Naira</option>
-                <option value="INR">INR — Indian Rupee</option>
-                <option value="BRL">BRL — Brazilian Real</option>
-                <option value="MXN">MXN — Mexican Peso</option>
-              </select>
-            </div>
-          </div>
-
-          {error && (
-            <p style={{ marginTop: "12px", fontSize: "0.875rem", color: "var(--rose)" }}>
-              {error}
-            </p>
-          )}
-          {success && (
-            <p style={{ marginTop: "12px", fontSize: "0.875rem", color: "var(--mint)" }}>
-              Profile updated successfully.
-            </p>
-          )}
-
-          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "20px" }}>
-            <button
-              onClick={handleSave}
-              disabled={saving}
+          {/* Avatar + Name + Edit */}
+          <div style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: "28px" }}>
+            <div
               style={{
-                padding: "10px 24px",
-                borderRadius: "999px",
+                width: "64px",
+                height: "64px",
+                borderRadius: "var(--radius)",
                 background: "var(--accent)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontFamily: "var(--font-display-family)",
+                fontWeight: 700,
+                fontSize: "1.375rem",
                 color: "#fff",
-                fontSize: "0.875rem",
-                fontWeight: 600,
-                border: "none",
-                cursor: saving ? "not-allowed" : "pointer",
-                opacity: saving ? 0.6 : 1,
-                transition: "opacity 0.2s var(--ease)",
+                flexShrink: 0,
+                boxShadow: "0 4px 20px rgba(105, 90, 255, 0.3)",
               }}
             >
-              {saving ? "Saving\u2026" : "Save changes"}
+              {(firstName?.[0] ?? "T").toUpperCase()}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <h2
+                style={{
+                  fontSize: "1.125rem",
+                  fontWeight: 600,
+                  color: "var(--text-1)",
+                  lineHeight: 1.3,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  margin: 0,
+                }}
+              >
+                {firstName || lastName ? `${firstName} ${lastName}`.trim() : <span style={{ color: "var(--text-3)" }}>Your name</span>}
+              </h2>
+              <p
+                style={{
+                  fontFamily: "var(--font-mono-family)",
+                  fontSize: "0.6875rem",
+                  fontWeight: 600,
+                  color: "var(--text-3)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  margin: "4px 0 0",
+                }}
+              >
+                Profile
+              </p>
+            </div>
+            <button
+              onClick={() => setShowProfileModal(true)}
+              style={{
+                padding: "7px 18px",
+                borderRadius: "999px",
+                border: "1px solid var(--accent)",
+                background: "rgba(105, 90, 255, 0.1)",
+                color: "var(--accent)",
+                fontSize: "0.8125rem",
+                fontWeight: 600,
+                cursor: "pointer",
+                transition: "all 0.15s var(--ease)",
+                flexShrink: 0,
+              }}
+            >
+              Edit
             </button>
+          </div>
+
+          {/* Details */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "16px",
+              padding: "20px",
+              borderRadius: "var(--radius-sm)",
+              background: "rgba(255, 255, 255, 0.02)",
+              border: "1px solid var(--glass-border)",
+            }}
+          >
+            {[
+              { label: "Age", value: age },
+              { label: "Country", value: country },
+              { label: "Currency", value: currency },
+            ].map(({ label, value }) => (
+              <div key={label}>
+                <span
+                  style={{
+                    fontFamily: "var(--font-mono-family)",
+                    fontSize: "0.625rem",
+                    fontWeight: 600,
+                    color: "var(--text-3)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    display: "block",
+                    marginBottom: "4px",
+                  }}
+                >
+                  {label}
+                </span>
+                <span
+                  style={{
+                    fontSize: "0.9375rem",
+                    fontWeight: 500,
+                    color: value ? "var(--text-1)" : "var(--text-3)",
+                    fontStyle: value ? "normal" : "italic",
+                  }}
+                >
+                  {value || "Not set"}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -364,6 +442,426 @@ export default function SettingsPage() {
             </span>
           </button>
         </div>
+
+        {/* Reminders Section */}
+        <div
+          style={{
+            borderRadius: "var(--radius)",
+            border: "1px solid var(--glass-border)",
+            background: "var(--glass-bg)",
+            padding: "24px",
+            marginTop: "16px",
+          }}
+        >
+          <h2
+            style={{
+              fontFamily: "var(--font-mono-family)",
+              fontSize: "0.6875rem",
+              fontWeight: 600,
+              color: "var(--text-3)",
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              marginBottom: "20px",
+            }}
+          >
+            Reminders
+          </h2>
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "14px 16px",
+              borderRadius: "var(--radius-sm)",
+              border: "1px solid var(--glass-border)",
+              background: "var(--glass-bg)",
+            }}
+          >
+            <span style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <Bell size={18} style={{ color: reminderEnabled ? "var(--accent)" : "var(--text-3)" }} />
+              <span>
+                <span style={{ display: "block", fontSize: "0.875rem", fontWeight: 500, color: "var(--text-1)" }}>
+                  Daily reminder
+                </span>
+                <span style={{ display: "block", marginTop: "3px", fontSize: "0.75rem", color: "var(--text-3)" }}>
+                  {reminderEnabled
+                    ? `At ${formatTimeDisplay(reminderTime)} · ${formatDaysDisplay(reminderDays)}`
+                    : "Disabled"}
+                </span>
+              </span>
+            </span>
+            <button
+              onClick={openReminderModal}
+              style={{
+                padding: "6px 14px",
+                borderRadius: "999px",
+                border: "1px solid var(--accent-soft)",
+                background: "var(--accent-soft)",
+                color: "var(--accent)",
+                fontSize: "0.75rem",
+                fontWeight: 600,
+                cursor: "pointer",
+                transition: "all 0.15s var(--ease)",
+              }}
+            >
+              Edit
+            </button>
+          </div>
+        </div>
+
+        {/* Reminder Edit Modal */}
+        {showReminderModal && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Edit reminder"
+            onClick={(e) => { if (e.target === e.currentTarget) closeReminderModal(); }}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 9999,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "24px",
+              background: "rgba(0, 0, 0, 0.5)",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+            }}
+          >
+            <div
+              style={{
+                width: "100%",
+                maxWidth: "380px",
+                background: "var(--bg)",
+                border: "1px solid var(--glass-border)",
+                borderRadius: "var(--radius)",
+                padding: "28px 24px",
+                maxHeight: "85vh",
+                overflowY: "auto",
+              }}
+            >
+              <h3 style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-1)", marginBottom: "20px" }}>
+                Edit reminder
+              </h3>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                {/* Enable toggle */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <span style={{ fontSize: "0.875rem", fontWeight: 500, color: "var(--text-1)" }}>
+                    Enabled
+                  </span>
+                  <button
+                    onClick={() => setReminderDraftEnabled(!reminderDraftEnabled)}
+                    style={{
+                      width: "44px",
+                      height: "24px",
+                      borderRadius: "12px",
+                      background: reminderDraftEnabled ? "var(--accent)" : "var(--gauge-track)",
+                      position: "relative",
+                      transition: "background 0.2s var(--ease)",
+                      border: "none",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: "18px",
+                        height: "18px",
+                        borderRadius: "50%",
+                        background: "#fff",
+                        position: "absolute",
+                        top: "3px",
+                        left: reminderDraftEnabled ? "23px" : "3px",
+                        transition: "left 0.2s var(--ease)",
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
+                      }}
+                    />
+                  </button>
+                </div>
+
+                {/* Time picker */}
+                <div>
+                  <label
+                    htmlFor="reminder-time"
+                    style={{ fontSize: "0.8125rem", fontWeight: 500, color: "var(--text-1)", display: "block", marginBottom: "6px" }}
+                  >
+                    Reminder time
+                  </label>
+                  <input
+                    id="reminder-time"
+                    type="time"
+                    value={reminderDraftTime}
+                    onChange={(e) => setReminderDraftTime(e.target.value)}
+                    style={{
+                      display: "block",
+                      width: "100%",
+                      padding: "12px 14px",
+                      borderRadius: "var(--radius-sm)",
+                      border: "1px solid var(--glass-border)",
+                      background: "var(--glass-bg)",
+                      fontSize: "0.875rem",
+                      color: "var(--text-1)",
+                      outline: "none",
+                      minHeight: "44px",
+                    }}
+                  />
+                </div>
+
+                {/* Day picker */}
+                <div>
+                  <span style={{ fontSize: "0.8125rem", fontWeight: 500, color: "var(--text-1)", display: "block", marginBottom: "8px" }}>
+                    Active days
+                  </span>
+                  <div style={{ display: "flex", gap: "6px" }}>
+                    {[
+                      { label: "Su", day: 0 },
+                      { label: "Mo", day: 1 },
+                      { label: "Tu", day: 2 },
+                      { label: "We", day: 3 },
+                      { label: "Th", day: 4 },
+                      { label: "Fr", day: 5 },
+                      { label: "Sa", day: 6 },
+                    ].map(({ label, day }) => {
+                      const active = reminderDraftDays.includes(day);
+                      return (
+                        <button
+                          key={day}
+                          onClick={() => setReminderDraftDays((prev) =>
+                            prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day].sort()
+                          )}
+                          style={{
+                            flex: 1,
+                            height: "40px",
+                            borderRadius: "var(--radius-xs)",
+                            border: `1.5px solid ${active ? "var(--accent)" : "var(--glass-border)"}`,
+                            background: active ? "var(--accent-soft)" : "var(--glass-bg)",
+                            color: active ? "var(--accent)" : "var(--text-3)",
+                            fontSize: "0.75rem",
+                            fontWeight: 600,
+                            cursor: "pointer",
+                            transition: "all 0.15s var(--ease)",
+                          }}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {reminderError && (
+                <p style={{ marginTop: "12px", fontSize: "0.875rem", color: "var(--rose)" }}>
+                  {reminderError}
+                </p>
+              )}
+
+              {/* Actions */}
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "24px" }}>
+                <button
+                  onClick={closeReminderModal}
+                  style={{
+                    padding: "10px 20px",
+                    borderRadius: "999px",
+                    border: "1px solid var(--glass-border)",
+                    background: "transparent",
+                    color: "var(--text-2)",
+                    fontSize: "0.8125rem",
+                    fontWeight: 500,
+                    cursor: "pointer",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    const saved = await handleReminderSave();
+                    if (saved) setShowReminderModal(false);
+                  }}
+                  disabled={reminderSaving}
+                  style={{
+                    padding: "10px 24px",
+                    borderRadius: "999px",
+                    background: "var(--accent)",
+                    color: "#fff",
+                    fontSize: "0.8125rem",
+                    fontWeight: 600,
+                    border: "none",
+                    cursor: reminderSaving ? "not-allowed" : "pointer",
+                    opacity: reminderSaving ? 0.6 : 1,
+                  }}
+                >
+                  {reminderSaving ? "Saving\u2026" : "Save"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showProfileModal && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Edit profile"
+            onClick={(e) => { if (e.target === e.currentTarget) setShowProfileModal(false); }}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 9999,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "24px",
+              background: "rgba(0, 0, 0, 0.5)",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+            }}
+          >
+            <div
+              style={{
+                width: "100%",
+                maxWidth: "380px",
+                background: "var(--bg)",
+                border: "1px solid var(--glass-border)",
+                borderRadius: "var(--radius)",
+                padding: "28px 24px",
+                maxHeight: "85vh",
+                overflowY: "auto",
+              }}
+            >
+              <h3 style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-1)", marginBottom: "20px" }}>
+                Edit profile
+              </h3>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                  <div>
+                    <label htmlFor="first-name" style={labelStyle}>First name</label>
+                    <input
+                      id="first-name"
+                      type="text"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      placeholder="e.g. Michael"
+                      style={inputStyle}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="last-name" style={labelStyle}>Last name</label>
+                    <input
+                      id="last-name"
+                      type="text"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      placeholder="e.g. Johnson"
+                      style={inputStyle}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                  <div>
+                    <label htmlFor="age" style={labelStyle}>Age</label>
+                    <input
+                      id="age"
+                      type="number"
+                      value={age}
+                      onChange={(e) => setAge(e.target.value)}
+                      placeholder="e.g. 30"
+                      style={inputStyle}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="country" style={labelStyle}>Country</label>
+                    <input
+                      id="country"
+                      type="text"
+                      value={country}
+                      onChange={(e) => setCountry(e.target.value)}
+                      placeholder="e.g. Nigeria"
+                      style={inputStyle}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="currency" style={labelStyle}>Currency</label>
+                  <select
+                    id="currency"
+                    value={currency}
+                    onChange={(e) => setCurrency(e.target.value)}
+                    style={inputStyle}
+                    className="select-chevron"
+                  >
+                    <option value="">Select currency</option>
+                    <option value="USD">USD — US Dollar</option>
+                    <option value="EUR">EUR — Euro</option>
+                    <option value="GBP">GBP — British Pound</option>
+                    <option value="CAD">CAD — Canadian Dollar</option>
+                    <option value="AUD">AUD — Australian Dollar</option>
+                    <option value="JPY">JPY — Japanese Yen</option>
+                    <option value="NGN">NGN — Nigerian Naira</option>
+                    <option value="INR">INR — Indian Rupee</option>
+                    <option value="BRL">BRL — Brazilian Real</option>
+                    <option value="MXN">MXN — Mexican Peso</option>
+                  </select>
+                </div>
+              </div>
+
+              {error && (
+                <p style={{ marginTop: "12px", fontSize: "0.875rem", color: "var(--rose)" }}>
+                  {error}
+                </p>
+              )}
+              {success && (
+                <p style={{ marginTop: "12px", fontSize: "0.875rem", color: "var(--mint)" }}>
+                  Profile updated successfully.
+                </p>
+              )}
+
+              {/* Actions */}
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "24px" }}>
+                <button
+                  onClick={() => setShowProfileModal(false)}
+                  style={{
+                    padding: "10px 20px",
+                    borderRadius: "999px",
+                    border: "1px solid var(--glass-border)",
+                    background: "transparent",
+                    color: "var(--text-2)",
+                    fontSize: "0.8125rem",
+                    fontWeight: 500,
+                    cursor: "pointer",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    const saved = await handleSave();
+                    if (saved) setShowProfileModal(false);
+                  }}
+                  disabled={saving}
+                  style={{
+                    padding: "10px 24px",
+                    borderRadius: "999px",
+                    background: "var(--accent)",
+                    color: "#fff",
+                    fontSize: "0.8125rem",
+                    fontWeight: 600,
+                    border: "none",
+                    cursor: saving ? "not-allowed" : "pointer",
+                    opacity: saving ? 0.6 : 1,
+                  }}
+                >
+                  {saving ? "Saving\u2026" : "Save"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Security Section */}
         <div
