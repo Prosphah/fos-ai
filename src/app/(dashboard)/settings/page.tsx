@@ -55,10 +55,10 @@ export default function SettingsPage() {
   const router = useRouter();
   const [reminderEnabled, setReminderEnabled] = useState(true);
   const [reminderTime, setReminderTime] = useState("19:00");
-  const [reminderDays, setReminderDays] = useState<number[]>([0, 1, 2, 3, 4, 5, 6]);
+  const [reminderDays, setReminderDays] = useState<number[]>([1, 2, 3, 4, 5, 6, 7]);
   const [reminderDraftEnabled, setReminderDraftEnabled] = useState(true);
   const [reminderDraftTime, setReminderDraftTime] = useState("19:00");
-  const [reminderDraftDays, setReminderDraftDays] = useState<number[]>([0, 1, 2, 3, 4, 5, 6]);
+  const [reminderDraftDays, setReminderDraftDays] = useState<number[]>([1, 2, 3, 4, 5, 6, 7]);
   const [reminderSaving, setReminderSaving] = useState(false);
   const [reminderError, setReminderError] = useState("");
   const [showReminderModal, setShowReminderModal] = useState(false);
@@ -172,7 +172,7 @@ export default function SettingsPage() {
         body: JSON.stringify({
           reminder_enabled: reminderDraftEnabled,
           reminder_time: reminderDraftTime,
-          reminder_days: reminderDraftDays,
+          reminder_days: [...new Set(reminderDraftDays)].filter((d) => d >= 1 && d <= 7).sort((a, b) => a - b),
         }),
       });
       if (!response.ok) {
@@ -207,8 +207,8 @@ export default function SettingsPage() {
   function formatDaysDisplay(days: number[]): string {
     if (days.length === 7) return "Every day";
     if (days.length === 0) return "No days";
-    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const sorted = [...days].sort();
+    const dayNames = ["", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const sorted = [...days].sort((a, b) => a - b);
     const consecutive = sorted.every((d, i) => i === 0 || d === sorted[i - 1] + 1);
     if (consecutive && sorted.length > 2) {
       return `${dayNames[sorted[0]]} – ${dayNames[sorted[sorted.length - 1]]}`;
@@ -240,6 +240,9 @@ export default function SettingsPage() {
             borderRadius: "var(--radius)",
             border: "1px solid var(--glass-border)",
             background: "var(--glass-bg)",
+            boxShadow: "var(--shadow-card)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
             padding: "32px 28px",
           }}
         >
@@ -392,6 +395,9 @@ export default function SettingsPage() {
             borderRadius: "var(--radius)",
             border: "1px solid var(--glass-border)",
             background: "var(--glass-bg)",
+            boxShadow: "var(--shadow-card)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
             padding: "24px",
             marginTop: "16px",
           }}
@@ -449,6 +455,9 @@ export default function SettingsPage() {
             borderRadius: "var(--radius)",
             border: "1px solid var(--glass-border)",
             background: "var(--glass-bg)",
+            boxShadow: "var(--shadow-card)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
             padding: "24px",
             marginTop: "16px",
           }}
@@ -476,6 +485,8 @@ export default function SettingsPage() {
               borderRadius: "var(--radius-sm)",
               border: "1px solid var(--glass-border)",
               background: "var(--glass-bg)",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
             }}
           >
             <span style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -616,13 +627,13 @@ export default function SettingsPage() {
                   </span>
                   <div style={{ display: "flex", gap: "6px" }}>
                     {[
-                      { label: "Su", day: 0 },
                       { label: "Mo", day: 1 },
                       { label: "Tu", day: 2 },
                       { label: "We", day: 3 },
                       { label: "Th", day: 4 },
                       { label: "Fr", day: 5 },
                       { label: "Sa", day: 6 },
+                      { label: "Su", day: 7 },
                     ].map(({ label, day }) => {
                       const active = reminderDraftDays.includes(day);
                       return (
@@ -869,6 +880,9 @@ export default function SettingsPage() {
             borderRadius: "var(--radius)",
             border: "1px solid var(--glass-border)",
             background: "var(--glass-bg)",
+            boxShadow: "var(--shadow-card)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
             padding: "24px",
             marginTop: "16px",
           }}
@@ -996,6 +1010,8 @@ export default function SettingsPage() {
                   borderRadius: "var(--radius-sm)",
                   border: "1px solid var(--glass-border)",
                   background: "var(--glass-bg)",
+                  backdropFilter: "blur(8px)",
+                  WebkitBackdropFilter: "blur(8px)",
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -1044,6 +1060,8 @@ export default function SettingsPage() {
                   borderRadius: "var(--radius-sm)",
                   border: "1px solid var(--glass-border)",
                   background: "var(--glass-bg)",
+                  backdropFilter: "blur(8px)",
+                  WebkitBackdropFilter: "blur(8px)",
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -1126,6 +1144,9 @@ export default function SettingsPage() {
             borderRadius: "var(--radius)",
             border: "1px solid var(--glass-border)",
             background: "var(--glass-bg)",
+            boxShadow: "var(--shadow-card)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
             padding: "24px",
             marginTop: "16px",
           }}

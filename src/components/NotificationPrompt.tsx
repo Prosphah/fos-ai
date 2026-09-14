@@ -49,6 +49,8 @@ export function NotificationPrompt() {
       setVisible(false);
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
+    } else if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+      setVisible(false);
     }
   };
 

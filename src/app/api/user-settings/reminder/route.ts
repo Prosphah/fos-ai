@@ -28,11 +28,19 @@ export async function GET() {
     return NextResponse.json({
       reminder_enabled: true,
       reminder_time: "19:00",
-      reminder_days: [0, 1, 2, 3, 4, 5, 6],
+      reminder_days: [1, 2, 3, 4, 5, 6, 7],
     });
   }
 
-  return NextResponse.json(data);
+  return NextResponse.json({
+    ...data,
+    reminder_time: typeof data.reminder_time === "string" ? data.reminder_time.slice(0, 5) : "19:00",
+    reminder_days: Array.isArray(data.reminder_days)
+      ? [...new Set(data.reminder_days as number[])]
+          .filter((d): d is number => typeof d === "number" && Number.isInteger(d) && d >= 1 && d <= 7)
+          .sort((a, b) => a - b)
+      : [1, 2, 3, 4, 5, 6, 7],
+  });
 }
 
 export async function PUT(request: Request) {
@@ -60,20 +68,41 @@ export async function PUT(request: Request) {
   const hasEnabled = input.reminder_enabled !== undefined;
   const hasTime = input.reminder_time !== undefined;
   const hasDays = input.reminder_days !== undefined;
-  const validTime = typeof input.reminder_time === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(input.reminder_time);
-  const validDays = Array.isArray(input.reminder_days) &&
-    input.reminder_days.every((day) => Number.isInteger(day) && day >= 0 && day <= 6);
 
-  if ((hasEnabled && typeof input.reminder_enabled !== "boolean") ||
-      (hasTime && !validTime) ||
-      (hasDays && (!validDays || new Set(input.reminder_days as number[]).size !== (input.reminder_days as number[]).length))) {
+  if ((hasTime && typeof input.reminder_time !== "string") ||
+      (hasDays && !Array.isArray(input.reminder_days))) {
+    return NextResponse.json({ error: "Invalid reminder settings" }, { status: 400 });
+  }
+
+  let normalizedTime: string | undefined;
+  if (hasTime) {
+    const match = (input.reminder_time as string).match(/^([01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/);
+    if (match) {
+      normalizedTime = match[0].slice(0, 5);
+    } else {
+      return NextResponse.json({ error: "Invalid reminder settings" }, { status: 400 });
+    }
+  }
+
+  let normalizedDays: number[] | undefined;
+  if (hasDays) {
+    const unique = [...new Set(input.reminder_days as number[])].filter(
+      (d): d is number => typeof d === "number" && Number.isInteger(d) && d >= 1 && d <= 7
+    ).sort((a, b) => a - b);
+    if (unique.length === 0) {
+      return NextResponse.json({ error: "Invalid reminder settings" }, { status: 400 });
+    }
+    normalizedDays = unique;
+  }
+
+  if (hasEnabled && typeof input.reminder_enabled !== "boolean") {
     return NextResponse.json({ error: "Invalid reminder settings" }, { status: 400 });
   }
 
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
   if (hasEnabled) updates.reminder_enabled = input.reminder_enabled;
-  if (hasTime) updates.reminder_time = input.reminder_time;
-  if (hasDays) updates.reminder_days = input.reminder_days;
+  if (normalizedTime !== undefined) updates.reminder_time = normalizedTime;
+  if (normalizedDays !== undefined) updates.reminder_days = normalizedDays;
 
   const { error } = await supabase
     .from("user_settings")

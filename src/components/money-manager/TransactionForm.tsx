@@ -260,6 +260,9 @@ export function TransactionForm({ onSuccess, defaultType = "expense", defaultDat
                     textAlign: "center",
                     border: `1px solid ${isSelected ? "var(--accent)" : "var(--glass-border)"}`,
                     background: isSelected ? "var(--accent-soft)" : "var(--glass-bg)",
+                    boxShadow: isSelected ? "0 0 20px rgba(105, 90, 255, 0.1)" : "var(--shadow-card)",
+                    backdropFilter: "blur(8px)",
+                    WebkitBackdropFilter: "blur(8px)",
                     transition: "all 0.2s var(--ease)",
                   }}
                 >

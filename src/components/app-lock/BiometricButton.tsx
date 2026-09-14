@@ -32,11 +32,9 @@ export function BiometricButton({ onAuthenticate }: Props) {
       disabled={loading}
       style={{
         display: "flex",
-        flexDirection: "column",
         alignItems: "center",
         gap: "8px",
-        width: "100%",
-        padding: "14px 20px",
+        padding: "9px 16px",
         borderRadius: "999px",
         border: `1px solid ${error ? "var(--rose-soft)" : "var(--glass-border)"}`,
         background: error ? "var(--rose-soft)" : "var(--glass-bg)",
@@ -46,12 +44,12 @@ export function BiometricButton({ onAuthenticate }: Props) {
       }}
     >
       {loading ? (
-        <Loader2 size={28} style={{ color: "var(--accent)", animation: "spin 1s linear infinite" }} />
+        <Loader2 size={16} style={{ color: "var(--accent)", animation: "spin 1s linear infinite" }} />
       ) : (
-        <Fingerprint size={28} style={{ color: error ? "var(--rose)" : "var(--accent)" }} />
+        <Fingerprint size={16} style={{ color: error ? "var(--rose)" : "var(--accent)" }} />
       )}
-      <span style={{ fontSize: "0.8125rem", color: error ? "var(--rose)" : "var(--text-2)" }}>
-        {loading ? "Verifying..." : error ? "Failed — try again" : "Use biometric"}
+      <span style={{ fontSize: "0.8125rem", fontWeight: 500, color: error ? "var(--rose)" : "var(--text-2)" }}>
+        {loading ? "Verifying..." : error ? "Try again" : "Use biometric"}
       </span>
     </button>
   );
