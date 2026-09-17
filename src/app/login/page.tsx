@@ -64,22 +64,10 @@ export default function LoginPage() {
         return;
       }
 
-      // If the user already exists (common when switching modes), try signing in
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (signInError) {
-        setError(
-          "An account with this email already exists. Log in with your password, or try a different email."
-        );
-        setLoading(false);
-        return;
-      }
-
-      setSuccess("Welcome back! Signing you in…");
-      router.replace("/");
+      setSuccess(
+        "Check your email for a confirmation link. If you already have an account, try signing in instead."
+      );
+      setLoading(false);
     }
   };
 
