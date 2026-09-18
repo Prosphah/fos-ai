@@ -55,10 +55,10 @@ export default function SettingsPage() {
   const router = useRouter();
   const [reminderEnabled, setReminderEnabled] = useState(true);
   const [reminderTime, setReminderTime] = useState("19:00");
-  const [reminderDays, setReminderDays] = useState<number[]>([1, 2, 3, 4, 5, 6, 7]);
+  const [reminderDays, setReminderDays] = useState<number[]>([0, 1, 2, 3, 4, 5, 6]);
   const [reminderDraftEnabled, setReminderDraftEnabled] = useState(true);
   const [reminderDraftTime, setReminderDraftTime] = useState("19:00");
-  const [reminderDraftDays, setReminderDraftDays] = useState<number[]>([1, 2, 3, 4, 5, 6, 7]);
+  const [reminderDraftDays, setReminderDraftDays] = useState<number[]>([0, 1, 2, 3, 4, 5, 6]);
   const [reminderSaving, setReminderSaving] = useState(false);
   const [reminderError, setReminderError] = useState("");
   const [showReminderModal, setShowReminderModal] = useState(false);
@@ -172,7 +172,8 @@ export default function SettingsPage() {
         body: JSON.stringify({
           reminder_enabled: reminderDraftEnabled,
           reminder_time: reminderDraftTime,
-          reminder_days: [...new Set(reminderDraftDays)].filter((d) => d >= 1 && d <= 7).sort((a, b) => a - b),
+          reminder_days: [...new Set(reminderDraftDays)].filter((d) => d >= 0 && d <= 6).sort((a, b) => a - b),
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         }),
       });
       if (!response.ok) {
@@ -207,7 +208,7 @@ export default function SettingsPage() {
   function formatDaysDisplay(days: number[]): string {
     if (days.length === 7) return "Every day";
     if (days.length === 0) return "No days";
-    const dayNames = ["", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     const sorted = [...days].sort((a, b) => a - b);
     const consecutive = sorted.every((d, i) => i === 0 || d === sorted[i - 1] + 1);
     if (consecutive && sorted.length > 2) {
@@ -627,13 +628,13 @@ export default function SettingsPage() {
                   </span>
                   <div style={{ display: "flex", gap: "6px" }}>
                     {[
+                      { label: "Su", day: 0 },
                       { label: "Mo", day: 1 },
                       { label: "Tu", day: 2 },
                       { label: "We", day: 3 },
                       { label: "Th", day: 4 },
                       { label: "Fr", day: 5 },
                       { label: "Sa", day: 6 },
-                      { label: "Su", day: 7 },
                     ].map(({ label, day }) => {
                       const active = reminderDraftDays.includes(day);
                       return (

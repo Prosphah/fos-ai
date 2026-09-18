@@ -16,7 +16,7 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from("user_settings")
-    .select("reminder_enabled, reminder_time, reminder_days")
+    .select("reminder_enabled, reminder_time, reminder_days, timezone")
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -28,18 +28,20 @@ export async function GET() {
     return NextResponse.json({
       reminder_enabled: true,
       reminder_time: "19:00",
-      reminder_days: [1, 2, 3, 4, 5, 6, 7],
+      reminder_days: [0, 1, 2, 3, 4, 5, 6],
+      timezone: "UTC",
     });
   }
 
   return NextResponse.json({
-    ...data,
+    reminder_enabled: data.reminder_enabled ?? true,
     reminder_time: typeof data.reminder_time === "string" ? data.reminder_time.slice(0, 5) : "19:00",
     reminder_days: Array.isArray(data.reminder_days)
       ? [...new Set(data.reminder_days as number[])]
-          .filter((d): d is number => typeof d === "number" && Number.isInteger(d) && d >= 1 && d <= 7)
+          .filter((d): d is number => typeof d === "number" && Number.isInteger(d) && d >= 0 && d <= 6)
           .sort((a, b) => a - b)
-      : [1, 2, 3, 4, 5, 6, 7],
+      : [0, 1, 2, 3, 4, 5, 6],
+    timezone: data.timezone || "UTC",
   });
 }
 
@@ -87,7 +89,7 @@ export async function PUT(request: Request) {
   let normalizedDays: number[] | undefined;
   if (hasDays) {
     const unique = [...new Set(input.reminder_days as number[])].filter(
-      (d): d is number => typeof d === "number" && Number.isInteger(d) && d >= 1 && d <= 7
+      (d): d is number => typeof d === "number" && Number.isInteger(d) && d >= 0 && d <= 6
     ).sort((a, b) => a - b);
     if (unique.length === 0) {
       return NextResponse.json({ error: "Invalid reminder settings" }, { status: 400 });
@@ -103,6 +105,15 @@ export async function PUT(request: Request) {
   if (hasEnabled) updates.reminder_enabled = input.reminder_enabled;
   if (normalizedTime !== undefined) updates.reminder_time = normalizedTime;
   if (normalizedDays !== undefined) updates.reminder_days = normalizedDays;
+
+  if (input.timezone !== undefined && typeof input.timezone === "string") {
+    try {
+      Intl.DateTimeFormat(undefined, { timeZone: input.timezone });
+      updates.timezone = input.timezone;
+    } catch {
+      return NextResponse.json({ error: "Invalid reminder settings" }, { status: 400 });
+    }
+  }
 
   const { error } = await supabase
     .from("user_settings")
