@@ -1,0 +1,3 @@
+-- This cron setup is run manually via the SQL Editor, not as an automatic migration.
+-- See the project README or ask the team for the setup SQL.
+-- The pg_cron job is named 'send-reminders' and runs every minute.
