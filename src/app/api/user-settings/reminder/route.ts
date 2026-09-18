@@ -106,7 +106,11 @@ export async function PUT(request: Request) {
   if (normalizedTime !== undefined) updates.reminder_time = normalizedTime;
   if (normalizedDays !== undefined) updates.reminder_days = normalizedDays;
 
-  if (input.timezone !== undefined && typeof input.timezone === "string") {
+  if (input.timezone !== undefined && typeof input.timezone !== "string") {
+    return NextResponse.json({ error: "Invalid reminder settings" }, { status: 400 });
+  }
+
+  if (input.timezone !== undefined) {
     try {
       Intl.DateTimeFormat(undefined, { timeZone: input.timezone });
       updates.timezone = input.timezone;

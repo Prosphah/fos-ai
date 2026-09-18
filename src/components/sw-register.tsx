@@ -9,7 +9,7 @@ declare global {
   }
 }
 
-async function syncRemindersToSW(): Promise<void> {
+export async function syncRemindersToSW(): Promise<void> {
   try {
     const res = await fetch("/api/push/reminder-sync", { method: "POST" });
     if (!res.ok) return;

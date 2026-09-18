@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { AppShell } from "@/components/layout/AppShell";
+import { syncRemindersToSW } from "@/components/sw-register";
 import { useAppLock } from "@/hooks/use-app-lock";
 import { getProfile, updateProfile } from "@/app/actions/profile";
 import Link from "next/link";
@@ -182,6 +183,7 @@ export default function SettingsPage() {
       setReminderEnabled(reminderDraftEnabled);
       setReminderTime(reminderDraftTime);
       setReminderDays(reminderDraftDays);
+      await syncRemindersToSW();
       return true;
     } catch {
       setReminderError("Could not save your reminder settings. Please try again.");

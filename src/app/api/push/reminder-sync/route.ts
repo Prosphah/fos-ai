@@ -16,7 +16,7 @@ export async function POST() {
 
   const { data: settings, error } = await supabase
     .from("user_settings")
-    .select("reminder_enabled, reminder_time, reminder_days")
+    .select("reminder_enabled, reminder_time, reminder_days, timezone")
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -31,6 +31,7 @@ export async function POST() {
     reminder_enabled: true,
     reminder_time: "19:00",
     reminder_days: [0, 1, 2, 3, 4, 5, 6],
+    timezone: "UTC",
   };
 
   return NextResponse.json({
@@ -40,6 +41,7 @@ export async function POST() {
         enabled: reminderSettings.reminder_enabled,
         time: reminderSettings.reminder_time,
         days: reminderSettings.reminder_days,
+        timezone: reminderSettings.timezone || "UTC",
       },
     ],
   });

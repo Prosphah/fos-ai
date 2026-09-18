@@ -93,7 +93,7 @@ function getTimeInTimezone(tz: string): { hours: number; minutes: number; day: n
       hours: now.getHours(),
       minutes: now.getMinutes(),
       day: now.getDay(),
-      dateKey: now.toISOString().slice(0, 10),
+      dateKey: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`,
     };
   }
 }

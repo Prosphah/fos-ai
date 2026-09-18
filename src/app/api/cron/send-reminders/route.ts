@@ -9,6 +9,8 @@ const vapidPublicKey = process.env.VAPID_PUBLIC_KEY;
 const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
 const vapidEmail = process.env.VAPID_EMAIL;
 const CRON_SECRET = process.env.CRON_SECRET;
+const CATCH_UP_WINDOW_MINUTES = 15;
+const CLAIM_STALE_AFTER_MINUTES = 10;
 
 if (vapidPublicKey && vapidPrivateKey && vapidEmail) {
   webPush.setVapidDetails(vapidEmail, vapidPublicKey, vapidPrivateKey);
@@ -81,11 +83,12 @@ export async function GET(request: Request) {
   }
 
   if (!settings || settings.length === 0) {
-    return NextResponse.json({ success: true, processed: 0, sent: 0 });
+    return NextResponse.json({ success: true, processed: 0, sent: 0, failed: 0 });
   }
 
   let processed = 0;
   let sent = 0;
+  let failed = 0;
 
   for (const setting of settings) {
     const tz = setting.timezone || "UTC";
@@ -96,78 +99,109 @@ export async function GET(request: Request) {
 
     const reminderTime = typeof setting.reminder_time === "string" ? setting.reminder_time.slice(0, 5) : "19:00";
     const [rh, rm] = reminderTime.split(":").map(Number);
-    if (hours !== rh || minutes !== rm) continue;
+    const minutesSinceReminder = hours * 60 + minutes - (rh * 60 + rm);
+    if (minutesSinceReminder < 0 || minutesSinceReminder > CATCH_UP_WINDOW_MINUTES) continue;
 
-    const { error: claimError } = await supabase
-      .from("reminder_deliveries")
-      .insert({
-        user_id: setting.user_id,
-        delivery_date: dateKey,
-        reminder_time: reminderTime,
-      });
+    const staleBefore = new Date(Date.now() - CLAIM_STALE_AFTER_MINUTES * 60 * 1000).toISOString();
+    const { data: claimToken, error: claimError } = await supabase.rpc("claim_reminder_delivery", {
+      p_user_id: setting.user_id,
+      p_delivery_date: dateKey,
+      p_reminder_time: reminderTime,
+      p_stale_before: staleBefore,
+    });
 
     if (claimError) {
       if (claimError.code === "23505") continue;
       console.error(`[Cron] Failed to claim delivery for user ${setting.user_id}:`, claimError);
-      return NextResponse.json({ error: "Delivery claim failed" }, { status: 500 });
+      failed++;
+      continue;
     }
+    if (!claimToken) continue;
 
     processed++;
 
-    const { data: subscriptions, error: subError } = await supabase
-      .from("push_subscriptions")
-      .select("id, endpoint, p256dh, auth")
-      .eq("user_id", setting.user_id)
-      .eq("is_active", true);
+    try {
+      const { data: subscriptions, error: subError } = await supabase
+        .from("push_subscriptions")
+        .select("id, endpoint, p256dh, auth")
+        .eq("user_id", setting.user_id)
+        .eq("is_active", true);
 
-    if (subError) {
-      console.error(`[Cron] Failed to fetch subscriptions for user ${setting.user_id}:`, subError);
-    }
+      if (subError) throw subError;
 
-    if (subscriptions && subscriptions.length > 0) {
-      const payload = JSON.stringify({
+      if (subscriptions && subscriptions.length > 0) {
+        const payload = JSON.stringify({
+          title: "Have you recorded your transactions?",
+          body: "Tap to open Money Manager and log today's cash movements.",
+          url: "/money-manager",
+        });
+
+        const expiredIds: string[] = [];
+        let pushFailure: unknown;
+
+        await Promise.all(
+          subscriptions.map(async (sub) => {
+            try {
+              await webPush.sendNotification(
+                { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+                payload
+              );
+              sent++;
+            } catch (err: unknown) {
+              const pushErr = err as { statusCode?: number };
+              if (pushErr.statusCode === 404 || pushErr.statusCode === 410) {
+                expiredIds.push(sub.id);
+              } else {
+                pushFailure = err;
+              }
+            }
+          })
+        );
+
+        if (expiredIds.length > 0) {
+          await supabase
+            .from("push_subscriptions")
+            .update({ is_active: false, updated_at: new Date().toISOString() })
+            .in("id", expiredIds);
+        }
+
+        if (pushFailure) throw pushFailure;
+      }
+
+      const { error: completeError } = await supabase
+        .from("reminder_deliveries")
+        .update({ status: "completed", completed_at: new Date().toISOString() })
+        .eq("claim_token", claimToken)
+        .eq("user_id", setting.user_id)
+        .eq("delivery_date", dateKey)
+        .eq("reminder_time", reminderTime);
+      if (completeError) throw completeError;
+
+      const { error: notificationError } = await supabase.from("notifications").insert({
+        user_id: setting.user_id,
         title: "Have you recorded your transactions?",
         body: "Tap to open Money Manager and log today's cash movements.",
+        icon: null,
         url: "/money-manager",
+        type: "reminder",
+        is_read: false,
       });
-
-      const expiredIds: string[] = [];
-
-      await Promise.allSettled(
-        subscriptions.map(async (sub) => {
-          try {
-            await webPush.sendNotification(
-              { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-              payload
-            );
-            sent++;
-          } catch (err: unknown) {
-            const pushErr = err as { statusCode?: number };
-            if (pushErr.statusCode === 404 || pushErr.statusCode === 410) {
-              expiredIds.push(sub.id);
-            }
-          }
-        })
-      );
-
-      if (expiredIds.length > 0) {
-        await supabase
-          .from("push_subscriptions")
-          .update({ is_active: false, updated_at: new Date().toISOString() })
-          .in("id", expiredIds);
+      if (notificationError) {
+        console.error(`[Cron] Failed to create in-app reminder for user ${setting.user_id}:`, notificationError);
       }
+    } catch (error) {
+      console.error(`[Cron] Failed to deliver reminder for user ${setting.user_id}:`, error);
+      failed++;
+      await supabase
+        .from("reminder_deliveries")
+        .update({ status: "failed" })
+        .eq("claim_token", claimToken)
+        .eq("user_id", setting.user_id)
+        .eq("delivery_date", dateKey)
+        .eq("reminder_time", reminderTime);
+      continue;
     }
-
-    await supabase.from("notifications").insert({
-      user_id: setting.user_id,
-      title: "Have you recorded your transactions?",
-      body: "Tap to open Money Manager and log today's cash movements.",
-      icon: null,
-      url: "/money-manager",
-      type: "reminder",
-      is_read: false,
-    });
   }
 
-  return NextResponse.json({ success: true, processed, sent });
+  return NextResponse.json({ success: true, processed, sent, failed });
 }
