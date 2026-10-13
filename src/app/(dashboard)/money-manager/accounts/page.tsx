@@ -297,7 +297,7 @@ export default function AccountsPage() {
                 </div>
               </div>
               <p className="mt-4 text-xl font-bold text-text-primary">
-                {formatCurrency(account.balance, account.currency)}
+                {formatCurrency(account.balance, userCurrency)}
               </p>
               {account.institution && (
                 <p className="mt-1 text-[11px] text-text-secondary">{account.institution}</p>

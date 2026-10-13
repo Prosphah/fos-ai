@@ -11,6 +11,10 @@ const vapidEmail = process.env.VAPID_EMAIL;
 const CRON_SECRET = process.env.CRON_SECRET;
 const CATCH_UP_WINDOW_MINUTES = 15;
 const CLAIM_STALE_AFTER_MINUTES = 10;
+// 0-indexed with Sunday=0, matching dayMap below and the user_settings column
+// default. Must never include 7: the cron has no weekday 7.
+const DEFAULT_REMINDER_DAYS = [0, 1, 2, 3, 4, 5, 6];
+const DEFAULT_REMINDER_TIME = "19:00";
 
 if (vapidPublicKey && vapidPrivateKey && vapidEmail) {
   webPush.setVapidDetails(vapidEmail, vapidPublicKey, vapidPrivateKey);
@@ -83,7 +87,19 @@ export async function GET(request: Request) {
   }
 
   if (!settings || settings.length === 0) {
-    return NextResponse.json({ success: true, processed: 0, sent: 0, failed: 0 });
+    // No opted-in settings rows at all. This is almost always an environment
+    // problem (unbackfilled table, half-finished migration), not a genuine
+    // "nobody wants reminders" state, so make it loud instead of returning a
+    // cheerful no-op that looks identical to a healthy idle run.
+    console.error(
+      "[Cron] No user_settings rows with reminder_enabled=true. " +
+        "Reminders cannot be delivered. Run supabase/migrations/20261014000003_backfill_user_settings.sql " +
+        "and confirm the VAPID_* env vars are set on the deployment."
+    );
+    return NextResponse.json(
+      { error: "No reminder-enabled user settings found", processed: 0, sent: 0, failed: 0 },
+      { status: 503 }
+    );
   }
 
   let processed = 0;
@@ -94,10 +110,14 @@ export async function GET(request: Request) {
     const tz = setting.timezone || "UTC";
     const { hours, minutes, day, dateKey } = getTimeInTimezone(tz);
 
-    const reminderDays = Array.isArray(setting.reminder_days) ? setting.reminder_days : [];
+    const reminderDays = Array.isArray(setting.reminder_days)
+      ? setting.reminder_days
+      : DEFAULT_REMINDER_DAYS;
     if (!reminderDays.includes(day)) continue;
 
-    const reminderTime = typeof setting.reminder_time === "string" ? setting.reminder_time.slice(0, 5) : "19:00";
+    const reminderTime = typeof setting.reminder_time === "string"
+      ? setting.reminder_time.slice(0, 5)
+      : DEFAULT_REMINDER_TIME;
     const [rh, rm] = reminderTime.split(":").map(Number);
     const minutesSinceReminder = hours * 60 + minutes - (rh * 60 + rm);
     if (minutesSinceReminder < 0 || minutesSinceReminder > CATCH_UP_WINDOW_MINUTES) continue;

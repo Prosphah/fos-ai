@@ -33,13 +33,14 @@ const typeColors: Record<string, { bg: string; color: string }> = {
 
 interface Props {
   account: Account;
+  currency: string;
 }
 
-export function AccountCard({ account }: Props) {
+export function AccountCard({ account, currency }: Props) {
   const Icon = typeIcons[account.type];
   const colors = typeColors[account.type] ?? typeColors.other;
   const balance = Number(account.balance);
-  const formatted = formatCurrency(balance, account.currency);
+  const formatted = formatCurrency(balance, currency);
 
   return (
     <div

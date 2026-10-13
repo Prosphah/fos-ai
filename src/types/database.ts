@@ -157,6 +157,8 @@ export interface Transaction {
   tags: string[] | null;
   is_recurring: boolean;
   recurring_config: RecurringConfig | null;
+  /** Set on occurrences generated from a recurring template. Templates themselves have null. */
+  recurring_parent_id: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -73,7 +73,7 @@ export default async function MoneyManagerPage() {
         </div>
         <div className="mt-4 flex gap-3 overflow-x-auto pb-2 scrollbar-none">
           {accounts.map((account) => (
-            <AccountCard key={account.id} account={account} />
+            <AccountCard key={account.id} account={account} currency={currency} />
           ))}
           <Link
             href="/money-manager/accounts"
