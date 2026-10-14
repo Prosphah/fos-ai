@@ -12,8 +12,8 @@ export function Providers({ children }: Props) {
   return (
     <NextThemesProvider
       attribute="class"
-      defaultTheme="light"
-      enableSystem={false}
+      defaultTheme="system"
+      enableSystem
       disableTransitionOnChange
     >
       <AppLockProvider>{children}</AppLockProvider>
