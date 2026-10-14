@@ -23,11 +23,34 @@ function envOr(name: string, fallback: string): string {
   return value ? value : fallback;
 }
 
-/** The app's own origin. Also the Paystack callback origin. */
-export const SITE_ORIGIN = envOr("NEXT_PUBLIC_SITE_URL", "http://localhost:3000").replace(
-  /\/+$/,
-  "",
-);
+/**
+ * The deployed origin, used only when NEXT_PUBLIC_SITE_URL is missing.
+ *
+ * A canonical URL is a search engine instruction. Falling back to
+ * http://localhost:3000 in production would tell Google that the real version
+ * of every page lives at an address nobody can reach, and it fails silently:
+ * the site still builds, still serves, and simply stops ranking. The error
+ * surfaces in search results weeks later, where it is hardest to trace back.
+ *
+ * Only a real deployment reaches this constant. The localhost default below is
+ * for development, where the origin genuinely is localhost.
+ */
+const PRODUCTION_ORIGIN = "https://fos-ai.betiangli.xyz";
+const DEVELOPMENT_ORIGIN = "http://localhost:3000";
+
+/**
+ * The app's own origin. Also the Paystack callback origin.
+ *
+ * NEXT_PUBLIC_SITE_URL wins whenever it holds a usable value. Prefer it over
+ * the constant above so that a preview deployment or a future domain change
+ * does not need a code edit.
+ */
+export const SITE_ORIGIN = envOr(
+  "NEXT_PUBLIC_SITE_URL",
+  process.env.NODE_ENV === "production"
+    ? PRODUCTION_ORIGIN
+    : DEVELOPMENT_ORIGIN,
+).replace(/\/+$/, "");
 
 /**
  * Where the storefront is meant to be indexed.

@@ -34,12 +34,29 @@ comment on column enrollments.followup_step is
   'How many abandoned-checkout emails have been sent. Reset to 0 on payment.';
 
 comment on column enrollments.purchase_email_sent_at is
-  'When the purchase confirmation was accepted by the mail provider. Null on a
-   paid row means the confirmation never went out, which the sweep retries.';
+  'Set once the purchase confirmation has been accepted by the mail provider.
+   Null on a paid row means it has not been confirmed delivered, and the sweep
+   retries it. Rows predating this migration are grandfathered to created_at
+   and so are never retried.';
 
 comment on column enrollments.ttclid is
   'TikTok click id captured at checkout, sent to the Events API with the
    Purchase event. Null for traffic that did not arrive from a TikTok ad.';
+
+-- Grandfather every purchase that already happened.
+--
+-- The column is new, so it is null on every existing paid row, which is
+-- exactly the set the retry sweep below would otherwise pick up. Left alone,
+-- its first run emails every historical customer a fresh purchase confirmation
+-- for something they bought months ago.
+--
+-- A backfill rather than a created_at cutoff: a cutoff has to guess when the
+-- feature went live and silently skips anything bought between that guess and
+-- this migration. This is correct whenever the migration happens to run.
+update enrollments
+   set purchase_email_sent_at = created_at
+ where status in ('paid', 'active')
+   and purchase_email_sent_at is null;
 
 -- Drives the abandoned-checkout sweep. Partial so it stays small no matter
 -- how many completed sales accumulate.

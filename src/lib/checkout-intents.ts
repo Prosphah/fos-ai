@@ -21,6 +21,46 @@ import { createAdminClient } from "@/lib/supabase/admin";
  * a database that is briefly unavailable.
  */
 
+/**
+ * How long a bookkeeping write may delay a checkout before we stop waiting.
+ *
+ * PostgREST retries by default and backs off between attempts, so a database
+ * that is slow rather than down can hold a request open for many seconds.
+ * This runs in front of the Paystack call, so that stall is a stall in the
+ * buyer's checkout, and it is a stall caused entirely by bookkeeping.
+ */
+const WRITE_TIMEOUT_MS = 2_000;
+
+/**
+ * Stops waiting on a write that has gone quiet.
+ *
+ * Takes a PromiseLike because a Supabase query builder is thenable but is not
+ * a Promise: it has no catch or finally. Promise.resolve assimilates it, which
+ * also gives the race a real promise to work with.
+ *
+ * Races rather than aborts, because PostgrestBuilder only accepts an
+ * AbortSignal through its constructor and we do not build the builder. That
+ * suits this case anyway: the row is either written a moment later or never
+ * written, and neither outcome is worth holding a paying customer for.
+ *
+ * The timer is always cleared. Left running it would keep the event loop alive
+ * past the response on a serverless instance, which is how you get billed for
+ * idle time you have already finished using.
+ */
+async function withTimeout<T>(work: PromiseLike<T>, ms: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+
+  const expiry = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`Write timed out after ${ms}ms`)), ms);
+  });
+
+  try {
+    return await Promise.race([Promise.resolve(work), expiry]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 /** Shape written to enrollments at checkout start. */
 export type CheckoutIntent = {
   reference: string;
@@ -33,16 +73,25 @@ export type CheckoutIntent = {
 
 export async function recordCheckoutIntent(intent: CheckoutIntent): Promise<void> {
   try {
-    const { error } = await createAdminClient().from("enrollments").insert({
-      paystack_reference: intent.reference,
-      email: intent.email,
-      full_name: intent.fullName,
-      tier: intent.tier,
-      amount: intent.amount,
-      status: "pending",
-      source_variant: intent.variant,
-      course_access_url: getCourseAccessUrl(),
-    });
+    const { error } = await withTimeout(
+      createAdminClient().from("enrollments").insert({
+        paystack_reference: intent.reference,
+        email: intent.email,
+        full_name: intent.fullName,
+        tier: intent.tier,
+        amount: intent.amount,
+        status: "pending",
+        // Stored as null, not as the "control" that went to Paystack metadata.
+        // The webhook whitelists a/b/c and discards "control" before it writes,
+        // so a null here is the same value the paid row will end up carrying.
+        // Writing "control" instead would put an intent in one bucket and its
+        // own completed purchase in another, splitting the control group in
+        // the very query this row exists to make possible.
+        source_variant: intent.variant,
+        course_access_url: getCourseAccessUrl(),
+      }),
+      WRITE_TIMEOUT_MS,
+    );
 
     if (error) {
       console.error("[checkout-intent] Could not record intent:", error.message);
@@ -64,10 +113,13 @@ export async function recordCheckoutIntent(intent: CheckoutIntent): Promise<void
  */
 export async function markCheckoutFailed(reference: string): Promise<void> {
   try {
-    const { error } = await createAdminClient()
-      .from("enrollments")
-      .update({ status: "failed" })
-      .eq("paystack_reference", reference);
+    const { error } = await withTimeout(
+      createAdminClient()
+        .from("enrollments")
+        .update({ status: "failed" })
+        .eq("paystack_reference", reference),
+      WRITE_TIMEOUT_MS,
+    );
 
     if (error) {
       console.error(
