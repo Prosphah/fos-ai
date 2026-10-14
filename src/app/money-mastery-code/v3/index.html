@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+<html lang="en-NG">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Money Mastery Code: Make money. Manage money. Multiply money.</title>
+<meta name="description" content="Eight recorded workshops on making more money, managing it intentionally, and putting it to work through investments. Lifetime access. Beginner-friendly.">
+<meta name="theme-color" content="#0B3D2E">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Money Mastery Code">
+<meta property="og:description" content="Eight recorded workshops. Lifetime access. Beginner-friendly.">
+<!-- EDIT: add <meta property="og:image" content="https://your-domain/share.jpg"> for WhatsApp / social previews -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add('js');</script>
+
+<style>
+/* ==========================================================================
+   Money Mastery Code: mobile-first
+   Phones are the base. Wider screens are layered on with min-width queries.
+
+   COLOURS and FONT: change them in one place, right here.
+   ========================================================================== */
+:root{
+  --forest:#0B3D2E;      /* deep green: text, dark scenes */
+  --forest-2:#14573F;    /* lighter green for decoration */
+  --indigo:#4A34E8;
+  --indigo-deep:#2A1C9E;
+  --volt:#D2FF1E;        /* volt lime: buttons, highlights */
+  --volt-press:#8CB300;
+  --lilac:#EFEBFF;
+  --lilac-2:#DDD6FF;
+  --mint:#17B386;
+  --sun:#FFC53D;         /* gold, used only in the karat demo */
+  --muted:#4F5A55;
+  --line:#DDD8F5;
+  --paper:#fff;
+
+  --display:'Sora','Arial Black',system-ui,sans-serif;
+  --sans:'Sora',system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+
+  --gutter:1.25rem;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;overflow-x:clip}
+body{
+  margin:0;overflow-x:clip;
+  font:400 1rem/1.7 var(--sans);
+  color:var(--forest);background:var(--forest);
+  padding-bottom:calc(4.75rem + env(safe-area-inset-bottom,0px));
+  -webkit-font-smoothing:antialiased;
+}
+p{margin:0 0 1rem}
+ul,ol{margin:0;padding:0;list-style:none}
+dl,dd{margin:0}
+a{color:var(--indigo)}
+strong,b{font-weight:700}
+button{font:inherit;color:inherit}
+[id]{scroll-margin-top:1rem}
+:focus-visible{outline:3px solid var(--indigo);outline-offset:3px;border-radius:6px}
+.dark :focus-visible{outline-color:#fff}
+.ic{width:1.5rem;height:1.5rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* ---------- Layout ---------- */
+.wrap{width:min(100% - (var(--gutter) * 2),40rem);margin-inline:auto}
+.wrap-wide{width:min(100% - (var(--gutter) * 2),68rem);margin-inline:auto}
+
+/* Sheets that stack over each other as you scroll */
+.scene{
+  position:relative;margin-top:-1.75rem;
+  padding:4.25rem 0 5rem;
+  border-radius:1.75rem 1.75rem 0 0;
+}
+.scene--lilac{background:var(--lilac)}
+.scene--white{background:var(--paper)}
+.scene--indigo{background:var(--indigo);color:#fff}
+.scene--night{background:var(--forest);color:#fff}
+.scene--indigo a,.scene--night a{color:#fff}
+.scene > .wrap > :last-child,.scene > .wrap-wide > :last-child{margin-bottom:0}
+
+/* ---------- Type ---------- */
+h1,h2,h3{margin:0}
+h1,h2,.display{font-family:var(--display);font-weight:800;letter-spacing:-.035em}
+h2{font-size:clamp(1.85rem,8vw,3.1rem);line-height:1.08;margin-bottom:1.25rem}
+h3{font:700 1.0625rem/1.4 var(--sans)}
+.lead{font-size:1.0625rem;line-height:1.65;font-weight:500}
+.muted{color:var(--muted)}
+.scene--indigo .muted,.scene--night .muted{color:rgba(255,255,255,.75)}
+.scene .card .muted{color:var(--muted)}
+.small{font-size:.875rem;line-height:1.6}
+.statement{font:800 clamp(1.7rem,7.2vw,2.6rem)/1.12 var(--display);letter-spacing:-.035em;margin:0 0 1.5rem}
+
+/* ---------- Buttons ---------- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.6rem;
+  min-height:3.5rem;padding:.85rem 1.4rem;
+  border:0;border-radius:16px;
+  background:var(--volt);color:var(--forest);
+  font:800 .975rem/1.25 var(--display);letter-spacing:-.01em;text-align:center;text-decoration:none;
+  box-shadow:0 5px 0 var(--volt-press);
+  cursor:pointer;transition:transform .08s ease,box-shadow .08s ease;
+  -webkit-tap-highlight-color:transparent;
+}
+.scene--indigo a.btn,.scene--night a.btn{color:var(--forest)}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--volt-press)}
+.btn--block{display:flex;width:100%}
+.btn--night{background:var(--forest);color:#fff;box-shadow:0 5px 0 #04160f}
+.scene .btn--night{color:#fff}
+.btn--night:active{box-shadow:0 1px 0 #04160f}
+.btn[disabled]{opacity:.6;cursor:default}
+
+/* ---------- Scroll reveal (quick, one direction, once) ---------- */
+.js .rv{opacity:0;transform:translateY(18px);transition:opacity .55s ease,transform .55s ease;transition-delay:var(--d,0s)}
+.js .rv.in{opacity:1;transform:none}
+
+/* ==========================================================================
+   HERO
+   ========================================================================== */
+.hero{position:relative;background:var(--forest);color:#fff;padding:2.25rem 0 3.5rem;overflow:hidden}
+.hero__bg{position:absolute;inset:0;pointer-events:none}
+.hero__ring{position:absolute;border-radius:50%}
+.hero__ring--a{width:26rem;height:26rem;right:-11rem;top:-7rem;background:var(--forest-2)}
+.hero__ring--b{width:11rem;height:11rem;left:-4rem;bottom:7rem;border:2px solid rgba(255,255,255,.2)}
+.hero__naira{position:absolute;right:-2.5rem;top:24rem;width:15rem;height:15rem;opacity:.1;transform:rotate(12deg)}
+.hero__in{position:relative}
+.badge{
+  display:inline-flex;align-items:center;gap:.5rem;
+  padding:.4rem .9rem;border-radius:999px;
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);
+  font-size:.8125rem;font-weight:600;
+}
+.badge i{width:.5rem;height:.5rem;border-radius:50%;background:var(--volt);display:block}
+.wordmark{
+  margin:1.4rem 0 0;
+  font:800 clamp(3rem,15.5vw,6.8rem)/.92 var(--display);letter-spacing:-.045em;
+}
+.wordmark span{display:block}
+.wordmark .code{color:var(--volt)}
+.hero h1{
+  margin:1.6rem 0 1rem;max-width:40rem;
+  font:700 clamp(1.4rem,6vw,2.4rem)/1.25 var(--display);letter-spacing:-.025em;
+}
+.hero h1 mark{background:none;color:var(--volt)}
+.hero__sub{font:500 1rem/1.65 var(--sans);margin:0 0 1.75rem;max-width:30rem;color:rgba(255,255,255,.88)}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin:0 0 1.75rem}
+.tiles li{
+  padding:.8rem .75rem .9rem;border-radius:16px;
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);
+}
+.tiles b{display:flex;align-items:center;height:2.2rem;font:800 2rem/1 var(--display);letter-spacing:-.04em;color:#fff}
+.tiles b .ic{width:2rem;height:2rem;color:var(--volt)}
+.tiles span{display:block;margin-top:.3rem;font-size:.75rem;line-height:1.3;font-weight:600;color:rgba(255,255,255,.85)}
+.hero .btn{width:100%}
+
+.marquee{
+  position:relative;margin:3rem -4% 0;
+  background:var(--volt);color:var(--forest);
+  transform:rotate(-1.6deg);overflow:hidden;
+  border-block:2px solid var(--forest);
+}
+.marquee__track{display:flex;width:max-content;animation:mq 30s linear infinite}
+.marquee__group{display:flex}
+.marquee__group span{
+  display:flex;align-items:center;gap:1.4rem;padding:.9rem 0 .9rem 1.4rem;
+  font:800 1.35rem/1 var(--display);letter-spacing:-.03em;white-space:nowrap;
+}
+.marquee__group span::after{content:"";width:.7rem;height:.7rem;background:var(--forest);border-radius:50%}
+@keyframes mq{to{transform:translateX(-50%)}}
+
+/* ==========================================================================
+   PROBLEM + PAY YOURSELF FIRST
+   ========================================================================== */
+.trio{margin:1.75rem 0 2rem;display:grid;gap:.9rem}
+.trio li{
+  display:flex;gap:.9rem;align-items:flex-start;
+  padding:1rem 1.1rem;border:2px solid var(--forest);border-radius:18px;background:var(--lilac);
+  font-weight:600;line-height:1.5;
+}
+.trio .ic{margin-top:.1rem;width:1.5rem;height:1.5rem;padding:.2rem;border-radius:50%;background:var(--volt);border:2px solid var(--forest);stroke-width:3}
+
+.pyf{
+  margin:2.25rem 0 0;padding:1.5rem 1.25rem 1.6rem;
+  background:var(--lilac);border:2px solid var(--forest);border-radius:26px;
+  box-shadow:7px 7px 0 var(--forest);
+}
+.pyf__k{display:inline-block;margin:0 0 .6rem;padding:.2rem .7rem;border-radius:999px;background:var(--forest);color:#fff;font-size:.75rem;font-weight:700}
+.pyf__q{font-weight:600;margin:0;font-size:.9375rem}
+.pyf__income{display:block;font:800 clamp(2.4rem,12vw,3.8rem)/1.1 var(--display);letter-spacing:-.045em;margin:.15rem 0 .8rem;font-variant-numeric:tabular-nums}
+.pyf input[type=range]{
+  -webkit-appearance:none;appearance:none;width:100%;height:2.2rem;background:transparent;margin:0;touch-action:pan-y;
+}
+.pyf input[type=range]::-webkit-slider-runnable-track{
+  height:.9rem;border-radius:99px;border:2px solid var(--forest);
+  background:linear-gradient(90deg,var(--indigo) var(--p,18%),#fff var(--p,18%));
+}
+.pyf input[type=range]::-moz-range-track{height:.9rem;border-radius:99px;border:2px solid var(--forest);background:#fff}
+.pyf input[type=range]::-moz-range-progress{height:.9rem;border-radius:99px;background:var(--indigo)}
+.pyf input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:2rem;height:2rem;margin-top:-.7rem;border-radius:50%;
+  background:var(--volt);border:3px solid var(--forest);box-shadow:0 3px 0 var(--forest);
+}
+.pyf input[type=range]::-moz-range-thumb{width:1.6rem;height:1.6rem;border-radius:50%;background:var(--volt);border:3px solid var(--forest);box-shadow:0 3px 0 var(--forest)}
+.pyf__chips{display:flex;flex-wrap:wrap;gap:.5rem;margin:.9rem 0 1.4rem}
+.pyf__chips button{
+  min-height:2.6rem;padding:.4rem .95rem;border-radius:999px;cursor:pointer;
+  background:#fff;border:2px solid var(--forest);font-weight:700;font-size:.875rem;
+}
+.pyf__chips button[aria-pressed="true"]{background:var(--forest);color:#fff}
+.pyf__split{display:flex;height:3.4rem;border:2px solid var(--forest);border-radius:14px;overflow:hidden;background:#fff}
+.pyf__split i{display:block;height:100%}
+.pyf__split .k{width:10%;background:var(--mint)}
+.pyf__split .r{width:90%;background:var(--indigo)}
+.pyf__legend{display:grid;grid-template-columns:1fr 1.5fr;gap:.75rem;margin:.75rem 0 1.25rem}
+.pyf__legend span{display:block;font-size:.75rem;font-weight:600;color:var(--muted);line-height:1.35}
+.pyf__legend b{display:block;font:800 1.15rem/1.2 var(--display);letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:var(--forest)}
+.pyf__year{margin:0;padding-top:1.1rem;border-top:2px dashed var(--forest);font-weight:600;font-size:.9375rem}
+.pyf__year b{font:800 1.25rem/1.2 var(--display);letter-spacing:-.03em;font-variant-numeric:tabular-nums;background:var(--mint);padding:0 .35rem;border-radius:6px;color:var(--forest)}
+
+/* ==========================================================================
+   WHERE DID YOU COME FROM
+   ========================================================================== */
+.routes{display:grid;gap:1.15rem;margin-top:1.75rem}
+.route{
+  position:relative;display:flex;gap:1rem;align-items:flex-start;
+  padding:1.15rem 2.6rem 1.15rem 1.1rem;
+  background:#fff;border:2px solid var(--forest);border-radius:22px;box-shadow:5px 5px 0 var(--forest);
+  color:var(--forest);text-decoration:none;
+  transition:transform .1s ease,box-shadow .1s ease;
+}
+.route:active{transform:translate(3px,3px);box-shadow:2px 2px 0 var(--forest)}
+.route__ic{
+  flex:none;width:3.1rem;height:3.1rem;border-radius:16px;border:2px solid var(--forest);
+  display:grid;place-items:center;
+}
+.route__ic .ic{width:1.6rem;height:1.6rem}
+.route:nth-child(1) .route__ic{background:var(--sun)}
+.route:nth-child(2) .route__ic{background:var(--indigo);color:#fff}
+.route:nth-child(3) .route__ic{background:var(--lilac-2)}
+.route:nth-child(4) .route__ic{background:var(--volt)}
+.route:nth-child(5) .route__ic{background:var(--mint)}
+.route__tag{display:inline-block;margin-bottom:.35rem;padding:.1rem .6rem;border-radius:999px;background:var(--forest);color:#fff;font-size:.75rem;font-weight:700}
+.route__t{display:block;font:800 1.05rem/1.25 var(--display);letter-spacing:-.025em}
+.route__d{display:block;margin-top:.35rem;font-size:.875rem;line-height:1.6;color:var(--muted)}
+.route > .ic:last-child{position:absolute;right:.9rem;top:1.3rem}
+
+/* ==========================================================================
+   NOTE FROM PROSPER
+   ========================================================================== */
+.me{display:flex;align-items:center;gap:.9rem;margin-bottom:1.5rem}
+.me__av{
+  width:3.4rem;height:3.4rem;border-radius:50%;flex:none;
+  background:var(--volt);color:var(--forest);border:2px solid var(--forest);
+  display:grid;place-items:center;font:800 1.1rem/1 var(--display);
+}
+.me b{display:block;line-height:1.2}
+.me span{font-size:.875rem;color:rgba(255,255,255,.78)}
+.pullcard{
+  margin:1.75rem 0;padding:1.4rem 1.3rem;border-radius:22px;
+  background:var(--volt);color:var(--forest);
+  border:2px solid var(--forest);box-shadow:7px 7px 0 var(--forest);
+  font:800 clamp(1.2rem,5.4vw,1.7rem)/1.25 var(--display);letter-spacing:-.03em;
+}
+.sign{font:800 1.5rem/1 var(--display);letter-spacing:-.03em;margin-top:1.5rem}
+
+/* ==========================================================================
+   WHO IT'S FOR: tap checklist
+   ========================================================================== */
+.tick{
+  display:flex;gap:.9rem;align-items:flex-start;width:100%;text-align:left;cursor:pointer;
+  padding:1rem 1.1rem;margin-bottom:.8rem;
+  background:#fff;border:2px solid var(--forest);border-radius:18px;
+  font:500 .9375rem/1.55 var(--sans);color:var(--forest);
+  box-shadow:4px 4px 0 var(--forest);
+  transition:background-color .15s ease,transform .08s ease,box-shadow .08s ease;
+}
+.tick:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--forest)}
+.tick__box{
+  flex:none;width:1.65rem;height:1.65rem;margin-top:.1rem;border:2px solid var(--forest);border-radius:8px;background:#fff;
+  display:grid;place-items:center;transition:background-color .15s ease;
+}
+.tick__box .ic{width:1.05rem;height:1.05rem;stroke-width:3.2;opacity:0;color:#fff}
+.tick[aria-pressed="true"]{background:var(--volt)}
+.tick[aria-pressed="true"] .tick__box{background:var(--forest)}
+.tick[aria-pressed="true"] .tick__box .ic{opacity:1}
+.tickmsg{margin:1.25rem 0 0;font:800 1.15rem/1.3 var(--display);letter-spacing:-.03em;min-height:2.7em}
+
+.nofit{
+  margin-top:2.5rem;padding:1.4rem 1.25rem;
+  background:var(--lilac);border:2px solid var(--forest);border-radius:22px;
+}
+.nofit h3{font:800 1.3rem/1.15 var(--display);letter-spacing:-.03em;margin-bottom:.75rem}
+.nofit li{display:flex;gap:.8rem;padding:.85rem 0;border-top:2px solid var(--line)}
+.nofit li:first-child{border-top:0}
+.nofit .ic{color:var(--indigo);margin-top:.15rem}
+.split{display:block}
+
+/* ==========================================================================
+   LECTURES
+   ========================================================================== */
+.codeblock{
+  margin:1.75rem 0 0;background:#fff;
+  border:2px solid var(--forest);border-radius:26px;box-shadow:7px 7px 0 var(--forest);overflow:hidden;
+}
+.codeblock + .codeblock{margin-top:2.25rem}
+.codeblock__head{padding:1.25rem 1.35rem 1.3rem}
+.codeblock__k{font-size:.8125rem;font-weight:700;margin:0 0 .15rem}
+.codeblock__t{font:800 clamp(1.7rem,7.4vw,2.3rem)/1.05 var(--display);letter-spacing:-.04em}
+.codeblock--1 .codeblock__head{background:var(--indigo);color:#fff}
+.codeblock--2 .codeblock__head{background:var(--volt);color:var(--forest)}
+.codeblock--3 .codeblock__head{background:var(--forest);color:#fff}
+.codeblock .acc{padding:0 1.35rem}
+
+.acc{border-top:2px solid var(--line)}
+.acc summary{
+  list-style:none;cursor:pointer;
+  display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;
+  min-height:3.5rem;padding:1.05rem 0;
+  font-weight:700;line-height:1.4;font-size:.9375rem;
+}
+.acc summary::-webkit-details-marker{display:none}
+.acc summary::after{
+  content:"";flex:none;width:.65rem;height:.65rem;margin:.55rem .2rem 0 0;
+  border-right:3px solid var(--indigo);border-bottom:3px solid var(--indigo);
+  transform:rotate(45deg);transition:transform .2s ease;
+}
+.acc[open] > summary::after{transform:rotate(-135deg);margin-top:.8rem}
+.acc__t small{display:block;margin-bottom:.15rem;font-size:.75rem;font-weight:700;color:var(--indigo)}
+.acc__body{padding:0 0 1.35rem;font-size:.9375rem}
+.acc__body > :last-child{margin-bottom:0}
+.pill{
+  display:block;width:max-content;max-width:100%;margin-top:.5rem;padding:.15rem .7rem;border-radius:999px;
+  background:var(--volt);color:var(--forest);border:1.5px solid var(--forest);font-size:.75rem;font-weight:700;line-height:1.5;
+}
+.safety li{position:relative;padding:.45rem 0 .45rem 1.6rem}
+.safety li::before{
+  content:"";position:absolute;left:0;top:.8rem;width:.95rem;height:.95rem;border-radius:50%;
+  background:var(--volt);border:2px solid var(--forest);
+}
+.vehicles{margin-top:1rem}
+.vehicles > div{padding:.9rem 0;border-top:2px solid var(--line)}
+.vehicles dt{font:800 1.1rem/1.2 var(--display);letter-spacing:-.025em;margin-bottom:.25rem}
+.vehicles dd{font-size:.9375rem}
+.bonus{
+  margin-top:2.25rem;padding:1.3rem 1.3rem 1.4rem;border-radius:22px;
+  background:#fff;border:2px dashed var(--forest);
+}
+.bonus h3{font:800 1.2rem/1.2 var(--display);letter-spacing:-.025em;margin-bottom:.4rem}
+.bonus p:last-child{margin:0}
+
+/* ==========================================================================
+   FROM THE DECK (dark scene, white cards with lime hard shadow)
+   ========================================================================== */
+.card{
+  margin:2rem 0 0;padding:1.4rem 1.25rem 1.5rem;
+  background:#fff;color:var(--forest);border-radius:24px;border:2px solid var(--forest);
+  box-shadow:7px 7px 0 var(--volt);
+}
+.card__cap{font:800 1.2rem/1.2 var(--display);letter-spacing:-.03em;margin:0 0 .35rem}
+.card__src{font-size:.8125rem;font-weight:700;color:var(--indigo);margin:0 0 1rem}
+
+.karat__tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin:.25rem 0 1.25rem}
+.karat__tabs button{
+  min-height:3rem;border-radius:14px;cursor:pointer;background:#fff;border:2px solid var(--forest);
+  font:800 1rem/1 var(--display);
+}
+.karat__tabs button[aria-pressed="true"]{background:var(--sun)}
+.karat__num{font:800 clamp(3.2rem,17vw,5rem)/.95 var(--display);letter-spacing:-.05em;font-variant-numeric:tabular-nums}
+.karat__lbl{font-weight:600;margin:.2rem 0 .9rem}
+.karat__bar{display:flex;height:2.3rem;border:2px solid var(--forest);border-radius:12px;overflow:hidden;background:var(--lilac-2)}
+.karat__bar i{display:block;height:100%;width:99.9%;background:var(--sun);transition:width .55s cubic-bezier(.2,.8,.2,1)}
+.karat__key{display:flex;justify-content:space-between;gap:1rem;margin-top:.5rem;font-size:.75rem;font-weight:600;color:var(--muted)}
+
+.sum{border-top:2px solid var(--line);margin:.5rem 0 1.1rem}
+.sum > div{display:flex;justify-content:space-between;gap:1rem;padding:.75rem 0;border-bottom:2px solid var(--line);font-size:.9375rem}
+.sum dd{font-weight:800;font-variant-numeric:tabular-nums;text-align:right}
+.bars__row{margin-bottom:1.1rem}
+.bars__row p{display:flex;justify-content:space-between;gap:1rem;margin:0 0 .4rem;font-variant-numeric:tabular-nums;font-size:.9375rem}
+.track{display:block;height:1.1rem;border:2px solid var(--forest);border-radius:99px;background:var(--lilac);overflow:hidden}
+.fill{display:block;height:100%;width:var(--w);background:var(--volt)}
+.fill--indigo{background:var(--indigo)}
+.fill--forest{background:var(--forest)}
+.js .grow .fill{width:0;transition:width 1.1s cubic-bezier(.2,.8,.2,1) .15s}
+.js .grow.in .fill{width:var(--w)}
+.verdict{font:800 1.25rem/1.25 var(--display);letter-spacing:-.03em;margin:1.25rem 0 0;padding:.9rem 1rem;border-radius:14px;background:var(--volt);border:2px solid var(--forest)}
+
+.quote-d{margin:0 0 1rem;padding:.1rem 0 .1rem 1rem;border-left:4px solid var(--volt-press)}
+.quote-d p{font-size:.9375rem}
+.quote-d p:last-child{margin-bottom:0}
+.wait{margin-top:1.25rem;padding:1.1rem;border-radius:18px;background:var(--lilac);border:2px solid var(--forest)}
+.wait__k{margin:0 0 .75rem;font-weight:700;font-size:.9375rem}
+.wait__meter{display:flex;justify-content:space-between;align-items:baseline;margin:.9rem 0 .4rem;font-variant-numeric:tabular-nums}
+.wait__meter b{font:800 2rem/1 var(--display);letter-spacing:-.04em}
+.wait__meter span{font-size:.8125rem;font-weight:600;color:var(--muted)}
+.wait .track{background:#fff}
+.wait .fill{width:0;transition:none}
+.wait__msg{margin:.9rem 0 0;font-weight:700;min-height:3.2em;font-size:.9375rem}
+
+/* ==========================================================================
+   FLEE FROM DEBT
+   ========================================================================== */
+.flee__lead{font-weight:700;margin-bottom:1rem}
+.chipgrid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.dchip{
+  display:flex;align-items:center;gap:.6rem;min-height:3.4rem;padding:.6rem .9rem;text-align:left;cursor:pointer;
+  background:#fff;border:2px solid var(--forest);border-radius:16px;box-shadow:4px 4px 0 var(--forest);
+  font:700 .9rem/1.25 var(--sans);color:var(--forest);
+  transition:background-color .15s ease,transform .08s ease,box-shadow .08s ease;
+}
+.dchip:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--forest)}
+.dchip .ic{width:1.35rem;height:1.35rem;padding:.2rem;border-radius:50%;border:2px solid var(--forest);background:#fff;stroke-width:3;opacity:.35}
+.dchip[aria-pressed="true"]{background:var(--volt)}
+.dchip[aria-pressed="true"] .ic{opacity:1;background:var(--forest);color:#fff}
+.dchip[aria-pressed="true"] span{text-decoration:line-through;text-decoration-thickness:2px}
+.flee__hint{margin:1rem 0 1.5rem;font-size:.875rem;color:var(--muted)}
+.punch{
+  padding:1.3rem 1.3rem;border-radius:22px;background:var(--forest);color:#fff;
+  font:800 clamp(1.4rem,6.4vw,2rem)/1.2 var(--display);letter-spacing:-.035em;
+  border:2px solid var(--forest);box-shadow:7px 7px 0 var(--volt);
+}
+.punch.pop{animation:pop .5s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{0%{transform:scale(.94)}60%{transform:scale(1.04)}100%{transform:scale(1)}}
+
+/* ==========================================================================
+   NOT / HOW
+   ========================================================================== */
+.no{display:flex;gap:1rem;margin-bottom:1rem;padding:1.15rem 1.2rem;background:var(--lilac);border:2px solid var(--forest);border-radius:22px;font-size:.9375rem}
+.no__x{flex:none;width:2.5rem;height:2.5rem;border-radius:50%;background:var(--forest);color:#fff;display:grid;place-items:center}
+.no--info{background:#fff;border-style:dashed}
+.no--info .no__x{background:var(--lilac-2);color:var(--forest)}
+.no p{margin:0}
+.no strong{display:block;font:800 1.05rem/1.25 var(--display);letter-spacing:-.025em;margin-bottom:.25rem}
+
+.how{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.how li{padding:1.1rem 1rem 1.2rem;background:#fff;border:2px solid var(--forest);border-radius:20px;box-shadow:4px 4px 0 var(--forest)}
+.how .ic{width:2.4rem;height:2.4rem;padding:.5rem;border-radius:12px;background:var(--volt);border:2px solid var(--forest);margin-bottom:.75rem;stroke-width:2.2}
+.how li:nth-child(2) .ic{background:var(--mint)}
+.how li:nth-child(3) .ic{background:var(--indigo);color:#fff}
+.how li:nth-child(4) .ic{background:var(--sun)}
+.how b{display:block;font:800 1rem/1.2 var(--display);letter-spacing:-.025em;margin-bottom:.3rem}
+.how span{display:block;font-size:.8125rem;line-height:1.55;color:var(--muted)}
+
+.after{margin-top:2.75rem}
+.after h3{font:800 1.5rem/1.15 var(--display);letter-spacing:-.035em;margin-bottom:1rem}
+.step{display:flex;gap:1rem;align-items:flex-start;margin-bottom:1rem;padding:1.1rem 1.2rem;background:#fff;border:2px solid var(--forest);border-radius:20px;box-shadow:4px 4px 0 var(--forest);font-size:.9375rem}
+.step__n{flex:none;width:2.6rem;height:2.6rem;border-radius:50%;background:var(--forest);color:var(--volt);display:grid;place-items:center;font:800 1.2rem/1 var(--display)}
+.step p{margin:0}
+.secure{
+  display:flex;gap:1rem;align-items:flex-start;margin-top:1.5rem;padding:1.3rem 1.2rem;
+  background:var(--forest);color:#fff;border-radius:22px;border:2px solid var(--forest);box-shadow:6px 6px 0 var(--volt);
+  font-size:.9375rem;
+}
+.secure .ic{width:2.4rem;height:2.4rem;color:var(--volt);margin-top:.1rem}
+.secure p:last-child{margin:0}
+.secure strong{color:var(--volt)}
+
+/* ==========================================================================
+   FOS·AI
+   ========================================================================== */
+.fos__tabs{
+  display:flex;gap:.5rem;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  margin:1.75rem calc(var(--gutter) * -1) 1.25rem;padding:.25rem var(--gutter) .75rem;
+}
+.fos__tabs button{
+  flex:none;min-height:2.9rem;padding:.4rem 1.1rem;border-radius:999px;cursor:pointer;
+  border:2px solid #fff;background:transparent;color:#fff;font:700 .8125rem/1 var(--sans);white-space:nowrap;
+}
+.fos__tabs button[aria-selected="true"]{background:var(--volt);color:var(--forest);border-color:var(--volt)}
+.fos__panel{display:grid;gap:1.5rem;align-items:center}
+.fos__panel[hidden]{display:none}
+.fos__panel h3{font:800 1.5rem/1.15 var(--display);letter-spacing:-.035em;margin-bottom:.6rem}
+.fos__panel p{font-size:.9375rem}
+.fos__panel .chips{margin-top:1rem}
+
+.phone{margin:0 auto;width:min(68vw,14.5rem)}
+.phone__frame{aspect-ratio:9 / 18;border:4px solid var(--forest);border-radius:2.1rem;background:#fff;overflow:hidden;box-shadow:6px 6px 0 var(--volt)}
+.phone figcaption{margin-top:.9rem;text-align:center;font-size:.8125rem;font-weight:600;color:rgba(255,255,255,.85)}
+/* EDIT: to use a real screenshot, replace everything inside .screen with:
+   <img src="your-screenshot.png" alt="Describe the screen"> */
+.screen{height:100%;padding:1.1rem .9rem;display:flex;flex-direction:column;gap:.55rem;font-size:.7rem;line-height:1.4;color:var(--forest)}
+.screen img{width:100%;height:100%;object-fit:cover;display:block}
+.screen__h{display:flex;justify-content:space-between;align-items:baseline;font:800 .9rem/1.2 var(--display);letter-spacing:-.02em}
+.screen__h span{font:600 .6rem/1 var(--sans);color:var(--muted)}
+.screen__big{font:800 1.4rem/1.1 var(--display);letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.screen__lbl{color:var(--muted);font-weight:600}
+.mini{height:.55rem;border-radius:99px;background:var(--lilac);border:1.5px solid var(--forest);overflow:hidden;margin:.25rem 0 .5rem}
+.mini i{display:block;height:100%;width:var(--w);background:var(--mint)}
+.mini i.ind{background:var(--indigo)}
+.mini i.vo{background:var(--volt)}
+.sk{height:.7rem;border-radius:99px;background:var(--lilac-2);margin:.2rem 0 .6rem}
+.sk.s{width:55%}
+.bub{padding:.55rem .7rem;border-radius:14px 14px 14px 4px;background:var(--lilac);border:1.5px solid var(--forest);font-weight:600}
+.bub.me2{align-self:flex-end;border-radius:14px 14px 4px 14px;background:var(--volt)}
+
+.calc{background:#fff;color:var(--forest);border:2px solid var(--forest);border-radius:22px;padding:1.2rem 1.15rem 1.3rem;box-shadow:6px 6px 0 var(--volt)}
+.calc__k{margin:0 0 .25rem;font:800 1.1rem/1.2 var(--display);letter-spacing:-.03em}
+.calc label{display:block;font-weight:600;font-size:.8125rem;margin:.8rem 0 .3rem}
+.calc input{
+  width:100%;min-height:3rem;padding:.5rem .8rem;border:2px solid var(--forest);border-radius:12px;
+  font:700 1rem var(--sans);color:var(--forest);background:var(--lilac);
+}
+.calc__out{margin:1.1rem 0 .5rem;padding:.8rem .9rem;border-radius:14px;background:var(--volt);border:2px solid var(--forest);font-weight:600;font-size:.9375rem}
+.calc__out b{display:block;font:800 1.7rem/1.15 var(--display);letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.calc .small{margin:0;color:var(--muted)}
+
+.chips{display:flex;flex-wrap:wrap;gap:.5rem;margin:1rem 0}
+.chips li{padding:.45rem .9rem;border-radius:999px;border:2px solid var(--forest);background:#fff;color:var(--forest);font-size:.8125rem;font-weight:700}
+
+.notice{margin:2rem 0 1.25rem;padding:1.3rem 1.25rem;background:#fff;color:var(--forest);border:2px solid var(--forest);border-radius:22px;box-shadow:6px 6px 0 var(--forest);font-size:.9375rem}
+.notice h3{font:800 1.3rem/1.15 var(--display);letter-spacing:-.03em;margin-bottom:.5rem}
+.notice p:last-child{margin:0}
+.privacy{display:inline-flex;align-items:center;gap:.5rem;font-weight:700;color:#fff}
+
+/* ==========================================================================
+   TESTIMONIALS (placeholders)
+   ========================================================================== */
+.placeholder{border:2px dashed var(--forest);border-radius:20px;padding:1.25rem;background:var(--lilac);color:var(--muted)}
+.quotes{
+  display:flex;gap:1rem;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;
+  margin:1.5rem calc(var(--gutter) * -1) 0;padding:.25rem var(--gutter) 1rem;
+}
+.quote{flex:0 0 min(82vw,19rem);scroll-snap-align:start;margin:0;display:flex;flex-direction:column;gap:.75rem}
+.quote blockquote{margin:0;font-size:1rem;color:var(--forest);font-weight:500}
+.quote cite{font-style:normal;font-weight:700;color:var(--forest)}
+
+/* ==========================================================================
+   OPTIONS: the bundle is the spotlight
+   ========================================================================== */
+.options{display:grid;gap:2.25rem;margin-top:2.25rem}
+.plan{
+  position:relative;display:flex;flex-direction:column;
+  padding:1.6rem 1.4rem 1.5rem;background:#fff;
+  border:2px solid var(--forest);border-radius:26px;box-shadow:5px 5px 0 var(--forest);
+}
+.plan--bundle{
+  order:-1;padding:2.4rem 1.5rem 1.7rem;
+  background:var(--forest);color:#fff;border-radius:30px;
+  box-shadow:0 0 0 4px var(--volt),10px 10px 0 4px var(--volt-press);
+}
+.plan__flag{
+  position:absolute;top:-1.15rem;left:1.25rem;padding:.4rem 1.1rem;border-radius:999px;
+  background:var(--volt);color:var(--forest);border:2px solid var(--forest);
+  font:800 .95rem/1.2 var(--display);box-shadow:0 3px 0 var(--forest);
+}
+.plan h3{font:800 1.6rem/1.1 var(--display);letter-spacing:-.04em}
+.plan__price{font:800 3rem/1.05 var(--display);letter-spacing:-.05em;margin:.5rem 0 1.1rem;font-variant-numeric:tabular-nums}
+.plan ul{margin:0 0 1.25rem}
+.plan li{position:relative;padding:.35rem 0 .35rem 1.9rem;font-size:.9375rem}
+.plan li::before{
+  content:"";position:absolute;left:.15rem;top:.55rem;width:.45rem;height:.9rem;
+  border-right:3px solid var(--indigo);border-bottom:3px solid var(--indigo);transform:rotate(40deg);
+}
+.plan--bundle li::before{border-color:var(--volt)}
+.plan--bundle h3{font-size:1.75rem}
+.plan--bundle .plan__price{font-size:3.6rem;color:var(--volt);margin-bottom:.15rem}
+.plan__math{margin:0 0 1.25rem;font-weight:600;font-size:.8125rem;color:rgba(255,255,255,.82)}
+.plan__lead{font-weight:700;margin-bottom:.4rem;font-size:.9375rem}
+.plan__plus{margin:.25rem 0 1.25rem;padding:1rem 1rem .6rem;border-radius:18px;background:rgba(255,255,255,.1);border:2px dashed var(--volt)}
+.plan__plus-k{margin:0 0 .3rem;font:800 1.1rem/1.2 var(--display);letter-spacing:-.03em;color:var(--volt)}
+.plan__plus ul{margin:0}
+.plan__diff{margin:0 0 1.25rem;padding:.8rem 1rem;border-radius:14px;background:rgba(255,255,255,.14);font-size:.875rem}
+.plan .btn{margin-top:auto}
+.plan--bundle .btn{min-height:3.9rem;font-size:1.05rem}
+.plan__fine{margin:1rem 0 0;font-size:.8125rem;color:rgba(255,255,255,.88)}
+
+/* ==========================================================================
+   GUARANTEE
+   ========================================================================== */
+.badge180{
+  width:9.5rem;height:9.5rem;border-radius:50%;margin:0 0 1.75rem;
+  background:var(--volt);border:2px solid var(--forest);box-shadow:6px 6px 0 var(--forest);
+  display:grid;place-content:center;text-align:center;
+  transform:rotate(-8deg);
+}
+.badge180 b{display:block;font:800 3.2rem/.9 var(--display);letter-spacing:-.06em}
+.badge180 span{display:block;font:800 .95rem/1.1 var(--display)}
+.refund-mail{font-weight:700;word-break:break-word}
+
+/* ==========================================================================
+   FAQ
+   ========================================================================== */
+.faq .acc{margin-bottom:.8rem;padding:0 1.1rem;background:#fff;border:2px solid var(--forest);border-radius:18px;box-shadow:3px 3px 0 var(--forest)}
+.faq .acc summary{padding:1rem 0}
+
+/* ==========================================================================
+   FINAL CTA + FOOTER
+   ========================================================================== */
+.final h2{font-size:clamp(2.2rem,10.5vw,4.4rem);line-height:1}
+.final p{max-width:34rem}
+.final .btn{width:100%;margin:.75rem 0 2rem}
+.final .sign{margin:0}
+.fine{margin-top:3rem;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,.22);font-size:.8125rem;line-height:1.6;color:rgba(255,255,255,.75)}
+
+/* ==========================================================================
+   STICKY BAR (phones)
+   ========================================================================== */
+.bar{
+  position:fixed;left:0;right:0;bottom:0;z-index:30;
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
+  padding:.7rem var(--gutter) calc(.7rem + env(safe-area-inset-bottom,0px));
+  background:var(--forest);color:#fff;border-top:2px solid var(--volt);
+  transform:translateY(110%);visibility:hidden;
+  transition:transform .25s ease,visibility 0s linear .25s;
+}
+.bar.is-on{transform:none;visibility:visible;transition:transform .25s ease}
+.bar__txt{line-height:1.25;min-width:0}
+.bar__txt strong{display:block;font:800 .9375rem/1.2 var(--display)}
+.bar__txt span{font-size:.8125rem;color:rgba(255,255,255,.8)}
+.bar .btn{min-height:2.9rem;padding:.55rem 1.1rem;white-space:nowrap;font-size:.9rem}
+
+/* ==========================================================================
+   WIDER SCREENS
+   ========================================================================== */
+@media (min-width:640px){
+  :root{--gutter:2rem}
+  .hero .btn,.final .btn{width:auto;min-width:19rem}
+  .quotes{margin-inline:0;padding-inline:0}
+  .how{grid-template-columns:repeat(4,1fr)}
+  .fos__tabs{margin-inline:0;padding-inline:0}
+}
+@media (min-width:960px){
+  .scene{padding:6rem 0 7rem}
+  .hero{padding:3.5rem 0 4.5rem}
+  .hero__naira{width:26rem;height:26rem;right:6%;top:3rem;opacity:.16}
+  .hero__ring--a{width:42rem;height:42rem;right:-12rem}
+  .hero__sub{font-size:1.125rem}
+  .routes{grid-template-columns:1fr 1fr}
+  .options{grid-template-columns:1fr 1.15fr;gap:2.75rem;align-items:center}
+  .plan--bundle{order:0}
+  .quote{flex-basis:20rem}
+  .bar{display:none}
+  body{padding-bottom:0}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start}
+  .split .nofit{margin-top:0}
+  .fos__panel{grid-template-columns:1.1fr .9fr;gap:3rem}
+  .chipgrid{grid-template-columns:repeat(4,1fr)}
+  .trio{grid-template-columns:repeat(3,1fr)}
+}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .marquee__track{animation:none}
+  *,*::before,*::after{transition-duration:.001ms !important;transition-delay:0s !important;animation-duration:.001ms !important}
+  .js .rv{opacity:1;transform:none}
+  .js .grow .fill{width:var(--w)}
+}
+</style>
+</head>
+
+<body>
+
+<!-- icon sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+    <symbol id="i-seed" viewBox="0 0 24 24"><path d="M12 21v-8"/><path d="M12 13c0-4 3-6 7-6 0 4-3 6-7 6z"/><path d="M12 16c0-3-2-5-6-5 0 3 2 5 6 5z"/></symbol>
+    <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M4 7a2 2 0 012-2h12v4"/><path d="M4 7v11a2 2 0 002 2h14V9H6a2 2 0 01-2-2z"/><path d="M16 14.5h1.5"/></symbol>
+    <symbol id="i-pie" viewBox="0 0 24 24"><path d="M11 3.2A9 9 0 1020.8 13H11V3.2z"/><path d="M14 3.5A9 9 0 0120.5 10H14V3.5z"/></symbol>
+    <symbol id="i-gold" viewBox="0 0 24 24"><path d="M3 18l3-8h12l3 8H3z"/><path d="M8.5 14h7"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 4v16h16"/><path d="M8 15l4-5 3 3 5-7"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-ban" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="12" r="4"/><path d="M12 12h9M17 12v3M20 12v2"/></symbol>
+    <symbol id="i-deck" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></symbol>
+  </defs>
+</svg>
+
+<!-- ======================= HERO ======================= -->
+<header class="hero dark">
+  <div class="hero__bg" aria-hidden="true">
+    <span class="hero__ring hero__ring--a"></span>
+    <span class="hero__ring hero__ring--b"></span>
+    <svg class="hero__naira" viewBox="0 0 100 100" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M24 86V14l52 72V14"/><path d="M8 38h84M8 62h84"/></svg>
+  </div>
+
+  <div class="wrap-wide hero__in">
+    <span class="badge"><i></i>Prosper Betiang</span>
+
+    <p class="wordmark" aria-label="Money Mastery Code">
+      <span>Money</span>
+      <span>Mastery</span>
+      <span class="code">Code</span>
+    </p>
+
+    <h1>A good salary doesn’t automatically make you wealthy. Without a clear strategy, your income will continue to <mark>disappear</mark> without building lasting wealth.</h1>
+    <p class="hero__sub">The Money Mastery Code shows you how to make more money, manage it intentionally, and put it to work through investments.</p>
+
+    <ul class="tiles" aria-label="At a glance">
+      <li><b>8</b><span>recorded workshops</span></li>
+      <li><b>∞</b><span>lifetime access</span></li>
+      <li><b><svg class="ic" aria-hidden="true"><use href="#i-seed"/></svg></b><span>beginner-friendly</span></li>
+    </ul>
+
+    <a class="btn" href="#options" id="hero-cta">Discover the Money Mastery Code</a>
+
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee__track">
+        <div class="marquee__group">
+          <span>Make money</span><span>Manage money</span><span>Multiply money</span>
+          <span>Make money</span><span>Manage money</span><span>Multiply money</span>
+        </div>
+        <div class="marquee__group">
+          <span>Make money</span><span>Manage money</span><span>Multiply money</span>
+          <span>Make money</span><span>Manage money</span><span>Multiply money</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<!-- ======================= PROBLEM ======================= -->
+<section class="scene scene--white" id="problem" aria-labelledby="problem-h">
+  <div class="wrap">
+    <h2 id="problem-h" class="rv">The problem this was built to solve</h2>
+    <p class="statement rv">You earn, and it doesn’t accumulate.</p>
+    <p class="lead rv">You get paid. Bills come out. Something always remains, and something always gets eaten. By the time you look up, there isn’t enough left to have built anything.</p>
+    <p class="rv">The gap between what you earn and what you keep usually isn’t discipline. It’s information. And financial education in Nigeria has an access problem, not a quality problem. The people who teach it well mostly teach it to people who already have money, and the people who teach everyone else usually have something to sell at the end of the lesson.</p>
+    <p class="rv">So here’s what most people learn, one fragment at a time: someone says cut your spending. Someone else says invest more. Nobody shows you how those two decisions are connected, or which one has been quietly undoing the other.</p>
+
+    <ul class="trio">
+      <li class="rv"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span>You can be excellent at budgeting and have nothing to invest.</span></li>
+      <li class="rv" style="--d:.08s"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span>You can earn more and end up in the same place.</span></li>
+      <li class="rv" style="--d:.16s"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span>You can invest carefully and never notice you had no system for keeping anything in the first place.</span></li>
+    </ul>
+
+    <!-- Pay yourself first demo -->
+    <div class="pyf rv" id="pyf-card">
+      <p class="pyf__k">Rule 101 from Lecture 3, in ten seconds</p>
+      <p class="pyf__q">Slide to your monthly income</p>
+      <output class="pyf__income" id="pyf-income" for="pyf">₦100,000</output>
+      <input type="range" id="pyf" min="20000" max="1000000" step="5000" value="100000" aria-label="Monthly income in naira">
+      <div class="pyf__chips" id="pyf-chips">
+        <button type="button" data-v="50000">₦50k</button>
+        <button type="button" data-v="100000" aria-pressed="true">₦100k</button>
+        <button type="button" data-v="250000">₦250k</button>
+        <button type="button" data-v="500000">₦500k</button>
+      </div>
+      <div class="pyf__split" aria-hidden="true"><i class="k"></i><i class="r"></i></div>
+      <div class="pyf__legend">
+        <div><span>Yours to keep (10%)</span><b id="pyf-keep">₦10,000</b></div>
+        <div><span>Every other expense comes out of the remaining 90%</span><b id="pyf-rest">₦90,000</b></div>
+      </div>
+      <p class="pyf__year">In a year of paying yourself first, that’s <b id="pyf-year">₦120,000</b> kept, before you invest any of it.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= WHERE DID YOU COME FROM ======================= -->
+<section class="scene scene--lilac" id="start" aria-labelledby="start-h">
+  <div class="wrap-wide">
+    <h2 id="start-h" class="rv">Where did you come from?</h2>
+    <p class="lead rv">Most people find this page from a short lesson on money. Here’s the part you came for.</p>
+
+    <nav class="routes" aria-label="Jump to the lecture you came for">
+      <a class="route rv" href="#gold">
+        <span class="route__ic"><svg class="ic" aria-hidden="true"><use href="#i-gold"/></svg></span>
+        <span>
+          <span class="route__tag">Day 5 · Lecture 7</span>
+          <span class="route__t">If you came for gold</span>
+          <span class="route__d">Purity and karat. The four tests for checking whether gold is genuine. Where to buy it in Nigeria. How to see today’s price.</span>
+        </span>
+        <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg>
+      </a>
+      <a class="route rv" href="#mutual-funds">
+        <span class="route__ic"><svg class="ic" aria-hidden="true"><use href="#i-pie"/></svg></span>
+        <span>
+          <span class="route__tag">Day 5 · Lecture 7</span>
+          <span class="route__t">If you came for mutual funds</span>
+          <span class="route__d">What a mutual fund actually is, what NAV means, and the real difference between an equity fund and a money market fund.</span>
+        </span>
+        <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg>
+      </a>
+      <a class="route rv" href="#lecture-8">
+        <span class="route__ic"><svg class="ic" aria-hidden="true"><use href="#i-chart"/></svg></span>
+        <span>
+          <span class="route__tag">Days 6 &amp; 7 · Lecture 8</span>
+          <span class="route__t">If you saw the stock valuation demo</span>
+          <span class="route__d">Market cap, EPS, P/E and dividend yield, worked through live, plus the limits of those numbers.</span>
+        </span>
+        <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg>
+      </a>
+      <a class="route rv" href="#code-2">
+        <span class="route__ic"><svg class="ic" aria-hidden="true"><use href="#i-wallet"/></svg></span>
+        <span>
+          <span class="route__tag">Days 2 &amp; 3 · Lectures 3 to 5</span>
+          <span class="route__t">If you came for budgeting, tracking and paying yourself first</span>
+          <span class="route__d">All three in depth, plus the impulse-spending rule, why separate accounts simplify everything, and the daily habit of recording what comes in and goes out.</span>
+        </span>
+        <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg>
+      </a>
+      <a class="route rv" href="#code-1">
+        <span class="route__ic"><svg class="ic" aria-hidden="true"><use href="#i-seed"/></svg></span>
+        <span>
+          <span class="route__tag">Day 1 · Lectures 1 &amp; 2</span>
+          <span class="route__t">If you’re new to managing money entirely</span>
+          <span class="route__d">Start at Day 1. Lectures 1 and 2 assume you’ve never been taught any of this.</span>
+        </span>
+        <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg>
+      </a>
+    </nav>
+  </div>
+</section>
+
+<!-- ======================= NOTE FROM PROSPER ======================= -->
+<section class="scene scene--indigo dark" id="note" aria-labelledby="note-h">
+  <div class="wrap">
+    <div class="me rv">
+      <div class="me__av" aria-hidden="true">PB</div>
+      <div><b>Prosper Betiang</b><span>Your instructor</span></div>
+    </div>
+    <h2 id="note-h" class="rv">A note from Prosper</h2>
+    <p class="rv">I’m Prosper Betiang. Money Mastery Code grew out of a lesson I experienced firsthand.</p>
+    <p class="rv">A friend and I came into money around the same period. My friend received a larger share than I did. But my understanding of money helped me preserve and grow what I had, while my friend later found himself needing to borrow money from me.</p>
+    <p class="rv">That experience made something clear to me.</p>
+    <p class="pullcard rv">The amount of money you receive is not the only thing that shapes your financial outcome. What you understand about money matters too.</p>
+    <p class="rv">Since then I’ve taught and spoken about financial literacy in different settings, from corporate to religious, including the Interswitch student community, the Thrive Financial Conference, United Evangelical Church, and events I’ve organised myself.</p>
+    <p class="rv">My approach rests on one belief: principles matter when you understand them well enough to apply them. I’m not interested in selling the fantasy of getting rich quickly. I want to break complex ideas down so ordinary people can understand them, question what they hear, and make deliberate decisions about their money.</p>
+    <p class="sign rv">Prosper Betiang</p>
+  </div>
+</section>
+
+<!-- ======================= WHO IT'S FOR ======================= -->
+<section class="scene scene--white" id="who" aria-labelledby="who-h">
+  <div class="wrap-wide">
+    <div class="split">
+      <div>
+        <h2 id="who-h" class="rv">Who this is for</h2>
+        <p class="rv">This is for you if any of this sounds familiar. Tap the ones that do:</p>
+        <div id="ticks">
+          <button class="tick rv" type="button" aria-pressed="false"><span class="tick__box"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg></span><span>You earn a real income and it never seems to accumulate.</span></button>
+          <button class="tick rv" type="button" aria-pressed="false"><span class="tick__box"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg></span><span>You’ve tried budgeting and it didn’t survive the first unexpected expense.</span></button>
+          <button class="tick rv" type="button" aria-pressed="false"><span class="tick__box"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg></span><span>You know you should be investing but you can’t tell a real opportunity from a persuasive one.</span></button>
+          <button class="tick rv" type="button" aria-pressed="false"><span class="tick__box"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg></span><span>You’ve heard people talk about gold, T-bills or mutual funds and you’d rather not be the person still nodding along.</span></button>
+        </div>
+        <p class="tickmsg" id="tickmsg" aria-live="polite">Tap everything that sounds like you.</p>
+      </div>
+
+      <div class="nofit rv">
+        <h3>It may not be for you if:</h3>
+        <ul>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg><span><strong>You want to be told what to buy.</strong> I don’t do that, not in the workshop and not afterwards. I explain how things work, and which one you choose is yours.</span></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg><span><strong>You want someone to manage your money.</strong> The workshop equips you to make every decision yourself.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= THE EIGHT LECTURES ======================= -->
+<section class="scene scene--lilac" id="lectures" aria-labelledby="lectures-h">
+  <div class="wrap">
+    <h2 id="lectures-h" class="rv">The eight lectures</h2>
+    <p class="lead rv">Three codes, in the order they actually work. Tap any lecture to see what’s inside.</p>
+
+    <!-- CODE 1 -->
+    <div class="codeblock codeblock--1 rv" id="code-1">
+      <div class="codeblock__head">
+        <p class="codeblock__k">Code 1 · Day 1</p>
+        <h3 class="codeblock__t">Making money</h3>
+      </div>
+      <details class="acc" id="lecture-1">
+        <summary><span class="acc__t"><small>Lecture 1</small>The different kinds of income</span></summary>
+        <div class="acc__body">
+          <p>Why earning more and building wealth are different problems. The seven types of income, from salary to royalties, and why most of the wealth on this continent comes from ownership rather than a payslip. We look at where the ten richest men in Africa actually got their money.</p>
+        </div>
+      </details>
+      <details class="acc" id="lecture-2">
+        <summary><span class="acc__t"><small>Lecture 2</small>Offline and online income streams</span></summary>
+        <div class="acc__body">
+          <p>What each one realistically looks like, what it costs to start, and how to pick one that fits your actual life rather than the one that sounds best.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- CODE 2 -->
+    <div class="codeblock codeblock--2 rv" id="code-2">
+      <div class="codeblock__head">
+        <p class="codeblock__k">Code 2 · Days 2 and 3</p>
+        <h3 class="codeblock__t">Keeping money</h3>
+      </div>
+      <details class="acc" id="lecture-3">
+        <summary><span class="acc__t"><small>Lecture 3</small>Rule 101: pay yourself first</span></summary>
+        <div class="acc__body">
+          <p>Ten percent of everything you earn is yours to keep. Every other expense comes out of the remaining ninety. We work it through on a ₦100,000 month.</p>
+        </div>
+      </details>
+      <details class="acc" id="lecture-4">
+        <summary><span class="acc__t"><small>Lecture 4</small>Debt: identify, isolate, divide and conquer</span></summary>
+        <div class="acc__body">
+          <p>Good debt and bad debt. Why the highest-interest debt goes first even when it’s the smallest, worked through with real numbers at ₦1,000,000. And the list of debts to run from.</p>
+        </div>
+      </details>
+      <details class="acc" id="lecture-5">
+        <summary><span class="acc__t"><small>Lecture 5</small>The two-day-and-twelve-hour rule, and your money system</span></summary>
+        <div class="acc__body">
+          <p>Where impulse spending actually comes from. The wait rule that cuts it. Budgeting you’ll keep, why separate accounts make everything simpler, and the daily habit of recording what comes in and what goes out.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- CODE 3 -->
+    <div class="codeblock codeblock--3 rv" id="code-3">
+      <div class="codeblock__head">
+        <p class="codeblock__k">Code 3 · Days 4 to 8</p>
+        <h3 class="codeblock__t">Putting money to work</h3>
+      </div>
+
+      <details class="acc" id="lecture-6">
+        <summary><span class="acc__t"><small>Lecture 6</small>Foundations, and the rules that keep you safe</span></summary>
+        <div class="acc__body">
+          <p>What investment actually is. Investing in yourself, in relationships, and in assets. The thirteen terms you need before anything else makes sense. How investments group by risk and by timeframe. Then the rules that matter more than the rest:</p>
+          <ul class="safety">
+            <li>Don’t invest in anything you don’t understand.</li>
+            <li>Don’t invest in an unregistered platform or app. Verify SEC registration first.</li>
+            <li>Don’t give anyone money to invest for you.</li>
+            <li>Don’t invest in anything promising outrageous returns for minimal risk.</li>
+            <li>If it’s too good to be true, it probably isn’t.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="acc" id="lecture-7">
+        <summary>
+          <span class="acc__t"><small>Lecture 7</small>T-bills, bonds, mutual funds, REITs, and gold
+            <span class="pill">The lecture most people come for</span>
+          </span>
+        </summary>
+        <div class="acc__body">
+          <dl class="vehicles">
+            <div id="t-bills">
+              <dt>T-bills</dt>
+              <dd>Lending to the government for 91, 182 or 364 days. What you actually pay and what you get back at maturity. Why there’s a ₦50 million minimum on the primary market but you can start at ₦10,000 through apps.</dd>
+            </div>
+            <div id="bonds">
+              <dt>Bonds</dt>
+              <dd>The same idea over a longer term, paying interest quarterly and returning your capital at maturity.</dd>
+            </div>
+            <div id="mutual-funds">
+              <dt>Mutual funds</dt>
+              <dd>A bucket. Money goes in, a professional invests it, the value updates daily. Equity versus money market, and which is which.</dd>
+            </div>
+            <div id="reits">
+              <dt>REITs</dt>
+              <dd>Real estate without buying a property. Why 90 percent of the income must legally go back to investors as dividends.</dd>
+            </div>
+            <div id="gold">
+              <dt>Gold</dt>
+              <dd>Purity and karat. The four tests for checking whether gold is genuine. Where to buy it. How to check the live price.</dd>
+            </div>
+          </dl>
+        </div>
+      </details>
+
+      <details class="acc" id="lecture-8">
+        <summary><span class="acc__t"><small>Lecture 8 · Days 6 and 7</small>Stocks, real estate, agriculture</span></summary>
+        <div class="acc__body">
+          <dl class="vehicles">
+            <div id="stocks">
+              <dt>Stocks</dt>
+              <dd>What owning a share means. Reading a company’s size, profit and value using market cap, EPS and P/E. Dividend yield. What dollar-cost averaging does and when it doesn’t help. US and Nigerian exchanges, and the sectors worth understanding.</dd>
+            </div>
+            <div>
+              <dt>Real estate</dt>
+              <dd>Buying and selling, land banking, rentals. The paperwork that decides whether a transaction is real: Certificate of Occupancy, deed of assignment, survey plan, governor’s consent. This is where more people lose money than anywhere else on this list.</dd>
+            </div>
+            <div>
+              <dt>Agriculture</dt>
+              <dd>Cultivation, processing, storage, livestock, fisheries, forestry. And why it pairs with property rather than competing with it.</dd>
+            </div>
+            <div>
+              <dt>And the finish</dt>
+              <dd>How to sell yourself, your ideas and your business.</dd>
+            </div>
+          </dl>
+        </div>
+      </details>
+    </div>
+
+    <div class="bonus rv">
+      <h3>Bonus: hedging and selling · Day 8</h3>
+      <p>Forward contracts, futures, options and swaps — how you protect a position you can’t control. Then how to sell yourself, your ideas and your business. Advanced, and included.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= FROM THE DECK ======================= -->
+<section class="scene scene--night dark" id="slides" aria-labelledby="slides-h">
+  <div class="wrap">
+    <h2 id="slides-h" class="rv">Three things from the deck</h2>
+    <p class="lead rv">Self-paced means the slides are the workshop. These are straight from the material. Play with them.</p>
+
+    <!-- Gold karat -->
+    <div class="card rv" id="karat">
+      <p class="card__cap">What purity actually means</p>
+      <p class="card__src">From Lecture 7</p>
+      <div class="karat__tabs" role="group" aria-label="Choose a karat">
+        <button type="button" data-p="99.9" aria-pressed="true">24K</button>
+        <button type="button" data-p="91.7" aria-pressed="false">22K</button>
+        <button type="button" data-p="75" aria-pressed="false">18K</button>
+        <button type="button" data-p="58.3" aria-pressed="false">14K</button>
+      </div>
+      <div class="karat__num" id="karat-num" aria-live="polite">99.9%</div>
+      <p class="karat__lbl">pure <span id="karat-k">24K</span> gold</p>
+      <div class="karat__bar" aria-hidden="true"><i id="karat-bar"></i></div>
+      <div class="karat__key" aria-hidden="true"><span>Pure gold</span><span>Other metals</span></div>
+    </div>
+
+    <!-- Debt -->
+    <div class="card grow rv">
+      <p class="card__cap">Why the smallest debt often costs you the most</p>
+      <p class="card__src">From Lecture 4</p>
+      <p>You owe ₦100,000 at 5 percent compounding, and ₦50,000 at 10 percent compounding. Both for five months.</p>
+      <dl class="sum">
+        <div><dt>The ₦100,000 grows to</dt><dd>₦102,096.08</dd></div>
+        <div><dt>The ₦50,000 grows to</dt><dd>₦52,122.08</dd></div>
+      </dl>
+      <p>That gap looks trivial. Run it at ₦1,000,000 instead.</p>
+      <div role="group" aria-label="Interest paid on ₦1,000,000: ₦42,440 at 10 percent, ₦20,960 at 5 percent">
+        <div class="bars__row">
+          <p><span>At 10 percent you repay</span><b>₦1,042,440</b></p>
+          <span class="track"><span class="fill" style="--w:100%"></span></span>
+        </div>
+        <div class="bars__row">
+          <p><span>At 5 percent you repay</span><b>₦1,020,960</b></p>
+          <span class="track"><span class="fill fill--indigo" style="--w:49.4%"></span></span>
+        </div>
+        <p class="small muted" style="margin:0">Bars show the interest paid on top of the ₦1,000,000.</p>
+      </div>
+      <p class="verdict">The expensive debt costs ₦21,480 more, even though it’s the smaller one.</p>
+    </div>
+
+    <!-- Impulse rule -->
+    <div class="card rv" id="impulse">
+      <p class="card__cap">The rule that does the most work</p>
+      <p class="card__src">From Lecture 5</p>
+      <blockquote class="quote-d">
+        <p>You’ve imagined what you’d buy with a fortune. Aliko Dangote has that fortune, and he isn’t buying all of it. That’s the whole point.</p>
+        <p>On one rough estimate, if he held ₦500,000 in liquid cash, his daily spending would be about ₦250.</p>
+        <p>So the most effective thing you can do about an impulse is <strong>never buy instantly</strong>. See something you feel you need, wait two days and twelve hours. If it’s still there then, it’s probably real. In my experience the feeling usually fades well before that.</p>
+      </blockquote>
+
+      <div class="wait">
+        <p class="wait__k">Try the wait</p>
+        <button class="btn btn--night btn--block" type="button" id="wait-btn">I just saw something I need</button>
+        <div class="wait__meter" aria-hidden="true"><b id="wait-h">0 hours</b><span>of 60 (2 days 12 hours)</span></div>
+        <span class="track" aria-hidden="true"><span class="fill fill--indigo" id="wait-bar"></span></span>
+        <p class="wait__msg" id="wait-msg" aria-live="polite"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= FLEE FROM DEBT ======================= -->
+<section class="scene scene--lilac" id="flee" aria-labelledby="flee-h">
+  <div class="wrap">
+    <h2 id="flee-h" class="rv">Flee from debt</h2>
+    <p class="lead rv">One rule from Lecture 4, because it’s the one people remember.</p>
+    <p class="flee__lead rv">Don’t take debts from:</p>
+
+    <div class="chipgrid" id="flee-chips">
+      <button class="dchip rv" type="button" aria-pressed="false" aria-label="Don’t take debts from banks"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg><span>Banks</span></button>
+      <button class="dchip rv" type="button" aria-pressed="false" aria-label="Don’t take debts from loan sharks"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg><span>Loan sharks</span></button>
+      <button class="dchip rv" type="button" aria-pressed="false" aria-label="Don’t take debts from loan apps"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg><span>Loan apps</span></button>
+      <button class="dchip rv" type="button" aria-pressed="false" aria-label="Don’t take debts from your friends"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg><span>Your friends</span></button>
+      <button class="dchip rv" type="button" aria-pressed="false" aria-label="Don’t take debts from your church"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg><span>Your church</span></button>
+      <button class="dchip rv" type="button" aria-pressed="false" aria-label="Don’t take debts from your boss"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg><span>Your boss</span></button>
+      <button class="dchip rv" type="button" aria-pressed="false" aria-label="Don’t take debts from your children"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg><span>Your children</span></button>
+      <button class="dchip rv" type="button" aria-pressed="false" aria-label="Don’t take debts from your neighbour"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg><span>Your neighbour</span></button>
+    </div>
+    <p class="flee__hint" id="flee-hint">Tap each one to cross it off.</p>
+
+    <p class="punch rv" id="punch">And don’t take debts from me.</p>
+  </div>
+</section>
+
+<!-- ======================= WHAT THIS IS NOT ======================= -->
+<section class="scene scene--white" id="not" aria-labelledby="not-h">
+  <div class="wrap">
+    <h2 id="not-h" class="rv">What this workshop is not</h2>
+
+    <div class="no rv"><span class="no__x"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></span><p><strong>It is not investment advice.</strong> I will not tell you what to buy, what to sell, or when. Not in the workshop, not afterwards, not on WhatsApp.</p></div>
+    <div class="no rv"><span class="no__x"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></span><p><strong>It will not manage your money or open anything in your name.</strong> Every decision stays yours.</p></div>
+    <div class="no no--info rv"><span class="no__x"><svg class="ic" aria-hidden="true"><use href="#i-info"/></svg></span><p>The figures in the slides are examples, recorded at the time of teaching. T-bill rates, index values and prices move constantly. Treat every number as an illustration of how something works, not a quote of what it is today.</p></div>
+    <div class="no no--info rv"><span class="no__x"><svg class="ic" aria-hidden="true"><use href="#i-info"/></svg></span><p><strong>The platforms named in the workshop are named so you know what exists and what to check.</strong> Naming them is not a recommendation to use any of them. Before you put money anywhere, ensure it is SEC registered and verified, as taught in the workshop.</p></div>
+  </div>
+</section>
+
+<!-- ======================= HOW IT WORKS ======================= -->
+<section class="scene scene--lilac" id="how" aria-labelledby="how-h">
+  <div class="wrap-wide">
+    <h2 id="how-h" class="rv">How it works</h2>
+    <ul class="how">
+      <li class="rv"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg><b>Eight lectures</b><span>About an hour each, across eight days of recorded material.</span></li>
+      <li class="rv" style="--d:.06s"><svg class="ic" aria-hidden="true"><use href="#i-ban"/></svg><b>No schedule. No cohort.</b><span>You start when you start, and you finish in about a week.</span></li>
+      <li class="rv" style="--d:.12s"><svg class="ic" aria-hidden="true"><use href="#i-key"/></svg><b>Lifetime access</b><span>Including any corrections I make later. If I get something wrong and fix it, you get the fix.</span></li>
+      <li class="rv" style="--d:.18s"><svg class="ic" aria-hidden="true"><use href="#i-deck"/></svg><b>The full slide deck</b><span>Yours to keep and refer back to.</span></li>
+    </ul>
+
+    <div class="after">
+      <h3 class="rv">What happens after you pay</h3>
+      <div class="step rv"><span class="step__n">1</span><p>You’ll get a confirmation link within minutes, sent to the email you provide.</p></div>
+      <div class="step rv"><span class="step__n">2</span><p>You’ll also be directed to WhatsApp, where I’ll welcome you and add you to the support community.</p></div>
+
+      <div class="secure rv">
+        <svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg>
+        <div>
+          <p><strong>We will never ask you to pay into a personal account, and we will never ask for your OTP, PIN or password.</strong> If a message claiming to be from us asks for any of those, it isn’t us. The SEC has already warned about impersonators using exactly this tactic during recent public share offers.</p>
+          <p>Our official account and payment processor is <strong>The Pixeltique</strong> powered by Paystack.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= FOS·AI ======================= -->
+<section class="scene scene--indigo dark" id="fosai" aria-labelledby="fosai-h">
+  <div class="wrap-wide">
+    <p class="lead rv" style="margin-bottom:.5rem">And that’s not all...</p>
+    <h2 id="fosai-h" class="rv">FOS·AI, your personal finance assistant in your pocket</h2>
+    <p class="lead rv">Knowledge is powerful. Having tools to apply it can make it more practical.</p>
+    <p class="rv">FOS·AI is a Financial Operating System (FOS) designed to help you engage with your finances beyond the workshop. Money Mastery Code teaches you the principles. FOS·AI adds practical tools for working with financial information, exploring calculations, and reviewing your financial position.</p>
+
+    <h3 class="rv" style="margin-top:1.75rem">What you can do in FOS·AI</h3>
+
+    <div class="fos rv">
+      <div class="fos__tabs" role="tablist" aria-label="FOS·AI features">
+        <button type="button" role="tab" id="tab-health" aria-selected="true" aria-controls="panel-health">Financial health</button>
+        <button type="button" role="tab" id="tab-money" aria-selected="false" aria-controls="panel-money" tabindex="-1">Money management</button>
+        <button type="button" role="tab" id="tab-research" aria-selected="false" aria-controls="panel-research" tabindex="-1">Investment research</button>
+        <button type="button" role="tab" id="tab-calc" aria-selected="false" aria-controls="panel-calc" tabindex="-1">Calculators</button>
+        <button type="button" role="tab" id="tab-assistant" aria-selected="false" aria-controls="panel-assistant" tabindex="-1">Assistant</button>
+      </div>
+
+      <!-- EDIT: the phone screens below are mock-ups. Swap the contents of any .screen for a real screenshot:
+           <img src="fosai-health.png" alt="FOS·AI financial health screen"> -->
+
+      <div class="fos__panel" role="tabpanel" id="panel-health" aria-labelledby="tab-health">
+        <div>
+          <h3>Financial health overview</h3>
+          <p>Bring aspects of your financial position together in a financial health profile, helping you get a clearer view of where you stand.</p>
+        </div>
+        <figure class="phone" style="margin:0 auto">
+          <div class="phone__frame"><div class="screen">
+            <div class="screen__h">Financial health <span>Sample screen</span></div>
+            <div class="screen__lbl">Where you stand</div>
+            <div><div class="screen__lbl">Cashflow</div><div class="mini"><i style="--w:72%"></i></div></div>
+            <div><div class="screen__lbl">Savings</div><div class="mini"><i class="ind" style="--w:46%"></i></div></div>
+            <div><div class="screen__lbl">Debt</div><div class="mini"><i class="vo" style="--w:24%"></i></div></div>
+            <div><div class="screen__lbl">Assets</div><div class="mini"><i style="--w:60%"></i></div></div>
+          </div></div>
+          <figcaption>Financial health</figcaption>
+        </figure>
+      </div>
+
+      <div class="fos__panel" role="tabpanel" id="panel-money" aria-labelledby="tab-money" hidden>
+        <div>
+          <h3>Money management</h3>
+          <p>Record your income and expenses. Shows your cashflow month to month so patterns become visible. Builds a budget and tracks you against it. Keeps a running view of the assets you hold. All in one financial management environment.</p>
+        </div>
+        <figure class="phone" style="margin:0 auto">
+          <div class="phone__frame"><div class="screen">
+            <div class="screen__h">Budget <span>Sample screen</span></div>
+            <div class="screen__lbl">Income this month</div>
+            <div class="screen__big">₦100,000</div>
+            <div>
+              <div class="screen__lbl">Kept first (10%)</div>
+              <div class="mini"><i style="--w:10%"></i></div>
+              <div><strong>₦10,000</strong></div>
+            </div>
+            <div>
+              <div class="screen__lbl">Everything else (90%)</div>
+              <div class="mini"><i class="ind" style="--w:90%"></i></div>
+              <div><strong>₦90,000</strong></div>
+            </div>
+          </div></div>
+          <figcaption>Budget</figcaption>
+        </figure>
+      </div>
+
+      <div class="fos__panel" role="tabpanel" id="panel-research" aria-labelledby="tab-research" hidden>
+        <div>
+          <h3>Investment research</h3>
+          <p>Explore stock information and analysis to support your own research. This is an aid to understanding, not a substitute for independent judgment or professional advice.</p>
+        </div>
+        <figure class="phone" style="margin:0 auto">
+          <div class="phone__frame"><div class="screen">
+            <div class="screen__h">Stock snapshot <span>Sample screen</span></div>
+            <div class="screen__lbl">Market cap</div><div class="sk"></div>
+            <div class="screen__lbl">EPS</div><div class="sk s"></div>
+            <div class="screen__lbl">P/E</div><div class="sk"></div>
+            <div class="screen__lbl">Dividend yield</div><div class="sk s"></div>
+          </div></div>
+          <figcaption>Research</figcaption>
+        </figure>
+      </div>
+
+      <div class="fos__panel" role="tabpanel" id="panel-calc" aria-labelledby="tab-calc" hidden>
+        <div>
+          <h3>Financial calculators</h3>
+          <p>Use tools for calculations involving:</p>
+          <ul class="chips">
+            <li>Return on investment (ROI)</li><li>Compound interest</li><li>Inflation</li><li>Retirement</li>
+            <li>Financial goal planning</li><li>Dollar-cost averaging (DCA)</li><li>Emergency funds</li>
+            <li>Currency conversion</li><li>Tax</li><li>Savings targets</li>
+          </ul>
+          <p>The exact results of any calculator depend on the information you enter.</p>
+        </div>
+        <div class="calc">
+          <p class="calc__k">Try one: compound interest</p>
+          <label for="c-p">Amount (₦)</label>
+          <input id="c-p" type="number" inputmode="numeric" min="0" value="100000">
+          <label for="c-r">Yearly rate (%)</label>
+          <input id="c-r" type="number" inputmode="decimal" min="0" step="0.5" value="10">
+          <label for="c-n">Years</label>
+          <input id="c-n" type="number" inputmode="numeric" min="0" max="60" value="5">
+          <p class="calc__out" aria-live="polite">After <span id="c-ny">5</span> years, it grows to <b id="c-res">₦161,051</b></p>
+          <p class="small">An illustration of how compounding works, not a prediction of any return.</p>
+        </div>
+      </div>
+
+      <div class="fos__panel" role="tabpanel" id="panel-assistant" aria-labelledby="tab-assistant" hidden>
+        <div>
+          <h3>FOS·AI assistant</h3>
+          <p>For explaining a term or working through a question from the lectures.</p>
+        </div>
+        <figure class="phone" style="margin:0 auto">
+          <div class="phone__frame"><div class="screen">
+            <div class="screen__h">Assistant <span>Sample screen</span></div>
+            <div class="bub me2">What does NAV mean?</div>
+            <div class="bub">NAV is net asset value: the value of one unit of a fund, worked out from what the fund owns minus what it owes, divided by the number of units.</div>
+          </div></div>
+          <figcaption>Assistant</figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <div class="notice rv">
+      <h3>What FOS·AI is not</h3>
+      <p>FOS·AI is a private financial tool. <strong>It is not a bank account. It does not hold, move or invest your money, and it isn’t connected to any broker, fund or investment platform.</strong> It records what you enter and does nothing else with it.</p>
+    </div>
+
+    <!-- EDIT: set the privacy statement link in the settings block at the bottom (SITE.privacy) -->
+    <a class="privacy rv" id="privacy-link" href="#fosai">Read the FOS·AI privacy statement
+      <svg class="ic" aria-hidden="true" style="width:1.2rem;height:1.2rem"><use href="#i-arrow"/></svg></a>
+  </div>
+</section>
+
+<!-- ======================= TESTIMONIALS (PLACEHOLDERS) ======================= -->
+<section class="scene scene--white" id="students" aria-labelledby="students-h">
+  <div class="wrap">
+    <h2 id="students-h" class="rv">What participants have said</h2>
+
+    <!-- EDIT: five participants. Real first names and last initials, real roles where they're comfortable,
+         their actual words, grammar cleaned and nothing added. Ask each one: what did you do differently
+         afterwards? A number, a decision, an account opened, a debt cleared. Duplicate or remove .quote blocks as needed. -->
+    <div class="quotes">
+      <figure class="quote placeholder"><blockquote>[Their words.]</blockquote><figcaption><cite>[Name, Role]</cite></figcaption></figure>
+      <figure class="quote placeholder"><blockquote>[Their words.]</blockquote><figcaption><cite>[Name, Role]</cite></figcaption></figure>
+      <figure class="quote placeholder"><blockquote>[Their words.]</blockquote><figcaption><cite>[Name, Role]</cite></figcaption></figure>
+      <figure class="quote placeholder"><blockquote>[Their words.]</blockquote><figcaption><cite>[Name, Role]</cite></figcaption></figure>
+      <figure class="quote placeholder"><blockquote>[Their words.]</blockquote><figcaption><cite>[Name, Role]</cite></figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= OPTIONS ======================= -->
+<section class="scene scene--lilac" id="options" aria-labelledby="options-h">
+  <div class="wrap-wide">
+    <h2 id="options-h" class="rv">Your options</h2>
+
+    <div class="options">
+      <article class="plan rv">
+        <h3>The Workshop</h3>
+        <p class="plan__price">₦15,000</p>
+        <ul>
+          <li>All eight lectures, plus the hedging bonus</li>
+          <li>Full slide deck</li>
+          <li>Lifetime access, including later corrections</li>
+          <li>WhatsApp support community</li>
+        </ul>
+        <a class="btn btn--night btn--block" href="#options" data-plan="workshop">Get the workshop for ₦15,000</a>
+      </article>
+
+      <article class="plan plan--bundle rv" style="--d:.1s">
+        <span class="plan__flag">Best option</span>
+        <h3>The Workshop + FOS·AI</h3>
+        <p class="plan__price">₦23,000</p>
+        <p class="plan__math">₦15,000 workshop + ₦8,000 FOS·AI</p>
+        <p class="plan__lead">Everything in The Workshop:</p>
+        <ul>
+          <li>All eight lectures, plus the hedging bonus</li>
+          <li>Full slide deck</li>
+          <li>Lifetime access, including later corrections</li>
+          <li>WhatsApp support community</li>
+        </ul>
+        <div class="plan__plus">
+          <p class="plan__plus-k">Plus full access to FOS·AI</p>
+          <ul>
+            <li>Financial health overview</li>
+            <li>Money management: income, expenses, budget, assets</li>
+            <li>Investment research</li>
+            <li>Financial calculators</li>
+            <li>The FOS·AI assistant</li>
+          </ul>
+        </div>
+        <p class="plan__diff"><strong>The difference is ₦8,000.</strong> Take this if you want to run the system, not just understand it.</p>
+        <a class="btn btn--block" href="#options" data-plan="bundle">Get the complete bundle for ₦23,000</a>
+        <p class="plan__fine"><strong>FOS·AI access is included permanently from your purchase date.</strong> No renewal, no expiry.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= GUARANTEE ======================= -->
+<section class="scene scene--white" id="guarantee" aria-labelledby="guarantee-h">
+  <div class="wrap">
+    <div class="badge180 rv" aria-hidden="true"><b>180</b><span>days</span></div>
+    <h2 id="guarantee-h" class="rv">The 180-day guarantee</h2>
+    <p class="lead rv">You have 180 days to decide whether this was worth it to you.</p>
+    <p class="rv">That’s deliberately longer than it needs to be. Eight one-hour lectures take about a week to finish, but people live with financial ideas for years, and a short refund window quietly rewards people who never got round to it.</p>
+    <p class="rv">If it isn’t right for you, ask for a full refund within 180 days of purchase. No argument, no forms, no questions about why.</p>
+    <p class="rv">Email <a class="refund-mail" href="mailto:refunds@betiangli.xyz">refunds@betiangli.xyz</a>.</p>
+  </div>
+</section>
+
+<!-- ======================= FAQ ======================= -->
+<section class="scene scene--lilac faq" id="faq" aria-labelledby="faq-h">
+  <div class="wrap">
+    <h2 id="faq-h" class="rv">Questions people actually ask</h2>
+
+    <details class="acc"><summary>Is this investment advice?</summary>
+      <div class="acc__body"><p>No. I explain how the vehicles work and how to think about risk. I don’t tell you what to buy, and neither should anyone who does without being licensed and regulated to.</p></div></details>
+
+    <details class="acc"><summary>I came here for gold. Will I actually get it?</summary>
+      <div class="acc__body"><p>Day 5, Lecture 7. Purity, how to check whether gold is genuine, where to buy it, how to check the live price. It’s one of eight lectures, so you’ll also get the money management that determines how much you can put into it at all.</p></div></details>
+
+    <details class="acc"><summary>I came for the stock valuation demo.</summary>
+      <div class="acc__body"><p>Days 6 and 7, Lecture 8. The same demo, plus what those numbers don’t tell you.</p></div></details>
+
+    <details class="acc"><summary>Do I need investment experience?</summary>
+      <div class="acc__body"><p>No. Lecture 1 assumes nothing.</p></div></details>
+
+    <details class="acc"><summary>How long do I have to finish it?</summary>
+      <div class="acc__body"><p>As long as you like. There’s no expiry.</p></div></details>
+
+    <details class="acc"><summary>What’s the difference between the two options?</summary>
+      <div class="acc__body"><p>The workshop is the teaching. The bundle adds FOS·AI, the tool. Take the workshop if you want to understand the material. Take the bundle if you want to keep real records while you work through it.</p></div></details>
+
+    <details class="acc"><summary>Do I get corrections if you update the material?</summary>
+      <div class="acc__body"><p>Yes. Lifetime access includes anything I fix later.</p></div></details>
+  </div>
+</section>
+
+</main>
+
+<!-- ======================= FINAL CTA ======================= -->
+<footer class="scene scene--night dark final" id="final">
+  <div class="wrap">
+    <h2 class="rv">Start with Lecture 1</h2>
+    <p class="lead rv">Eight lectures. About eight hours. No pressure, no deadline.</p>
+    <p class="rv">You already know something isn’t working. That’s usually what makes people look. What comes after that is just accurate information and aggressive implementation, and it takes about as long as eight evenings.</p>
+    <a class="btn rv" href="#options">Choose your option</a>
+    <p class="sign rv">Prosper Betiang</p>
+
+    <p class="fine">Money Mastery Code is education. It is not investment advice. Refunds: <a href="mailto:refunds@betiangli.xyz">refunds@betiangli.xyz</a><br>© 2026 Prosper Betiang</p>
+  </div>
+</footer>
+
+<!-- ======================= STICKY BAR (phones) ======================= -->
+<div class="bar dark" id="bar" aria-hidden="true">
+  <div class="bar__txt"><strong>Money Mastery Code</strong><span>From ₦15,000</span></div>
+  <a class="btn" href="#options" tabindex="-1">Choose option</a>
+</div>
+
+<!-- ======================= SETTINGS: EDIT HERE ======================= -->
+<script>
+  var SITE = {
+    // Paste your payment / checkout links between the quotes (Paystack, Flutterwave, Selar, etc.).
+    // While a link is empty, the buttons simply scroll to the options section.
+    checkout: {
+      workshop: "",
+      bundle:   ""
+    },
+    // Link to the FOS·AI privacy statement. While empty, the link does nothing.
+    privacy: ""
+  };
+</script>
+
+<script>
+(function () {
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var $ = function (id) { return document.getElementById(id); };
+  var all = function (sel, root) { return [].slice.call((root || document).querySelectorAll(sel)); };
+
+  /* Checkout + privacy links */
+  all('[data-plan]').forEach(function (a) {
+    var url = SITE.checkout[a.getAttribute('data-plan')];
+    if (url) a.setAttribute('href', url);
+  });
+  var pl = $('privacy-link');
+  if (pl && SITE.privacy) { pl.setAttribute('href', SITE.privacy); pl.setAttribute('target', '_blank'); pl.setAttribute('rel', 'noopener'); }
+  else if (pl) { pl.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); }); }
+
+  /* Jump links: open any collapsed lecture containing the target, then scroll to it */
+  function openTo(id) {
+    var el = $(id);
+    if (!el) return false;
+    for (var n = el; n && n !== document.body; n = n.parentElement) {
+      if (n.tagName === 'DETAILS') n.open = true;
+    }
+    el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    return true;
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[href^="#"]');
+    if (!a || a.id === 'privacy-link') return;
+    var id = a.getAttribute('href').slice(1);
+    if (id && openTo(id)) {
+      e.preventDefault();
+      if (history.replaceState) history.replaceState(null, '', '#' + id);
+    }
+  });
+  if (location.hash.length > 1) setTimeout(function () { openTo(location.hash.slice(1)); }, 0);
+
+  /* Scroll reveal */
+  var rv = all('.rv');
+  if ('IntersectionObserver' in window && !reduce) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+    rv.forEach(function (el) { io.observe(el); });
+  } else {
+    rv.forEach(function (el) { el.classList.add('in'); });
+  }
+
+  /* Number formatting + tween */
+  function fmt(n) { return '₦' + String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  var tweens = {};
+  function tween(el, to, format, ms) {
+    var from = parseFloat(el.getAttribute('data-v'));
+    if (isNaN(from)) from = to;
+    el.setAttribute('data-v', to);
+    cancelAnimationFrame(tweens[el.id]);
+    if (reduce) { el.textContent = format(to); return; }
+    var t0 = null;
+    function step(t) {
+      if (t0 === null) t0 = t;
+      var k = Math.min(1, (t - t0) / (ms || 350));
+      var e = 1 - Math.pow(1 - k, 3);
+      el.textContent = format(from + (to - from) * e);
+      if (k < 1) tweens[el.id] = requestAnimationFrame(step);
+    }
+    tweens[el.id] = requestAnimationFrame(step);
+  }
+
+  /* Pay yourself first */
+  var rng = $('pyf');
+  if (rng) {
+    var chips = all('#pyf-chips button');
+    var setPyf = function (v) {
+      v = +v;
+      $('pyf-income').textContent = fmt(v);
+      $('pyf-keep').textContent = fmt(v * 0.1);
+      $('pyf-rest').textContent = fmt(v * 0.9);
+      tween($('pyf-year'), v * 0.1 * 12, fmt, 400);
+      rng.style.setProperty('--p', ((v - rng.min) / (rng.max - rng.min) * 100) + '%');
+      chips.forEach(function (c) { c.setAttribute('aria-pressed', String(+c.getAttribute('data-v') === v)); });
+    };
+    $('pyf-year').setAttribute('data-v', 120000);
+    rng.addEventListener('input', function () { setPyf(rng.value); });
+    chips.forEach(function (c) {
+      c.addEventListener('click', function () { rng.value = c.getAttribute('data-v'); setPyf(rng.value); });
+    });
+    setPyf(rng.value);
+  }
+
+  /* Tap checklist */
+  var ticks = all('#ticks .tick');
+  var msg = $('tickmsg');
+  var msgs = [
+    'Tap everything that sounds like you.',
+    'That’s one. Keep going.',
+    'Two so far. Anything else?',
+    'Three. This was built for people like you.',
+    'All four. This was built for exactly you.'
+  ];
+  ticks.forEach(function (t) {
+    t.addEventListener('click', function () {
+      t.setAttribute('aria-pressed', String(t.getAttribute('aria-pressed') !== 'true'));
+      var n = ticks.filter(function (x) { return x.getAttribute('aria-pressed') === 'true'; }).length;
+      msg.textContent = msgs[n];
+    });
+  });
+
+  /* Karat explorer */
+  var kBtns = all('#karat .karat__tabs button');
+  if (kBtns.length) {
+    $('karat-num').setAttribute('data-v', 99.9);
+    kBtns.forEach(function (b) {
+      b.addEventListener('click', function () {
+        var p = parseFloat(b.getAttribute('data-p'));
+        kBtns.forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+        $('karat-k').textContent = b.textContent;
+        $('karat-bar').style.width = p + '%';
+        tween($('karat-num'), p, function (v) { return (Math.round(v * 10) / 10) + '%'; }, 450);
+      });
+    });
+  }
+
+  /* Two-day-and-twelve-hour wait */
+  var wb = $('wait-btn');
+  if (wb) {
+    var wbar = $('wait-bar'), wh = $('wait-h'), wmsg = $('wait-msg'), running = false;
+    wb.addEventListener('click', function () {
+      if (running) return;
+      running = true; wb.disabled = true; wmsg.textContent = '';
+      var dur = reduce ? 1 : 3400, t0 = null;
+      function step(ts) {
+        if (t0 === null) t0 = ts;
+        var k = Math.min(1, (ts - t0) / dur);
+        wbar.style.width = (k * 100) + '%';
+        wh.textContent = Math.round(k * 60) + ' hours';
+        if (k < 1) { requestAnimationFrame(step); }
+        else {
+          wmsg.textContent = 'Still want it? Then it’s probably real. Often, the feeling has already faded.';
+          wb.textContent = 'Run it again'; wb.disabled = false; running = false;
+        }
+      }
+      requestAnimationFrame(step);
+    });
+  }
+
+  /* Flee from debt */
+  var dchips = all('#flee-chips .dchip');
+  var punch = $('punch');
+  dchips.forEach(function (c) {
+    c.addEventListener('click', function () {
+      c.setAttribute('aria-pressed', String(c.getAttribute('aria-pressed') !== 'true'));
+      var n = dchips.filter(function (x) { return x.getAttribute('aria-pressed') === 'true'; }).length;
+      $('flee-hint').textContent = n === dchips.length ? 'All crossed off. Now read the last line.' : (n ? (dchips.length - n) + ' to go.' : 'Tap each one to cross it off.');
+      if (n === dchips.length && punch) { punch.classList.remove('pop'); void punch.offsetWidth; punch.classList.add('pop'); }
+    });
+  });
+
+  /* FOS·AI tabs */
+  var tabs = all('.fos__tabs [role="tab"]');
+  function selectTab(t, focus) {
+    tabs.forEach(function (x) {
+      var on = x === t;
+      x.setAttribute('aria-selected', String(on));
+      x.tabIndex = on ? 0 : -1;
+      var p = $(x.getAttribute('aria-controls'));
+      if (p) p.hidden = !on;
+    });
+    if (focus) t.focus();
+  }
+  tabs.forEach(function (t, i) {
+    t.addEventListener('click', function () { selectTab(t, false); });
+    t.addEventListener('keydown', function (e) {
+      var j = null;
+      if (e.key === 'ArrowRight') j = (i + 1) % tabs.length;
+      else if (e.key === 'ArrowLeft') j = (i - 1 + tabs.length) % tabs.length;
+      else if (e.key === 'Home') j = 0;
+      else if (e.key === 'End') j = tabs.length - 1;
+      if (j !== null) { e.preventDefault(); selectTab(tabs[j], true); }
+    });
+  });
+
+  /* Compound interest illustration */
+  var cp = $('c-p'), cr = $('c-r'), cn = $('c-n');
+  if (cp) {
+    var calc = function () {
+      var P = parseFloat(cp.value), r = parseFloat(cr.value), n = parseFloat(cn.value);
+      $('c-ny').textContent = isNaN(n) ? '–' : n;
+      if (isNaN(P) || isNaN(r) || isNaN(n) || P < 0 || r < 0 || n < 0) { $('c-res').textContent = '–'; return; }
+      $('c-res').textContent = fmt(P * Math.pow(1 + r / 100, n));
+    };
+    [cp, cr, cn].forEach(function (i) { i.addEventListener('input', calc); });
+    calc();
+  }
+
+  /* Sticky bar: shows once the hero button has scrolled away, hides near the options and the final CTA */
+  var bar = $('bar');
+  if (bar && 'IntersectionObserver' in window) {
+    var state = { hero: true, options: false, final: false };
+    var update = function () {
+      var on = !state.hero && !state.options && !state.final;
+      bar.classList.toggle('is-on', on);
+      bar.setAttribute('aria-hidden', on ? 'false' : 'true');
+      bar.querySelector('a').setAttribute('tabindex', on ? '0' : '-1');
+    };
+    [['hero-cta', 'hero'], ['options', 'options'], ['final', 'final']].forEach(function (pair) {
+      var el = $(pair[0]);
+      if (!el) return;
+      new IntersectionObserver(function (entries) {
+        state[pair[1]] = entries[0].isIntersecting;
+        update();
+      }).observe(el);
+    });
+  }
+})();
+</script>
+</body>
+</html>

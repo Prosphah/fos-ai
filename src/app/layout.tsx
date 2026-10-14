@@ -9,13 +9,16 @@ import "./globals.css";
 const sora = Sora({
   variable: "--font-display-family",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  // 800 is the storefront display weight (see money-mastery-code/v3).
+  // Without it the browser synthesises a fake bold and the large
+  // headings lose the tight, solid edge the type is built around.
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 const inter = Inter({
   variable: "--font-body",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800", "900"],
 });
 
 const jetbrainsMono = JetBrains_Mono({

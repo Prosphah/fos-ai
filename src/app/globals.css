@@ -100,6 +100,824 @@
   --rose-soft: rgba(225, 29, 72, 0.1);
 }
 
+/* ── Sales storefront ──────────────────────────────────────────
+   Monochrome base, emerald reserved as the single accent.
+   Scoped to its own token namespace so it never inherits the
+   app's violet identity.
+   ────────────────────────────────────────────────────────────── */
+:root {
+  --sales-warn: #8A5A18;
+  --sales-warn-soft: rgba(138, 90, 24, 0.1);
+}
+
+.dark {
+  /* Money Mastery Code storefront: near-black base, lime kept as the
+     single hot accent. Purple and orange appear only inside their own
+     colour-block sections, so every component that references a sales
+     token re-themes to this palette automatically. */
+  --sales-bg: #10120f;
+  --sales-mesh-1: rgba(213, 255, 101, 0.05);
+  --sales-mesh-2: rgba(187, 163, 255, 0.05);
+  --sales-surface: #181b17;
+  --sales-surface-hover: #20251f;
+  --sales-border: rgba(244, 243, 235, 0.14);
+  --sales-border-hover: rgba(213, 255, 101, 0.55);
+  --sales-text-1: #f4f3eb;
+  --sales-text-2: rgba(244, 243, 235, 0.64);
+  --sales-text-3: rgba(244, 243, 235, 0.4);
+
+  --sales-accent: #d5ff65;
+  --sales-accent-bright: #e9ffb0;
+  --sales-accent-contrast: #17190f;
+  --sales-accent-soft: rgba(213, 255, 101, 0.14);
+  --sales-accent-softer: rgba(213, 255, 101, 0.07);
+  --sales-accent-glow: rgba(213, 255, 101, 0.28);
+
+  --sales-ink-bg: #0e100b;
+  --sales-ink-text: #e9ffb0;
+  --sales-ink-text-2: rgba(233, 255, 176, 0.75);
+  --sales-ink-border: rgba(213, 255, 101, 0.4);
+
+  --sales-shadow: 0 2px 24px rgba(0, 0, 0, 0.5);
+  --sales-shadow-glow: 0 0 44px rgba(213, 255, 101, 0.14);
+  --sales-warn: #e0ae55;
+  --sales-warn-soft: rgba(224, 174, 85, 0.12);
+}
+
+:root:not(.dark) {
+  /* The storefront ignores the app theme: it is always this near-black
+     palette, so the app's light/dark toggle never re-themes it. */
+  --sales-bg: #10120f;
+  --sales-mesh-1: rgba(213, 255, 101, 0.05);
+  --sales-mesh-2: rgba(187, 163, 255, 0.05);
+  --sales-surface: #181b17;
+  --sales-surface-hover: #20251f;
+  --sales-border: rgba(244, 243, 235, 0.14);
+  --sales-border-hover: rgba(213, 255, 101, 0.55);
+  --sales-text-1: #f4f3eb;
+  --sales-text-2: rgba(244, 243, 235, 0.64);
+  --sales-text-3: rgba(244, 243, 235, 0.4);
+
+  --sales-accent: #d5ff65;
+  --sales-accent-bright: #e9ffb0;
+  --sales-accent-contrast: #17190f;
+  --sales-accent-soft: rgba(213, 255, 101, 0.14);
+  --sales-accent-softer: rgba(213, 255, 101, 0.07);
+  --sales-accent-glow: rgba(213, 255, 101, 0.28);
+
+  --sales-ink-bg: #0e100b;
+  --sales-ink-text: #e9ffb0;
+  --sales-ink-text-2: rgba(233, 255, 176, 0.75);
+  --sales-ink-border: rgba(213, 255, 101, 0.4);
+
+  --sales-shadow: 0 2px 24px rgba(0, 0, 0, 0.5);
+  --sales-shadow-glow: 0 0 44px rgba(213, 255, 101, 0.14);
+  --sales-warn: #e0ae55;
+  --sales-warn-soft: rgba(224, 174, 85, 0.12);
+}
+
+/* ── Money Mastery Code colour-block sections ──────────────────
+   Section-level backgrounds that break the near-black base on purpose
+   (light, lime, purple, soil). These are static tokens: each block is
+   always the same colour regardless of the app theme. */
+:root {
+  --mm-light: #e8e8df;
+  --mm-light-ink: #171914;
+  --mm-light-muted: #53574e;
+  --mm-lime: #d5ff65;
+  --mm-lime-deep: #566e18;
+  --mm-lime-glow: #758f2b;
+  --mm-purple: #bba3ff;
+  --mm-purple-ink: #1c1728;
+  --mm-orange: #ffb16e;
+  --mm-panel: #181b17;
+  --mm-panel-2: #20251f;
+  --mm-soil: #191d17;
+  --mm-fos-bg: #151319;
+  --mm-line: rgba(244, 243, 235, 0.14);
+}
+
+/* Own background + mesh, so the storefront never inherits the app's violet wash */
+.sales-root {
+  position: relative;
+  isolation: isolate;
+  background: var(--sales-bg);
+  color: var(--sales-text-1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sales-root::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse 620px 520px at 82% 4%, var(--sales-mesh-1), transparent),
+    radial-gradient(ellipse 540px 440px at 12% 78%, var(--sales-mesh-2), transparent);
+  pointer-events: none;
+}
+
+/* The inverted block. Carries its own colour set so nothing inside
+   it has to know which theme is active. */
+.sales-ink {
+  background: var(--sales-ink-bg);
+  color: var(--sales-ink-text);
+  border: 1px solid var(--sales-ink-border);
+}
+
+.sales-card {
+  background: var(--sales-surface);
+  backdrop-filter: blur(18px) saturate(1.25);
+  -webkit-backdrop-filter: blur(18px) saturate(1.25);
+  border: 1px solid var(--sales-border);
+  box-shadow: var(--sales-shadow);
+}
+
+.sales-card-hover {
+  transition: background 0.3s var(--ease), border-color 0.3s var(--ease),
+    transform 0.3s var(--ease);
+}
+
+.sales-card-hover:hover {
+  background: var(--sales-surface-hover);
+  border-color: var(--sales-border-hover);
+  transform: translateY(-2px);
+}
+
+.sales-focus:focus-visible {
+  outline: 2px solid var(--sales-accent);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+/* ── FOS·AI device mockups ──────────────────────────────────────
+   The screens are authored once at 390x844 (the app's real logical
+   viewport) and scaled down, so every pixel position holds at any
+   display size. Never rebuild these responsively by hand.
+
+   The `390px` divisor MUST keep its unit. `calc(286px / 390)`
+   divides a length by a number and yields a *length*, which
+   `zoom()` rejects, so the browser drops the whole declaration and
+   the canvas renders at its full unscaled 390x844 — overflowing the
+   stage and every neighbouring card. Dividing length by length
+   yields a number, which is what `zoom()` wants. ────────────── */
+.phone-stage {
+  --phone-w: 286px;
+  --phone-scale: calc(var(--phone-w) / 390px);
+  flex: none;
+  position: relative;
+  width: var(--phone-w);
+  height: calc(var(--phone-w) * 2.1641);
+}
+
+/* Absolutely positioned on purpose. A canvas that stays in flow keeps its
+   full 390px layout box and that becomes the min-content width of every
+   card and rail above it — which is what pushed the cards wider than the
+   viewport on small screens. Taking it out of flow means .phone-stage's
+   explicit width/height are the only thing sizing the box, while the
+   device's drop shadow still paints normally.
+
+   `zoom`, not `transform: scale()`. Both produce identical geometry, but a
+   transform promotes the canvas to its own composited layer that Chromium
+   rasters once and then reuses at the wrong raster scale — which showed up
+   as a small patch of shrunken, illegible text sitting behind the bottom of
+   the screens until the section was scrolled out of view and back. `zoom`
+   re-resolves every length in the subtree, so the mockup is laid out and
+   rastered at its final size and there is no scaled-text layer to get
+   wrong. (Supported in Chromium and WebKit since long ago, and in Firefox
+   since 126.) */
+.phone-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 390px;
+  height: 844px;
+  zoom: var(--phone-scale);
+}
+
+@media (min-width: 480px) {
+  .phone-stage { --phone-w: 308px; }
+}
+
+@media (min-width: 1024px) {
+  .phone-stage { --phone-w: 320px; }
+}
+
+/* Horizontal snap rail for the phone showcase */
+.phone-rail {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: 20px;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.phone-rail::-webkit-scrollbar { display: none; }
+
+.phone-rail > * { scroll-snap-align: center; }
+
+/* On phones the showcase stacks so every screen and its caption is fully
+   readable without a hidden swipe. The rail only kicks in once there is
+   actually room to show more than one. */
+@media (max-width: 639px) {
+  .phone-rail {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 3rem;
+    overflow: visible;
+    scroll-snap-type: none;
+    padding-bottom: 0;
+    justify-content: unset;
+  }
+  .phone-rail > * {
+    scroll-snap-align: none;
+  }
+}
+
+@media (min-width: 640px) {
+  .phone-rail {
+    /* `safe` matters: with a plain `center` on a scroll container, anything
+       overflowing past the left edge becomes unreachable, because the
+       scroll origin stays pinned to the flex-start. Falls back to `center`
+       whenever the row fits. */
+    justify-content: safe center;
+    scroll-padding-left: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mm-sticky-bar { transition: none !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Money Mastery Code · variant A storefront chrome
+   ═══════════════════════════════════════════════════════════════
+   The scroll progress bar, the hero debit-alert stack and the
+   lime marquee. Deliberately *not* named `.mmb-*`: variant B owns
+   those, and this page must be able to carry its own treatment in
+   the volt-lime accent rather than variant B's mint. */
+
+/* Scroll progress ──────────────────────────────────────────────── */
+.sales-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 45; /* above the sticky header's 40 */
+  width: 100%;
+  height: 4px;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    #7e9b35 0%,
+    var(--sales-accent) 60%,
+    var(--sales-accent-bright) 100%
+  );
+  transform-origin: left center;
+}
+
+/* Hero debit alerts ────────────────────────────────────────────── */
+.mm-alerts {
+  display: grid;
+  gap: 9px;
+  font-family: var(--font-mono-family);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.mm-alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 13px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(244, 243, 235, 0.09);
+  border-left: 3px solid #ff6b5b;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.018));
+  box-shadow: 0 18px 40px -28px rgba(0, 0, 0, 0.95);
+  color: var(--sales-text-1);
+}
+/* The stagger reads as a feed, not a table: every second row is pushed in. */
+.mm-alert:nth-child(even) { margin-left: 22px; }
+.mm-alert b {
+  color: #ff8f7e;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.mm-alert.is-end {
+  border-color: var(--sales-accent);
+  background: var(--sales-accent);
+  color: var(--sales-accent-contrast);
+  box-shadow: 0 22px 54px -24px var(--sales-accent-glow);
+}
+.mm-alert.is-end b { color: var(--sales-accent-contrast); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .mm-alert {
+    animation: mm-drop 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: var(--mm-d, 0s);
+  }
+}
+@keyframes mm-drop {
+  from { opacity: 0; transform: translateY(-18px); }
+}
+
+/* Marquee ──────────────────────────────────────────────────────── */
+.mm-marquee {
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 13px 0;
+  background: var(--sales-accent);
+  color: var(--sales-accent-contrast);
+  border-block: 1px solid rgba(23, 25, 15, 0.16);
+  font-weight: 800;
+  font-size: clamp(13px, 2.4vw, 24px);
+  letter-spacing: 0.01em;
+  user-select: none;
+}
+.mm-marquee-track { display: inline-block; }
+/* Descendant, not child: the words have to carry the spacing, not just the
+   two halves. `em` so the gaps track the clamp()'d type size instead of
+   drifting loose on a wide screen and tight on a phone. */
+.mm-marquee-track span { margin: 0 0.6em; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .mm-marquee-track { animation: mm-marquee 28s linear infinite; }
+}
+/* Only loops seamlessly because the track holds precisely two identical
+   halves — see the marquee copy in ../money-mastery-code/page.tsx. */
+@keyframes mm-marquee {
+  to { transform: translateX(-50%); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Money Mastery Code · variant B (the A/B challenger)
+   ═══════════════════════════════════════════════════════════════
+   A paper-coloured, hard-bordered alternative to the near-black
+   variant A. Everything here is scoped under `.mmb-root` so it
+   cannot leak into the app or into variant A.
+
+   The parent `layout.tsx` wraps every storefront route in
+   `.sales-root`, which paints a near-black background and a fixed
+   violet mesh. Variant B inverts both, so those two rules below are
+   load-bearing, not decoration. */
+
+.sales-root:has(> .mmb-root) { background: var(--mmb-pap); }
+.sales-root:has(> .mmb-root)::before { content: none; }
+
+/* Anchor CTAs should ease to their target, but only on this route. */
+html:has(.mmb-root) { scroll-behavior: smooth; }
+
+.mmb-root {
+  /* Palette. Ink on paper, one mint accent carried through the whole
+     page, violet reserved for FOS·AI because that is the product's own
+     identity, red used only to mark a loss or a struck-through "was". */
+  --mmb-ink: #0a1411;
+  --mmb-pap: #f3f5f2;
+  --mmb-g: #46e5a0;
+  --mmb-gd: #0b7a4b;
+  --mmb-p: #695aff;
+  --mmb-blue: #2437ff;
+  --mmb-red: #ff4a2b;
+  --mmb-tint: #dff9ec;
+  --mmb-line: rgba(12, 12, 22, 0.16);
+
+  position: relative;
+  isolation: isolate;
+  background: var(--mmb-pap);
+  color: var(--mmb-ink);
+  font-family: var(--font-body);
+  overflow-x: clip;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mmb-root :focus-visible { outline: 3px solid var(--mmb-red); outline-offset: 3px; }
+
+/* Type scale for the variant. Sora for display, the app's body sans for
+   prose, JetBrains Mono where the mock used DM Mono (labels, figures). */
+.mmb-root h1,
+.mmb-root h2,
+.mmb-root h3,
+.mmb-root .mmb-pull,
+.mmb-root .mmb-price,
+.mmb-root .mmb-btn,
+.mmb-root .mmb-tag,
+.mmb-root .mmb-mq,
+.mmb-root .mmb-stats b,
+.mmb-root .mmb-sc p,
+.mmb-root .mmb-bn h3,
+.mmb-root .mmb-dev {
+  font-family: var(--font-display-family);
+}
+.mmb-root h1,
+.mmb-root h2,
+.mmb-root h3 { font-weight: 800; letter-spacing: -0.03em; }
+
+.mmb-root h1 { font-size: clamp(2.3rem, 6vw, 4.6rem); line-height: 1.08; }
+.mmb-root h2 { font-size: clamp(1.8rem, 4.4vw, 3.2rem); line-height: 1.08; max-width: 20ch; }
+.mmb-root h3 { font-size: 1.35rem; line-height: 1.2; }
+
+/* Base vertical rhythm. These two rules are what stop the long prose blocks
+   from reading as one stressed wall of text: every paragraph breathes, and
+   a heading always separates itself from the copy beneath it. */
+.mmb-root h2 { margin: 0 0 1.3rem; }
+.mmb-root h3 { margin: 1.7rem 0 0.3rem; }
+.mmb-root p { margin: 0.9em 0; max-width: 60ch; }
+/* First child of a section has no rhythm to establish above it. */
+.mmb-root section > * > :first-child,
+.mmb-root h2:first-child,
+.mmb-root h3:first-child { margin-top: 0; }
+
+.mmb-wrap { max-width: 1160px; margin-inline: auto; }
+.mmb-wrap-narrow { max-width: 820px; margin-inline: auto; }
+.mmb-section { padding: clamp(4rem, 9vw, 7.5rem) 1.25rem; }
+.mmb-sub { font-size: 15px; }
+.mmb-tag { font-weight: 700; font-size: 15px; }
+.mmb-ink { background: var(--mmb-ink); color: #fff; }
+.mmb-ink strong { color: var(--mmb-g); }
+.mmb-mint { background: var(--mmb-g); color: var(--mmb-ink); }
+.mmb-white { background: #fff; }
+
+/* Buttons ────────────────────────────────────────────────────────── */
+.mmb-btn {
+  display: inline-block;
+  background: var(--mmb-g);
+  color: var(--mmb-ink);
+  font-weight: 700;
+  padding: 1rem 1.8rem;
+  border-radius: 999px;
+  border: 2px solid var(--mmb-ink);
+  text-decoration: none;
+  margin-top: 1.2rem;
+  text-align: center;
+  transition: background 0.2s, transform 0.2s;
+}
+.mmb-btn:hover { background: #fff; transform: translateY(-2px); }
+.mmb-btn:active { transform: translateY(0); }
+/* On the mint end-CTA the invert is the only contrast that survives. */
+.mmb-mint .mmb-btn { background: var(--mmb-ink); color: #fff; }
+.mmb-mint .mmb-btn:hover { background: var(--mmb-gd); }
+
+/* Scroll progress + sticky CTA ────────────────────────────────────── */
+.mmb-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 6px;
+  width: 100%;
+  z-index: 30;
+  background: linear-gradient(90deg, var(--mmb-blue), var(--mmb-g), var(--mmb-p));
+  pointer-events: none;
+}
+
+.mmb-sticky-cta {
+  position: fixed;
+  left: 1rem;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 20;
+  display: block;
+  padding: 1rem;
+  border-radius: 999px;
+  font-family: var(--font-display-family);
+  font-weight: 700;
+  font-size: 15px;
+  text-align: center;
+  text-decoration: none;
+  background: var(--mmb-g);
+  color: var(--mmb-ink);
+  border: 2px solid var(--mmb-ink);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  margin: 0;
+}
+@media (min-width: 700px) {
+  .mmb-sticky-cta { left: auto; right: 1.5rem; }
+}
+
+/* Hero debit alerts ───────────────────────────────────────────────── */
+.mmb-alerts { display: grid; gap: 0.7rem; font-family: var(--font-mono-family); font-size: 14px; line-height: 1.4; }
+.mmb-alert {
+  background: #fff;
+  color: var(--mmb-ink);
+  border-left: 5px solid var(--mmb-red);
+  border-radius: 10px;
+  padding: 0.75rem 0.95rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.mmb-alert:nth-child(even) { margin-left: 1.6rem; }
+.mmb-alert b { color: var(--mmb-red); font-weight: 500; }
+.mmb-alert.is-end { background: var(--mmb-g); }
+.mmb-alert.is-end b { color: var(--mmb-ink); font-weight: 700; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .mmb-alert { animation: mmb-drop 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both; animation-delay: var(--mmb-d, 0s); }
+}
+@keyframes mmb-drop {
+  from { opacity: 0; transform: translateY(-20px); }
+}
+
+/* Marquee ────────────────────────────────────────────────────────── */
+.mmb-mq {
+  background: var(--mmb-g);
+  overflow: hidden;
+  white-space: nowrap;
+  border-block: 2px solid var(--mmb-ink);
+  font-weight: 800;
+  font-size: clamp(1.05rem, 2.5vw, 1.6rem);
+  letter-spacing: -0.02em;
+  padding: 0.6rem 0;
+}
+.mmb-mq-track { display: inline-block; }
+.mmb-mq-track span { margin: 0 1.1rem; }
+@media (prefers-reduced-motion: no-preference) {
+  .mmb-mq-track { animation: mmb-mq 26s linear infinite; }
+}
+@keyframes mmb-mq {
+  to { transform: translateX(-50%); }
+}
+
+/* Stat strip ─────────────────────────────────────────────────────── */
+.mmb-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; background: var(--mmb-ink); }
+@media (min-width: 760px) { .mmb-stats { grid-template-columns: repeat(4, 1fr); } }
+.mmb-stats > div { background: var(--mmb-pap); padding: 1.5rem 1.25rem; }
+.mmb-stats b { display: block; font-size: clamp(1.8rem, 4vw, 2.7rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1; }
+/* The count-up span must render identically to the static figures beside it,
+   so it inherits weight and family rather than setting its own. */
+.mmb-stats b > span { font: inherit; letter-spacing: inherit; }
+.mmb-stats span { font-size: 15px; }
+
+/* Problem: sticky card stack ──────────────────────────────────────── */
+.mmb-stack { margin: 2.5rem 0 3.5rem; }
+.mmb-sc {
+  position: sticky;
+  top: 5rem;
+  background: var(--mmb-g);
+  color: var(--mmb-ink);
+  border-radius: 26px;
+  padding: clamp(1.6rem, 4vw, 2.6rem);
+  margin-bottom: 1.2rem;
+  min-height: 200px;
+  box-shadow: 0 -12px 30px -12px rgba(0, 0, 0, 0.6);
+}
+.mmb-sc:nth-child(even) { background: #fff; }
+.mmb-sc:nth-child(2) { top: 5.8rem; }
+.mmb-sc:nth-child(3) { top: 6.6rem; }
+.mmb-sc:nth-child(4) { top: 7.4rem; }
+.mmb-sc:nth-child(5) { top: 8.2rem; }
+.mmb-sc i { font-family: var(--font-mono-family); font-weight: 500; font-size: 14px; display: block; margin-bottom: 0.8rem; font-style: normal; }
+.mmb-sc p { font-size: clamp(1.2rem, 2.6vw, 1.7rem); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; margin: 0; max-width: none; }
+
+/* Hard-bordered cards ─────────────────────────────────────────────── */
+.mmb-cols { display: grid; gap: 1.6rem; margin-top: 2.4rem; }
+@media (min-width: 900px) {
+  .mmb-cols.three { grid-template-columns: repeat(3, 1fr); }
+  .mmb-cols.two { grid-template-columns: 1fr 1fr; }
+}
+.mmb-col {
+  background: #fff;
+  border: 2px solid var(--mmb-ink);
+  border-radius: 24px;
+  padding: 1.7rem;
+  box-shadow: 7px 7px 0 var(--mmb-g);
+}
+.mmb-col:nth-child(2) { box-shadow: 7px 7px 0 var(--mmb-p); }
+.mmb-col:nth-child(3) { box-shadow: 7px 7px 0 var(--mmb-blue); }
+.mmb-col > .mmb-tag { display: inline-block; background: var(--mmb-ink); color: #fff; padding: 0.25rem 0.8rem; border-radius: 999px; }
+.mmb-col h3 { margin-top: 1rem; }
+.mmb-col p { max-width: none; }
+
+/* Check / cross lists ────────────────────────────────────────────── */
+.mmb-list { list-style: none; padding: 0; margin: 1rem 0; }
+.mmb-list li { padding: 0.4rem 0 0.4rem 1.6rem; position: relative; }
+.mmb-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 1.05em;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--mmb-gd);
+}
+.mmb-list.is-check li { padding-left: 2rem; }
+.mmb-list.is-check li::before {
+  content: "\2713";
+  background: none;
+  width: auto;
+  height: auto;
+  top: 0.4em;
+  font-weight: 800;
+  color: #0a8a4f;
+}
+.mmb-list.is-cross li { padding-left: 2rem; }
+.mmb-list.is-cross li::before {
+  content: "\2715";
+  background: none;
+  width: auto;
+  height: auto;
+  top: 0.4em;
+  color: #ff7a62;
+}
+.mmb-root .mmb-list li p { max-width: none; }
+
+/* On the violet FOS·AI block the green bullet disappears, so the dot inverts. */
+.mmb-root .mmb-list.on-dark li::before { background: #fff; }
+
+/* Tag pills inside framework cards ───────────────────────────────── */
+.mmb-col .mmb-list { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.mmb-col .mmb-list li {
+  padding: 0.3rem 0.8rem;
+  border: 1.5px solid var(--mmb-ink);
+  border-radius: 999px;
+  font-size: 15px;
+  line-height: 1.35;
+}
+.mmb-col .mmb-list li::before { content: none; }
+
+/* Pull quote ─────────────────────────────────────────────────────── */
+/* Qualified with .mmb-root so it outranks the base `.mmb-root p` rhythm,
+   which would otherwise flatten the pull quote back to a normal paragraph. */
+.mmb-root .mmb-pull {
+  font-weight: 800;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  margin: 2.4rem 0;
+  max-width: 24ch;
+  border-left: 8px solid var(--mmb-g);
+  padding-left: 1.2rem;
+}
+.mmb-mint .mmb-pull { border-color: var(--mmb-ink); }
+
+/* Before / after ─────────────────────────────────────────────────── */
+.mmb-ba {
+  max-width: none;
+  background: #fff;
+  border: 2px solid var(--mmb-ink);
+  border-radius: 20px;
+  padding: 1.2rem 1.4rem;
+  margin: 0 0 1rem;
+}
+.mmb-was { display: block; opacity: 0.8; text-decoration: line-through; text-decoration-color: var(--mmb-red); text-decoration-thickness: 2px; }
+.mmb-now { display: block; font-weight: 700; font-size: 1.1rem; line-height: 1.4; margin-top: 0.5rem; }
+
+/* Instructor ─────────────────────────────────────────────────────── */
+/* The one paragraph that should carry visual weight. Applied as a class
+   rather than :nth-of-type, because the eyebrow above it is also a <p>
+   and a positional selector silently grabs the wrong one. */
+.mmb-root .mmb-standout {
+  font-size: clamp(1.35rem, 2.6vw, 1.75rem);
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+  margin: 2rem 0;
+  max-width: none;
+}
+
+/* Bento ──────────────────────────────────────────────────────────── */
+.mmb-bento { display: grid; gap: 1rem; margin-top: 2rem; }
+@media (min-width: 800px) {
+  .mmb-bento { grid-template-columns: repeat(6, 1fr); }
+  .mmb-bn:nth-child(1), .mmb-bn:nth-child(4) { grid-column: span 4; }
+  .mmb-bn:nth-child(2), .mmb-bn:nth-child(3) { grid-column: span 2; }
+  .mmb-bn:nth-child(5) { grid-column: span 6; }
+}
+.mmb-bn { border: 2px solid var(--mmb-ink); border-radius: 24px; padding: 1.6rem; background: var(--mmb-pap); }
+.mmb-bn:nth-child(1) { background: var(--mmb-g); }
+.mmb-bn:nth-child(4) { background: var(--mmb-ink); color: #fff; }
+.mmb-bn:nth-child(5) { background: var(--mmb-p); color: #fff; }
+.mmb-bn i { font-family: var(--font-mono-family); font-weight: 500; font-size: 14px; font-style: normal; }
+.mmb-bn h3 { margin-top: 0.5rem; }
+.mmb-bn p { max-width: 52ch; }
+
+/* Testimonials ───────────────────────────────────────────────────── */
+.mmb-tcard {
+  background: #fff;
+  border: 2px dashed var(--mmb-line);
+  border-radius: 16px;
+}
+.mmb-tcard-shot {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background: var(--mmb-tint);
+  border-bottom: 2px dashed var(--mmb-line);
+  max-height: 360px;
+  overflow: hidden;
+}
+.mmb-tcard-shot img { width: auto; height: 360px; object-fit: contain; object-position: top center; }
+.mmb-tcard .who { display: flex; gap: 0.8rem; align-items: center; margin-top: 1.1rem; padding-top: 1rem; border-top: 1px solid var(--mmb-line); }
+.mmb-tcard .av { width: 46px; height: 46px; border-radius: 50%; background: var(--mmb-tint); border: 1px solid var(--mmb-line); flex: none; }
+.mmb-tcard .who strong { display: block; }
+.mmb-tcard .who .sub { display: block; color: var(--mmb-ink); opacity: 0.62; }
+
+/* FOS·AI screen cards ────────────────────────────────────────────── */
+.mmb-shot {
+  background: #fff;
+  color: var(--mmb-ink);
+  border: 2px solid var(--mmb-ink);
+  border-radius: 24px;
+  padding: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  /* Inside the snap rail these are flex items. Without `flex: none` they
+     shrink to the viewport while their fixed-width device does not, so the
+     phone spills out sideways and paints over the rest of the page. */
+  flex: none;
+  max-width: 100%;
+}
+
+/* The device is authored at a fixed 390px and scaled by --phone-w, so the
+   job here is to give it a width that fits the card at every breakpoint.
+
+   These MUST stay plain lengths. The scale factor is derived downstream as
+   `calc(var(--phone-w) / 390px)`, and wrapping that numerator in min() or
+   any other function makes the whole division invalid, which drops the
+   transform and paints the device at its full unscaled 390x844. So the
+   clamping is done with explicit breakpoints instead of arithmetic.
+
+   Each value is checked to leave the phone inside the card: the section
+   gutter is 20px per side and the card chrome is 4px border + 14.4px
+   padding per side. */
+.mmb-shot .phone-stage { --phone-w: 232px; }
+@media (min-width: 400px) { .mmb-shot .phone-stage { --phone-w: 260px; } }
+@media (min-width: 640px) { .mmb-shot .phone-stage { --phone-w: 300px; } }
+
+/* Four cards do fit across once the viewport can carry them, which is what
+   the source mock did. Sized to land inside the 1160px wrap with the
+   rail's 20px gaps. */
+@media (min-width: 1100px) {
+  .mmb-shot { padding: 0.8rem; }
+  .mmb-shot .phone-stage { --phone-w: 236px; }
+}
+
+.mmb-shot figcaption { margin-top: 0.9rem; font-size: 15px; text-align: center; font-weight: 700; }
+
+/* Packages ───────────────────────────────────────────────────────── */
+.mmb-pk { display: grid; gap: 1.4rem; margin-top: 2.2rem; }
+@media (min-width: 860px) { .mmb-pk { grid-template-columns: 1fr 1fr; } }
+.mmb-card {
+  background: #fff;
+  border: 2px solid var(--mmb-ink);
+  border-radius: 24px;
+  padding: 1.9rem;
+  display: flex;
+  flex-direction: column;
+}
+.mmb-card.is-featured { background: var(--mmb-ink); color: #fff; }
+.mmb-card.is-featured .mmb-tag { color: var(--mmb-g); }
+.mmb-card.is-featured .mmb-price { color: var(--mmb-g); }
+.mmb-card.is-featured .mmb-list li::before { background: var(--mmb-g); }
+.mmb-card .mmb-price { font-weight: 800; font-size: 3.1rem; letter-spacing: -0.04em; line-height: 1; margin: 0.6rem 0; }
+.mmb-card .mmb-btn { margin-top: auto; }
+.mmb-card ul { margin-bottom: 1.4rem; }
+
+/* Guarantee ──────────────────────────────────────────────────────── */
+.mmb-guar { background: var(--mmb-g); color: var(--mmb-ink); border-radius: 28px; padding: clamp(1.6rem, 4vw, 3rem); }
+.mmb-guar h2, .mmb-guar h3 { color: var(--mmb-ink); margin-top: 0; max-width: none; }
+.mmb-guar strong { color: var(--mmb-ink); }
+
+/* FAQ ────────────────────────────────────────────────────────────── */
+.mmb-root details { border-bottom: 2px solid var(--mmb-line); }
+.mmb-root summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 1.2rem 2.2rem 1.2rem 0;
+  font-family: var(--font-display-family);
+  font-weight: 700;
+  font-size: 1.15rem;
+  position: relative;
+}
+.mmb-root summary::-webkit-details-marker { display: none; }
+.mmb-root summary::after {
+  content: "+";
+  position: absolute;
+  right: 0;
+  top: 0.8rem;
+  font-size: 1.9rem;
+  line-height: 1;
+  color: var(--mmb-gd);
+  transition: transform 0.25s;
+}
+.mmb-root details[open] summary::after { transform: rotate(45deg); }
+.mmb-root details p { margin-top: 0; padding-bottom: 1.1rem; }
+
+.mmb-root footer { padding: 3rem 1.25rem 6rem; background: var(--mmb-ink); color: rgba(255, 255, 255, 0.88); font-size: 15px; }
+.mmb-root footer p { max-width: 1160px; margin: 0.8rem auto; }
+
+/* Reduced motion ─────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  html:has(.mmb-root) { scroll-behavior: auto; }
+  .mmb-mq-track, .mmb-alert { animation: none !important; }
+  .mmb-btn { transition: none; }
+}
+
 /* ── Dark mode select/option ── */
 .dark select {
   background-color: #1a1a2e !important;
@@ -123,6 +941,10 @@
 }
 
 /* ── Body ── */
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-family: var(--font-body);
   background: var(--bg);
@@ -221,6 +1043,7 @@ body::before {
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
   .reveal { animation: none; opacity: 1; transform: none; }
   .animate-modal-overlay, .animate-modal-panel { animation: none; }
   .animate-orb-drift, .animate-orb-drift-reverse,
@@ -358,3 +1181,4 @@ body::before {
   from { opacity: 0; }
   to { opacity: 1; }
 }
+

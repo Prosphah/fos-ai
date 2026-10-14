@@ -1,0 +1,141 @@
+"use client";
+
+import { useState } from "react";
+import { ArrowRight, Loader2 } from "lucide-react";
+import type { TierConfig } from "@/lib/money-mastery";
+
+type Status = "idle" | "loading" | "error";
+
+export function CheckoutForm({
+  tier,
+  label,
+  tone = "dark",
+  theme = "default",
+  variant,
+}: {
+  tier: TierConfig;
+  label?: string;
+  tone?: "dark" | "light";
+  /**
+   * "default" is the near-black variant A palette. "mmb" swaps the lime
+   * accent for the variant B mint, and retints the light card's hard-coded
+   * greys onto variant B's paper-and-ink tokens. Nothing else differs, so
+   * both variants share one form and one checkout path.
+   */
+  theme?: "default" | "mmb";
+  /** Which storefront page this purchase came from, for A/B attribution. */
+  variant?: "a" | "b";
+}) {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<Status>("idle");
+  const [error, setError] = useState("");
+
+  async function startCheckout(event: React.FormEvent) {
+    event.preventDefault();
+    setStatus("loading");
+    setError("");
+
+    try {
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tier: tier.id, email, variant }),
+      });
+
+      const payload = await response.json();
+
+      if (!response.ok || !payload.url) {
+        throw new Error(payload.error ?? "Checkout could not start.");
+      }
+
+      window.location.href = payload.url;
+    } catch (caught) {
+      setStatus("error");
+      setError(caught instanceof Error ? caught.message : "Checkout could not start.");
+    }
+  }
+
+  const light = tone === "light";
+  const mmb = theme === "mmb";
+
+  const accent = mmb ? "var(--mmb-g)" : "var(--sales-accent)";
+  const accentContrast = mmb ? "#0a1411" : "var(--sales-accent-contrast)";
+
+  // Variant B's paper ground is lighter than variant A's, so its helper text
+  // needs a darker grey to hold 4.5:1.
+  const quietTone = light ? (mmb ? "#3f463c" : "#64685d") : "var(--sales-text-3)";
+
+  return (
+    <form onSubmit={startCheckout} className="mt-7">
+      <label
+        htmlFor={`email-${tier.id}`}
+        className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.14em]"
+        style={{ color: quietTone }}
+      >
+        Where we send your access
+      </label>
+
+      <input
+        id={`email-${tier.id}`}
+        type="email"
+        required
+        autoComplete="email"
+        inputMode="email"
+        placeholder="you@example.com"
+        value={email}
+        onChange={(event) => setEmail(event.target.value)}
+        className="sales-focus w-full rounded-xl border px-4 py-3 text-[15px] outline-none transition-colors"
+        style={
+          light
+            ? {
+                background: "#ffffff",
+                borderColor: mmb ? "var(--mmb-ink)" : "#c6cabe",
+                borderWidth: mmb ? 2 : 1,
+                color: "#171914",
+              }
+            : {
+                background: mmb ? "rgba(255,255,255,0.06)" : "var(--sales-surface-hover)",
+                borderColor: mmb ? "rgba(255,255,255,0.32)" : "var(--sales-border)",
+                color: mmb ? "#ffffff" : "var(--sales-text-1)",
+              }
+        }
+      />
+
+      <button
+        type="submit"
+        disabled={status === "loading"}
+        className="sales-focus mt-3 flex w-full items-center justify-center gap-2 rounded-full px-5 py-3.5 text-[14.5px] font-semibold transition duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
+        style={{ background: accent, color: accentContrast }}
+      >
+        {status === "loading" ? (
+          <>
+            <Loader2 size={17} className="animate-spin" />
+            Opening secure checkout
+          </>
+        ) : (
+          <>
+            {label ?? (tier.featured ? "Get the course and FOS·AI" : "Get the course")}
+            <ArrowRight size={17} />
+          </>
+        )}
+      </button>
+
+      {status === "error" ? (
+        <p
+          role="alert"
+          className="mt-3 text-[13px] leading-5"
+          style={{ color: light ? "#b45309" : "var(--sales-warn)" }}
+        >
+          {error}
+        </p>
+      ) : (
+        <p
+          className="mt-3 text-[12px] leading-5"
+          style={{ color: quietTone }}
+        >
+          One payment by card, bank transfer or USSD. 180 days to change your mind.
+        </p>
+      )}
+    </form>
+  );
+}

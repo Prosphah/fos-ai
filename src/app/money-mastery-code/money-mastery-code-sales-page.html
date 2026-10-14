@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#10120f">
+<title>Money Mastery Code | Financial Literacy Without the Fluff</title>
+<meta name="description" content="A practical, beginner-friendly course to help you make money, manage what you earn, and understand how to put money to work.">
+<style>
+:root{
+  --bg:#10120f;--panel:#181b17;--panel2:#20251f;--ink:#f4f3eb;--muted:#b8bcb1;
+  --lime:#d5ff65;--purple:#bba3ff;--line:rgba(244,243,235,.14);--orange:#ffb16e;
+  --max:1180px;--radius:26px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:90px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.65}
+a{color:inherit;text-decoration:none}
+button,a{ -webkit-tap-highlight-color:transparent }
+.wrap{width:min(var(--max),calc(100% - 44px));margin-inline:auto}
+.nav{position:sticky;top:0;z-index:20;background:rgba(16,18,15,.88);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}
+.nav-inner{height:76px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.brand{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:900;letter-spacing:.08em}
+.brand-mark{display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:var(--lime);color:#111;font-size:19px;font-weight:950}
+.nav-links{display:flex;align-items:center;gap:24px;color:var(--muted);font-size:13px}
+.nav-links a:hover{color:var(--ink)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:15px 21px;border-radius:999px;background:var(--lime);color:#11140d;font-weight:850;font-size:14px;line-height:1.2;transition:transform .2s,background .2s}
+.btn:hover{transform:translateY(-2px);background:#e2ff94}
+.btn.secondary{background:transparent;border:1px solid var(--line);color:var(--ink)}
+.btn.secondary:hover{border-color:var(--lime)}
+.eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--lime);font-weight:900}
+.hero{position:relative;overflow:hidden;padding:86px 0 74px;border-bottom:1px solid var(--line)}
+.hero:before{content:"";position:absolute;width:600px;height:600px;right:-130px;top:-230px;border-radius:50%;background:radial-gradient(circle,rgba(187,163,255,.22),transparent 68%);pointer-events:none}
+.hero-grid{display:grid;grid-template-columns:1.12fr .88fr;gap:48px;align-items:center;position:relative}
+h1,h2,h3,p{margin-top:0}
+h1{font-size:clamp(44px,6.1vw,82px);line-height:.98;letter-spacing:-.065em;max-width:760px;margin:20px 0 24px;font-weight:900}
+h1 em{font-style:normal;color:var(--lime)}
+.hero-copy{max-width:620px;font-size:18px;color:var(--muted)}
+.hero-copy strong{color:var(--ink)}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin:30px 0 20px}
+.micro{font-size:12px;color:var(--muted)}
+.hero-art{min-height:440px;position:relative;display:flex;align-items:center;justify-content:center}
+.orbit{position:absolute;width:365px;height:365px;border:1px solid rgba(213,255,101,.25);border-radius:50%;transform:rotate(-22deg)}
+.orbit:before,.orbit:after{content:"";position:absolute;border:1px solid rgba(187,163,255,.3);border-radius:50%;inset:32px;transform:rotate(40deg)}
+.orbit:after{inset:70px;border-color:rgba(213,255,101,.2)}
+.money-card{position:relative;z-index:1;width:min(100%,340px);padding:26px;border:1px solid rgba(255,255,255,.18);border-radius:28px;background:linear-gradient(145deg,rgba(43,49,39,.96),rgba(24,27,23,.95));box-shadow:0 28px 90px #0008;transform:rotate(-4deg)}
+.money-card-top{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.12em}
+.card-symbol{display:grid;place-items:center;width:42px;height:42px;border-radius:14px;background:var(--lime);color:#111;font-size:22px;font-weight:900}
+.card-number{font-size:44px;line-height:1.05;letter-spacing:-.06em;font-weight:900;margin:32px 0 5px}
+.card-caption{color:var(--muted);font-size:13px}
+.mini-bars{display:flex;align-items:end;gap:8px;height:72px;margin-top:28px}
+.mini-bars span{flex:1;border-radius:7px 7px 2px 2px;background:linear-gradient(180deg,var(--lime),#7e9b35)}
+.mini-bars span:nth-child(1){height:30%}.mini-bars span:nth-child(2){height:43%}.mini-bars span:nth-child(3){height:38%}.mini-bars span:nth-child(4){height:62%}.mini-bars span:nth-child(5){height:54%}.mini-bars span:nth-child(6){height:82%}.mini-bars span:nth-child(7){height:100%}
+.float-tag{position:absolute;z-index:2;padding:12px 15px;background:var(--purple);color:#171322;border-radius:15px;font-weight:900;font-size:12px;box-shadow:0 12px 36px #0005}
+.tag-one{top:44px;right:5px;transform:rotate(6deg)}.tag-two{bottom:44px;left:0;background:var(--lime);transform:rotate(-5deg)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--line)}
+.stat{padding:24px 20px;border-right:1px solid var(--line)}.stat:last-child{border-right:0}
+.stat strong{display:block;font-size:22px;letter-spacing:-.04em}.stat span{color:var(--muted);font-size:12px}
+section{padding:100px 0}
+.section-head{max-width:760px;margin-bottom:42px}
+.section-head h2,.content h2{font-size:clamp(34px,4.3vw,58px);line-height:1.02;letter-spacing:-.055em;margin:14px 0 18px;font-weight:900}
+.section-head p{color:var(--muted);font-size:17px;max-width:700px}
+.problem{background:#e8e8df;color:#171914}
+.problem .eyebrow{color:#566e18}.problem .section-head p{color:#53574e}
+.problem-grid{display:grid;grid-template-columns:.82fr 1.18fr;gap:52px;align-items:start}
+.problem-aside{position:sticky;top:110px}.problem-aside .big-stat{font-size:clamp(54px,7vw,92px);line-height:.9;font-weight:950;letter-spacing:-.08em;color:#758f2b}
+.problem-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.problem-card{padding:22px;border:1px solid #c7cabe;border-radius:18px;background:#f5f5ef;font-size:14px;font-weight:650}
+.problem-card .num{display:block;color:#748a32;font-size:12px;font-weight:900;margin-bottom:18px}
+.problem-note{margin-top:15px;padding:22px;border-radius:18px;background:#d5ff65;color:#15170f;font-size:15px;font-weight:750}
+.framework{background:var(--panel)}
+.pillar-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.pillar{min-height:380px;padding:28px;border-radius:var(--radius);position:relative;overflow:hidden;display:flex;flex-direction:column}
+.pillar:nth-child(1){background:var(--lime);color:#17190f}.pillar:nth-child(2){background:var(--purple);color:#1c1728}.pillar:nth-child(3){background:#f2a76c;color:#21160e}
+.pillar .number{font-size:12px;letter-spacing:.14em;font-weight:950;opacity:.7}
+.pillar .glyph{font-size:58px;line-height:1;margin:40px 0 25px}
+.pillar h3{font-size:28px;line-height:1.02;letter-spacing:-.045em;margin-bottom:12px}
+.pillar p{font-size:14px;opacity:.8}
+.pillar a{margin-top:auto;font-size:12px;font-weight:900;letter-spacing:.06em;text-transform:uppercase}
+.pillar a span{font-size:18px;margin-left:7px}
+.transformation{padding:80px 0;background:#191d17}
+.transform-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:55px;align-items:center}
+.transform-quote{font-size:clamp(27px,3.2vw,42px);line-height:1.12;letter-spacing:-.04em;font-weight:850}
+.transform-quote em{font-style:normal;color:var(--lime)}
+.transform-list{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.transform-item{padding:18px;border:1px solid var(--line);border-radius:16px;color:var(--muted);font-size:13px}
+.transform-item strong{display:block;color:var(--ink);font-size:14px;margin-bottom:6px}
+.demo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.demo-card{min-height:270px;padding:26px;border-radius:22px;background:var(--panel);border:1px solid var(--line);display:flex;flex-direction:column}
+.demo-icon{width:50px;height:50px;border-radius:16px;display:grid;place-items:center;background:var(--panel2);font-size:24px;margin-bottom:28px}
+.demo-card h3{font-size:21px;letter-spacing:-.03em;line-height:1.1}.demo-card p{font-size:13px;color:var(--muted);margin-bottom:0}
+.instructor{background:#d9ff72;color:#17190f;overflow:hidden}
+.instructor .eyebrow{color:#4d6416}
+.instructor-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:65px;align-items:center}
+.instructor-visual{min-height:410px;position:relative;display:flex;align-items:center;justify-content:center}
+.portrait-block{width:290px;height:350px;border-radius:160px 160px 24px 24px;background:linear-gradient(145deg,#b6d64c,#8ea63a);border:1px solid #7e9828;display:flex;align-items:center;justify-content:center;font-size:112px;font-weight:950;letter-spacing:-.1em;color:#25310d}
+.sticker{position:absolute;padding:12px 16px;border-radius:13px;background:#17190f;color:#e5ff9a;font-size:12px;font-weight:900;transform:rotate(-7deg);left:0;bottom:65px}
+.instructor-copy h2{font-size:clamp(36px,4.4vw,58px);line-height:1;letter-spacing:-.06em;margin:12px 0 24px}
+.instructor-copy p{font-size:16px;color:#363d28}.instructor-copy strong{color:#17190f}
+.credibility{display:flex;gap:9px;flex-wrap:wrap;margin-top:24px}
+.credibility span{border:1px solid #849d34;border-radius:999px;padding:8px 12px;font-size:11px;font-weight:850}
+.audience-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.audience-card{padding:30px;border-radius:22px;background:var(--panel);border:1px solid var(--line)}
+.audience-card h3{font-size:24px;letter-spacing:-.04em}
+.audience-card ul{padding-left:19px;color:var(--muted);font-size:14px}.audience-card li{margin:10px 0}
+.audience-card.nope{background:#24201c;border-color:#674e3b}.audience-card.nope h3{color:var(--orange)}
+.deliverables{background:#191d17}
+.deliver-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.deliver-card{display:flex;gap:18px;padding:23px;border:1px solid var(--line);border-radius:18px;background:#20251f}
+.deliver-card .icon{flex:0 0 45px;height:45px;border-radius:14px;display:grid;place-items:center;background:var(--lime);color:#17190f;font-size:20px}
+.deliver-card h3{font-size:17px;margin:0 0 7px}.deliver-card p{font-size:13px;color:var(--muted);margin:0}
+.fos{background:#151319}
+.fos-top{display:grid;grid-template-columns:1fr .72fr;gap:50px;align-items:end;margin-bottom:38px}
+.fos-top h2{font-size:clamp(36px,4.5vw,60px);line-height:1;letter-spacing:-.06em;margin:13px 0 18px}
+.fos-top p{color:var(--muted)}
+.fos-preview{padding:24px;border:1px solid rgba(187,163,255,.35);border-radius:24px;background:linear-gradient(145deg,#252130,#17151c)}
+.preview-head{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:25px}
+.preview-badge{background:#bba3ff;color:#1c1728;padding:6px 9px;border-radius:999px;font-size:10px;font-weight:900}
+.preview-score{font-size:45px;font-weight:900;letter-spacing:-.07em}.preview-score small{font-size:13px;color:var(--muted);letter-spacing:0}
+.preview-meter{height:7px;border-radius:10px;background:#45404f;overflow:hidden;margin:10px 0 23px}.preview-meter span{display:block;width:68%;height:100%;background:var(--purple)}
+.preview-list{display:grid;grid-template-columns:1fr 1fr;gap:9px}.preview-list span{background:#302a3b;border-radius:10px;padding:12px;font-size:11px;color:#ded7ed}
+.fos-features{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.fos-feature{padding:22px;border:1px solid rgba(187,163,255,.2);border-radius:18px;background:#1e1b24}
+.fos-feature h3{font-size:16px;margin-bottom:8px}.fos-feature p,.fos-feature li{font-size:12px;color:var(--muted)}
+.fos-feature ul{padding-left:17px}.fos-future{margin-top:14px;padding:22px;border:1px dashed rgba(187,163,255,.45);border-radius:18px;color:var(--muted);font-size:13px}
+.offer{background:#e8e8df;color:#171914}
+.offer .eyebrow{color:#596f1c}.offer .section-head p{color:#53574e}
+.offer-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:stretch}
+.price-card{padding:32px;border-radius:24px;border:1px solid #c6cabe;background:#f6f6f0;display:flex;flex-direction:column;position:relative}
+.price-card.featured{background:#171a13;color:var(--ink);border-color:#171a13;box-shadow:0 22px 50px #171a1320}
+.price-card .popular{position:absolute;right:18px;top:18px;background:var(--lime);color:#17190f;border-radius:999px;padding:7px 10px;font-size:10px;font-weight:900}
+.price-card h3{font-size:21px;letter-spacing:-.035em;margin:0 0 12px}
+.price{font-size:clamp(40px,5vw,60px);line-height:1;letter-spacing:-.07em;font-weight:950;margin:16px 0 7px}
+.price-note{font-size:12px;color:#64685d;margin-bottom:25px}.featured .price-note{color:var(--muted)}
+.price-card ul{padding-left:19px;font-size:13px;color:#555a4e;margin-bottom:28px}.featured ul{color:var(--muted)}
+.price-card li{margin:10px 0}
+.price-card .btn{margin-top:auto;width:100%;text-align:center}
+.featured .btn{background:var(--lime);color:#11140d}
+.choose-note{margin-top:18px;padding:20px;border-radius:16px;background:#d8dcd0;font-size:13px;color:#3d4335}
+.guarantee{padding:64px 0}
+.guarantee-box{display:grid;grid-template-columns:.65fr 1.35fr;gap:35px;align-items:center;border:1px solid var(--line);border-radius:26px;padding:36px;background:var(--panel)}
+.guarantee-mark{width:130px;height:130px;border-radius:50%;border:1px solid var(--lime);display:grid;place-items:center;color:var(--lime);font-size:20px;font-weight:950;text-align:center;line-height:1.1;transform:rotate(-8deg)}
+.guarantee h2{font-size:34px;letter-spacing:-.05em;line-height:1.05;margin:12px 0}
+.guarantee p{font-size:13px;color:var(--muted)}
+.faq{background:var(--panel)}
+.faq-grid{display:grid;grid-template-columns:.65fr 1.35fr;gap:55px}
+.faq-intro{position:sticky;top:110px;align-self:start}
+.faq-intro h2{font-size:clamp(36px,4vw,52px);line-height:1;letter-spacing:-.06em}
+.faq-intro p{color:var(--muted);font-size:14px}
+.faq-item{border-bottom:1px solid var(--line)}
+.faq-question{width:100%;border:0;background:none;color:var(--ink);display:flex;align-items:center;justify-content:space-between;gap:18px;padding:22px 0;text-align:left;font:inherit;font-size:15px;font-weight:800;cursor:pointer}
+.faq-question span:last-child{font-size:22px;color:var(--lime);transition:transform .2s}
+.faq-answer{display:none;padding:0 28px 20px 0;color:var(--muted);font-size:14px}
+.faq-item.open .faq-answer{display:block}.faq-item.open .faq-question span:last-child{transform:rotate(45deg)}
+.final-cta{padding:90px 0;background:var(--lime);color:#17190f;text-align:center;position:relative;overflow:hidden}
+.final-cta .eyebrow{color:#536b18}.final-cta h2{font-size:clamp(40px,6vw,74px);line-height:.98;letter-spacing:-.07em;max-width:850px;margin:18px auto 20px}
+.final-cta p{max-width:650px;margin:0 auto 28px;color:#3b432b}
+.final-cta .btn{background:#17190f;color:var(--lime)}
+.disclaimer{padding:28px 0 42px;border-top:1px solid var(--line);font-size:11px;color:#92988a}
+.disclaimer strong{color:#d5d9ce}
+@media(max-width:900px){
+ .hero-grid,.problem-grid,.transform-grid,.instructor-grid,.fos-top,.faq-grid{grid-template-columns:1fr}
+ .hero{padding-top:60px}.hero-art{min-height:370px}.orbit{width:310px;height:310px}
+ .problem-aside,.faq-intro{position:static}.instructor-grid{gap:20px}.instructor-visual{min-height:330px}
+ .fos-top{gap:25px}.faq-grid{gap:20px}
+}
+@media(max-width:650px){
+ .wrap{width:min(var(--max),calc(100% - 28px))}
+ .nav-inner{height:64px}.nav-links{display:none}.brand{font-size:11px}
+ .nav .btn{padding:11px 13px;font-size:11px}
+ section{padding:68px 0}.hero{padding:56px 0 42px}
+ h1{font-size:clamp(43px,13vw,64px)}
+ .hero-copy{font-size:16px}.hero-art{min-height:330px}.orbit{width:275px;height:275px}
+ .money-card{width:280px;padding:21px}.card-number{font-size:37px}
+ .tag-one{right:-2px;top:28px}.tag-two{left:-2px;bottom:24px}
+ .stats{grid-template-columns:1fr}.stat{padding:16px 4px;border-right:0;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:15px}.stat:last-child{border-bottom:0}
+ .stat strong{font-size:19px}.stat span{text-align:right}
+ .problem-cards,.pillar-grid,.transform-list,.demo-grid,.audience-grid,.deliver-grid,.fos-features,.offer-grid{grid-template-columns:1fr}
+ .pillar{min-height:300px}.pillar .glyph{margin:25px 0 20px}
+ .problem-card{min-height:120px}.transform-quote{font-size:31px}
+ .demo-card{min-height:220px}.instructor-visual{min-height:280px}.portrait-block{width:230px;height:275px;font-size:90px}
+ .sticker{left:5px;bottom:30px}
+ .price-card{padding:25px}.price-card .popular{position:static;align-self:flex-start;margin-bottom:14px}
+ .guarantee-box{grid-template-columns:1fr;padding:25px;gap:20px}.guarantee-mark{width:100px;height:100px;font-size:16px}
+ .final-cta{padding:68px 0}.final-cta h2{font-size:clamp(39px,12vw,58px)}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#top"><span class="brand-mark">M</span><span>MONEY MASTERY CODE</span></a>
+    <nav class="nav-links"><a href="#framework">The framework</a><a href="#course">The course</a><a href="#fos">FOS·AI</a><a href="#faq">FAQs</a></nav>
+    <a class="btn" href="#offer">Get the course <span aria-hidden="true">↗</span></a>
+  </div>
+</header>
+<main id="top">
+<section class="hero">
+ <div class="wrap hero-grid">
+  <div>
+   <div class="eyebrow">Financial literacy. Without the fluff.</div>
+   <h1>Making money is one skill. <em>Knowing what to do with it is another.</em></h1>
+   <div class="hero-copy"><p>You can work hard, earn more, and still struggle to build wealth if you don't know how money works.</p><p><strong>Money Mastery Code</strong> is a practical, beginner-friendly course that teaches you how to make money, manage what you earn, and understand how to put money to work.</p><p>Learn the principles behind budgeting, debt repayment, financial tracking, gold, stocks, and other investment options. Then use what you learn to make more informed financial decisions.</p><p>No promises of overnight wealth. No magical investment secrets. Just practical financial knowledge you can keep using.</p></div>
+   <div class="hero-actions"><a class="btn" href="#offer">Get Money Mastery Code <span>↗</span></a><a class="btn secondary" href="#framework">Explore the course</a></div>
+   <div class="micro">8 recorded lectures · Lifetime course access · Learn at your own pace</div>
+  </div>
+  <div class="hero-art" aria-label="Illustration of financial growth and planning">
+   <div class="orbit"></div>
+   <div class="money-card">
+    <div class="money-card-top"><span>Your money mindset</span><span class="card-symbol">↗</span></div>
+    <div class="card-number">Know<br>your money.</div>
+    <div class="card-caption">Make informed decisions. Build better habits.</div>
+    <div class="mini-bars"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+   </div>
+   <div class="float-tag tag-one">MAKE · MANAGE · MULTIPLY</div><div class="float-tag tag-two">Learn it. Apply it.</div>
+  </div>
+ </div>
+</section>
+<div class="wrap stats">
+ <div class="stat"><strong>8 recorded lectures</strong><span>Approximately one hour each</span></div>
+ <div class="stat"><strong>Lifetime access</strong><span>Revisit lessons and slides</span></div>
+ <div class="stat"><strong>Beginner-friendly</strong><span>Practical concepts, no fluff</span></div>
+</div>
+<!-- Core copy sections, given distinct layouts and visual rhythm -->
+<section class="problem" id="problem">
+ <div class="wrap problem-grid">
+  <div class="problem-aside">
+   <div class="eyebrow">The problem</div>
+   <h2 class="section-head" style="font-size:clamp(36px,4.2vw,56px);line-height:1.02;letter-spacing:-.055em;margin:14px 0 20px">You don't have to be bad with money to be missing something important.</h2>
+   <div class="big-stat">01<span style="font-size:.35em;letter-spacing:-.02em"> / 03</span></div>
+   <p>Different money challenges. A common root: understanding how money works.</p>
+  </div>
+  <div>
+   <div class="problem-cards">
+    <div class="problem-card"><span class="num">01 / CASH FLOW</span>Maybe you earn money, but by the end of the month, you're not entirely sure where it went.</div>
+    <div class="problem-card"><span class="num">02 / DEBT</span>Maybe debt has become a recurring part of your life, and you're tired of trying to solve it without a clear plan.</div>
+    <div class="problem-card"><span class="num">03 / INVESTING</span>Maybe you've heard people talk about stocks, gold, Treasury bills, mutual funds, or ETFs, but the terminology makes investing feel more complicated than it needs to be.</div>
+    <div class="problem-card"><span class="num">04 / TOO MUCH ADVICE</span>Maybe the advice online is so contradictory that you're not sure what to trust.</div>
+   </div>
+   <div class="problem-note">Earning money is only one part of building financial stability. What you do with the money you earn matters too.</div>
+   <p style="margin-top:25px"><strong>The internet has no shortage of financial advice. It has a shortage of people who can tell good advice from bad advice.</strong></p>
+   <p>Someone can sound confident and still be wrong. A popular investment can still be unsuitable for you. An impressive return can hide a level of risk you don't understand. You shouldn't have to blindly trust every person who talks about money online.</p>
+   <p>You need enough financial literacy to ask better questions, understand the trade-offs, and make decisions with your eyes open. That's what Money Mastery Code is designed to help you develop.</p>
+  </div>
+ </div>
+</section>
+<section class="framework" id="framework">
+ <div class="wrap">
+  <div class="section-head"><div class="eyebrow">The framework</div><h2>Make money. Manage money. Multiply money.</h2><p>Money Mastery Code is built around three connected areas of financial literacy.</p></div>
+  <div class="pillar-grid">
+   <article class="pillar"><div class="number">CODE 01 / MONEY MAKING</div><div class="glyph">↗</div><h3>Understand how income is created.</h3><p>Explore different types and sources of income, offline and online opportunities, and how wealth is built through different economic activities.</p><a href="#course">Explore the lessons <span>↘</span></a></article>
+   <article class="pillar"><div class="number">CODE 02 / MONEY MANAGEMENT</div><div class="glyph">◉</div><h3>Give your money direction.</h3><p>Understand cash flow, deliberate spending, debt repayment, budgeting, account segmentation, and financial tracking.</p><a href="#course">Explore the lessons <span>↘</span></a></article>
+   <article class="pillar"><div class="number">CODE 03 / MONEY MULTIPLICATION</div><div class="glyph">✳</div><h3>Understand how money can be put to work.</h3><p>Learn investment concepts, asset classes, risk, and practical ways to evaluate the options available to you.</p><a href="#course">Explore the lessons <span>↘</span></a></article>
+  </div>
+  <div id="course" class="content" style="padding-top:48px">
+   <div class="section-head"><h2 style="font-size:clamp(29px,3.4vw,42px)">Inside the three codes</h2><p>Explore the topics covered across the course.</p></div>
+   <div class="deliver-grid">
+    <article class="deliver-card"><div class="icon">01</div><div><h3>Money making</h3><p>Different types of income; multiple income streams; how wealthy Africans have built wealth; offline and online income opportunities; developing your capacity to earn.</p></div></article>
+    <article class="deliver-card"><div class="icon">02</div><div><h3>Money management</h3><p>Pay yourself first and the 10% rule; identifying and prioritizing debt; “Identify, Isolate, Divide & Conquer”; impulse spending; budgeting; account segmentation; income and expense tracking.</p></div></article>
+    <article class="deliver-card"><div class="icon">03</div><div><h3>Money multiplication</h3><p>Investment categories and terminology; bonds and Treasury bills; mutual funds and REITs; gold; stocks and ETFs; real estate and agriculture; dollar-cost averaging; hedging and basic derivatives.</p></div></article>
+    <article class="deliver-card"><div class="icon">↗</div><div><h3>Practical applications</h3><p>Investing in yourself and your relationships, plus demonstrations involving stock valuation, investing in gold, and navigating the Bamboo investment app.</p></div></article>
+   </div>
+  </div>
+ </div>
+</section>
+<section class="transformation">
+ <div class="wrap transform-grid">
+  <div><div class="eyebrow">The transformation</div><div class="transform-quote">Financial advice starts <em>sounding different</em> when you understand the principles behind it.</div></div>
+  <div><div class="transform-list">
+   <div class="transform-item"><strong>From guessing to evaluating</strong>Ask how to evaluate a stock, not only which stock to buy.</div>
+   <div class="transform-item"><strong>From wondering to tracking</strong>Build a habit of understanding your cash flow.</div>
+   <div class="transform-item"><strong>From overwhelm to a plan</strong>Identify what you owe and approach repayment deliberately.</div>
+   <div class="transform-item"><strong>From hype to judgment</strong>Assess the reasoning behind financial advice instead of trusting confidence alone.</div>
+  </div><p style="color:var(--muted);margin-top:20px">The goal is not to make you an expert overnight. It's to help you become a more informed, deliberate, and financially mature decision-maker. With consistent application, the principles can help you build a clearer picture of your finances and make better-informed choices over time.</p></div>
+ </div>
+</section>
+<section id="demonstrations">
+ <div class="wrap">
+  <div class="section-head"><div class="eyebrow">Practical demonstrations</div><h2>Some things make more sense when you see how they work.</h2><p>Money Mastery Code goes beyond explaining financial terminology. The course includes practical demonstrations that connect concepts to real decisions and tools.</p></div>
+  <div class="demo-grid">
+   <article class="demo-card"><div class="demo-icon">⌕</div><h3>See how stock valuation works</h3><p>Explore how a stock can be evaluated instead of buying simply because it is popular or someone online recommended it.</p></article>
+   <article class="demo-card"><div class="demo-icon">◈</div><h3>See how gold investing works</h3><p>Understand gold as an investment option and follow a practical demonstration of getting started.</p></article>
+   <article class="demo-card"><div class="demo-icon">▣</div><h3>See how an investment app works</h3><p>Follow a demonstration of navigating the Bamboo app, so the process feels less unfamiliar.</p></article>
+  </div>
+  <p class="micro" style="margin-top:18px">These demonstrations are educational examples, not endorsements of a particular investment or guarantees of performance. Their purpose is to make the learning more concrete and help you understand the process.</p>
+ </div>
+</section>
+<section class="instructor" id="instructor">
+ <div class="wrap instructor-grid">
+  <div class="instructor-visual"><div class="portrait-block">PB</div><div class="sticker">FINANCIAL LITERACY, MADE PRACTICAL</div></div>
+  <div class="instructor-copy"><div class="eyebrow">Meet your instructor</div><h2>I care about what people can do with what they learn.</h2>
+   <p>I'm <strong>Prosper Betiang</strong>, and Money Mastery Code grew out of a lesson I experienced firsthand.</p>
+   <p>A friend and I came into money around the same period. My friend received a larger share than I did. But my understanding of money helped me preserve and grow what I had, while my friend later found himself needing to borrow money from me.</p>
+   <p><strong>That experience made something very clear to me: the amount of money you receive is not the only thing that shapes your financial outcome. What you understand about money matters too.</strong></p>
+   <p>Since then, I've taught and spoken about financial literacy in different settings, including the Interswitch student community, Thrive financial conference, a church engagement, and events I've organized myself.</p>
+   <p>My approach is grounded in a simple belief: principles matter when you understand them well enough to apply them. I'm not interested in selling the fantasy of getting rich quickly. I want to break down complex ideas so that ordinary people can understand them, question what they hear, and make more deliberate financial decisions.</p>
+   <div class="credibility"><span>Interswitch student community</span><span>Thrive financial conference</span><span>Community engagements</span></div>
+  </div>
+ </div>
+</section>
+<section id="audience">
+ <div class="wrap">
+  <div class="section-head"><div class="eyebrow">Is this for you?</div><h2>Build a stronger foundation for your financial decisions.</h2></div>
+  <div class="audience-grid">
+   <article class="audience-card"><h3>Money Mastery Code may be for you if…</h3><ul>
+    <li>You want a clearer foundation in personal finance.</li><li>You earn money but want to manage it more intentionally.</li><li>You need a practical starting point for budgeting and financial tracking.</li><li>You are dealing with debt and want to understand approaches to repayment.</li><li>You want to understand investment options beyond social media recommendations.</li><li>You are curious about stocks, gold, Treasury bills, mutual funds, or other investment vehicles.</li><li>You want to learn the basics before making more informed financial decisions.</li><li>You are tired of financial content that makes big promises but leaves you confused about the fundamentals.</li>
+   </ul></article>
+   <article class="audience-card nope"><h3>This course is not for you if…</h3><ul>
+    <li>You expect a secret formula that will make you rich overnight.</li><li>You want guaranteed investment returns.</li><li>You expect someone to choose investments for you without requiring you to understand the risks.</li><li>You are unwilling to examine your habits or apply what you learn.</li>
+   </ul><p style="font-size:13px;color:var(--muted)">Money Mastery Code teaches principles, not magic. The value you get from it depends in part on what you do with the knowledge.</p></article>
+  </div>
+ </div>
+</section>
+<section class="deliverables" id="included">
+ <div class="wrap">
+  <div class="section-head"><div class="eyebrow">What you receive</div><h2>More than eight hours of lessons sitting in a folder.</h2><p>Learn at your own pace, revisit the lessons, and keep the reference materials close.</p></div>
+  <div class="deliver-grid">
+   <article class="deliver-card"><div class="icon">▶</div><div><h3>The complete recorded course</h3><p>Eight recorded lectures, averaging approximately one hour each. Watch at your own pace and revisit lessons when you need to refresh your understanding.</p></div></article>
+   <article class="deliver-card"><div class="icon">▤</div><div><h3>Course slides for reference</h3><p>Keep the teaching material available as a quick reference while reviewing the lessons or revisiting a concept.</p></div></article>
+   <article class="deliver-card"><div class="icon">∞</div><div><h3>Lifetime access to the course</h3><p>Return to the recorded lessons and slides whenever you need to revisit the material.</p></div></article>
+   <article class="deliver-card"><div class="icon">◎</div><div><h3>Access to the WhatsApp support community</h3><p>Continue engaging with the financial ideas shared in the community, including thoughts and guidance shared beyond the original lessons.</p></div></article>
+  </div>
+ </div>
+</section>
+<section class="fos" id="fos">
+ <div class="wrap">
+  <div class="fos-top">
+   <div><div class="eyebrow">Optional upgrade · FOS·AI</div><h2>Knowledge is powerful. <span style="color:var(--purple)">Tools make it practical.</span></h2><p>FOS·AI is a Financial Operating System designed to help you engage with your finances beyond the classroom. Money Mastery Code teaches the principles. FOS·AI adds practical tools for working with financial information, exploring calculations, and reviewing your financial position.</p></div>
+   <div class="fos-preview"><div class="preview-head"><strong>FOS·AI / FINANCIAL OVERVIEW</strong><span class="preview-badge">PRODUCT PREVIEW</span></div><div class="preview-score">Your money,<br>in context. <small>↗</small></div><div class="preview-meter"><span></span></div><div class="preview-list"><span>Income & expenses</span><span>Budgets & accounts</span><span>Investment research</span><span>Financial calculators</span></div></div>
+  </div>
+  <div class="fos-features">
+   <article class="fos-feature"><h3>01 / Financial health overview</h3><p>Bring aspects of your financial position together in a financial health profile, helping you get a clearer view of where you stand.</p></article>
+   <article class="fos-feature"><h3>02 / Money management</h3><p>Work with income, expenses, accounts, budgets, and transactions in one financial management environment.</p></article>
+   <article class="fos-feature"><h3>03 / Investment research</h3><p>Explore stock information and analysis to support your own research. This is an aid to understanding, not a substitute for independent judgment or professional advice.</p></article>
+   <article class="fos-feature"><h3>04 / Return on investment</h3><p>Use calculators for ROI, compound interest, and inflation.</p></article>
+   <article class="fos-feature"><h3>05 / Plan ahead</h3><p>Explore retirement, financial goal planning, dollar-cost averaging, emergency funds, and savings targets.</p></article>
+   <article class="fos-feature"><h3>06 / Other calculations</h3><p>Use tools for currency conversion and tax calculations. Results depend on the information and assumptions entered.</p></article>
+  </div>
+  <div class="fos-future"><strong style="color:var(--purple)">Still evolving:</strong> planned additions include more complete financial-goal functionality and a conversational finance assistant designed to help users revisit financial concepts and keep track of useful information. These are future releases, not features you should assume are already available today. Availability and access terms may change as FOS·AI develops.</div>
+  <p class="micro" style="margin-top:15px">FOS·AI access is separate from the lifetime course-access promise. The course remains available for life; FOS·AI is an evolving product and may eventually be offered under its own subscription or access terms.</p>
+ </div>
+</section>
+<section class="offer" id="offer">
+ <div class="wrap">
+  <div class="section-head"><div class="eyebrow">Choose your package</div><h2>Start with the knowledge. Add the tools if you want them.</h2><p>Both packages give you the full Money Mastery Code course. The difference is whether you also want access to FOS·AI.</p></div>
+  <div class="offer-grid">
+   <article class="price-card"><h3>Money Mastery Code</h3><div class="price">₦15,000</div><div class="price-note">The complete course package</div><ul><li>All 8 recorded lectures</li><li>Course slides for reference</li><li>Lifetime access to the course</li><li>Access to the WhatsApp support community</li></ul><a class="btn" href="#checkout-course">Get the course for ₦15,000 ↗</a></article>
+   <article class="price-card featured"><div class="popular">COURSE + TOOLS</div><h3>Money Mastery Code + FOS·AI</h3><div class="price">₦23,000</div><div class="price-note">The course plus currently available FOS·AI features</div><ul><li>Everything in the course package</li><li>FOS·AI financial health overview</li><li>Money management tools for income, expenses, accounts, budgets, and transactions</li><li>Stock research and analysis tools</li><li>Financial calculators for common planning and investment calculations</li><li>Access to new FOS·AI capabilities according to product access and release terms</li></ul><a class="btn" href="#checkout-bundle">Get the course + FOS·AI ↗</a></article>
+  </div>
+  <div class="choose-note"><strong>Which should you choose?</strong> If you want to learn the principles first, the course-only package is a solid place to begin. If you also want a digital environment for managing financial information, exploring calculations, and researching stocks, consider the course plus FOS·AI package. <br><br><strong>Checkout setup:</strong> replace the package buttons with the correct payment or enrolment URLs before publishing.</div>
+ </div>
+</section>
+<section class="guarantee" id="guarantee">
+ <div class="wrap guarantee-box">
+  <div class="guarantee-mark">90-DAY<br>GUARANTEE*</div>
+  <div><div class="eyebrow">The guarantee</div><h2>Give the course a fair chance.</h2><p>I believe in the value of useful financial education, and I want you to feel comfortable giving this course a serious try. Go through the lessons. Study the material. Give yourself time to understand the principles and decide whether the course has delivered useful, actionable financial knowledge.</p><p>If you genuinely feel it has not provided the value you expected, contact us within 90 days of purchase to request a refund.</p><p><strong style="color:var(--ink)">No need to turn a purchase into a prolonged argument.</strong></p><p>*This proposed 90-day guarantee should only be published after the refund terms are finalized. The final terms should specify how to request a refund, the deadline, and any reasonable conditions. FOS·AI access and its refund treatment should be stated separately.</p></div>
+ </div>
+</section>
+<section class="faq" id="faq">
+ <div class="wrap faq-grid">
+  <div class="faq-intro"><div class="eyebrow">FAQs</div><h2>Good questions deserve clear answers.</h2><p>Still deciding? Here's what to know before you choose your package.</p><a class="btn secondary" href="#offer">Compare packages</a></div>
+  <div class="faq-list">
+   <div class="faq-item"><button class="faq-question" aria-expanded="false"><span>Is Money Mastery Code suitable for beginners?</span><span>+</span></button><div class="faq-answer">Yes. The course is designed to introduce financial concepts in an accessible way. You do not need to be an experienced investor to begin.</div></div>
+   <div class="faq-item"><button class="faq-question" aria-expanded="false"><span>Is this a get-rich-quick course?</span><span>+</span></button><div class="faq-answer">No. Money Mastery Code focuses on financial literacy and repeatable principles. It does not promise overnight wealth or guaranteed returns.</div></div>
+   <div class="faq-item"><button class="faq-question" aria-expanded="false"><span>How is the course delivered?</span><span>+</span></button><div class="faq-answer">It is delivered as recorded video lessons. The original teaching sessions have been recorded so you can learn at your own pace.</div></div>
+   <div class="faq-item"><button class="faq-question" aria-expanded="false"><span>How many lessons are included?</span><span>+</span></button><div class="faq-answer">There are eight recorded lectures, averaging approximately one hour each.</div></div>
+   <div class="faq-item"><button class="faq-question" aria-expanded="false"><span>Do I get lifetime access?</span><span>+</span></button><div class="faq-answer">You get lifetime access to the Money Mastery Code recordings and course slides. FOS·AI is a separate, evolving product, so its access terms are not covered by the lifetime course-access promise.</div></div>
+   <div class="faq-item"><button class="faq-question" aria-expanded="false"><span>Do I need to know how to invest already?</span><span>+</span></button><div class="faq-answer">No. The course introduces investment concepts and different asset classes, and includes practical demonstrations to help you understand how some processes work.</div></div>
+   <div class="faq-item"><button class="faq-question" aria-expanded="false"><span>Will you tell me exactly which stocks to buy?</span><span>+</span></button><div class="faq-answer">The course teaches concepts and methods for evaluating investments. It is not a promise of stock picks, individualized investment recommendations, or guaranteed performance.</div></div>
+   <div class="faq-item"><button class="faq-question" aria-expanded="false"><span>What is FOS·AI?</span><span>+</span></button><div class="faq-answer">FOS·AI is a financial operating system with tools for money management, financial calculations, stock research and analysis, and a financial health overview. Additional capabilities are in development and should not be assumed to be available until released.</div></div>
+   <div class="faq-item"><button class="faq-question" aria-expanded="false"><span>Does the ₦23,000 package include FOS·AI forever?</span><span>+</span></button><div class="faq-answer">No lifetime promise is being made for FOS·AI. It may eventually be offered on a subscription basis, and its future access terms may change. The lifetime-access promise applies to the course recordings and slides.</div></div>
+   <div class="faq-item"><button class="faq-question" aria-expanded="false"><span>Do I get support after buying?</span><span>+</span></button><div class="faq-answer">You receive access to the WhatsApp support community, where financial thoughts and guidance are shared. This should not be interpreted as unlimited one-to-one financial advice unless that service is explicitly offered.</div></div>
+   <div class="faq-item"><button class="faq-question" aria-expanded="false"><span>Will this course make me rich?</span><span>+</span></button><div class="faq-answer">No course can responsibly guarantee that. Money Mastery Code is designed to help you understand financial principles and make more informed decisions. Your outcomes will depend on your circumstances, decisions, consistency, and other factors outside the course.</div></div>
+  </div>
+ </div>
+</section>
+<section class="final-cta">
+ <div class="wrap"><div class="eyebrow">Money Mastery Code</div><h2>Your income matters. <br>What you understand about money matters too.</h2><p>You can keep collecting disconnected tips from timelines, trying to figure out which advice to trust and which habits to change. Or you can build a stronger foundation.</p><p>Learn how to make money, manage what you earn, and understand the ways money can be put to work. Revisit the lessons when you need them. And if you want practical digital tools alongside the teaching, choose the package that includes FOS·AI.</p><p>You do not need another promise that you'll become rich overnight. You need knowledge you can understand, question, and apply.</p><a class="btn" href="#offer">Start learning with Money Mastery Code ↗</a><p style="font-size:12px;margin-top:20px">Course only: ₦15,000 &nbsp;·&nbsp; Course + FOS·AI: ₦23,000</p></div>
+</section>
+</main>
+<footer class="disclaimer"><div class="wrap"><strong>Important information</strong><p>Money Mastery Code is an educational course. It does not provide a guarantee of financial results or investment returns and should not be treated as individualized financial, investment, tax, or legal advice. Investments involve risk, including possible loss of capital. Conduct your own research and consider qualified professional advice where appropriate.</p><p>FOS·AI is a financial information and calculation tool, not a guarantee of accuracy or investment performance. Verify important information before acting on it. Features in development are subject to change, and future functionality or availability is not guaranteed.</p></div></footer>
+<script>
+document.querySelectorAll('.faq-question').forEach(function(button){
+  button.addEventListener('click',function(){
+    var item=button.closest('.faq-item');
+    var isOpen=item.classList.toggle('open');
+    button.setAttribute('aria-expanded',String(isOpen));
+  });
+});
+</script>
+</body>
+</html>
