@@ -4,6 +4,7 @@ import { Providers } from "@/components/providers";
 import { SWRegister } from "@/components/sw-register";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { NotificationPrompt } from "@/components/NotificationPrompt";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
 const sora = Sora({
@@ -68,6 +69,7 @@ export default function RootLayout({
         <SWRegister />
         <PWAInstallPrompt />
         <NotificationPrompt />
+        <SpeedInsights />
       </body>
     </html>
   );
