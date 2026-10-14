@@ -11,6 +11,7 @@ import {
 
 import { getCourseAccessUrl, getTier } from "@/lib/money-mastery";
 import { verifyTransaction } from "@/lib/paystack";
+import { parseFullName } from "@/lib/validation/checkout";
 
 export const metadata: Metadata = {
   title: "You are enrolled | Money Mastery Code",
@@ -22,6 +23,24 @@ export const dynamic = "force-dynamic";
 type PageProps = {
   searchParams: Promise<{ reference?: string }>;
 };
+
+/**
+ * First name only, for the greeting.
+ *
+ * Paystack echoes back whatever the buyer typed, so this is a name of unknown
+ * provenance rendered into a heading. Using only the first token limits how
+ * much of it is echoed, and means a single stray comma or double space cannot
+ * turn the greeting into a sentence. Falls back to null so the page drops to a
+ * neutral heading rather than rendering something odd.
+ */
+function firstName(fullName: string | null): string | null {
+  if (!fullName) return null;
+
+  const [first] = fullName.split(" ");
+  if (!first) return null;
+
+  return first.length <= 40 ? first : null;
+}
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
@@ -134,6 +153,11 @@ export default async function SuccessPage({ searchParams }: PageProps) {
   const tier = getTier(String(transaction.metadata?.tier ?? ""));
   const accessUrl = getCourseAccessUrl();
 
+  // Read back out of Paystack rather than from anything the browser sent, so
+  // the greeting matches the name recorded against the payment rather than
+  // anything that could have been edited into the URL.
+  const buyer = firstName(parseFullName(transaction.metadata?.full_name));
+
   return (
     <Shell>
       <div className="sales-card rounded-3xl p-8 sm:p-11">
@@ -144,7 +168,7 @@ export default async function SuccessPage({ searchParams }: PageProps) {
             style={{ color: "var(--sales-accent)" }}
           />
           <h1 className="mt-6 text-3xl font-semibold tracking-tight">
-            You are enrolled.
+            {buyer ? `Thank you, ${buyer}.` : "You are enrolled."}
           </h1>
           <p
             className="mx-auto mt-4 max-w-lg text-[16px] leading-8"

@@ -36,17 +36,9 @@ import { COURSE_TIERS } from "@/lib/money-mastery";
  * floating CTA instead of variant A's sticky mobile bar.
  */
 
-export const metadata: Metadata = {
-  title: "Money Mastery Code | Financial literacy, without the fluff",
-  description:
-    "Eight recorded lectures on making money, managing what you earn, and putting it to work. Budgeting, debt, tracking, gold, stocks and Treasury bills, taught from zero. From N15,000.",
-  openGraph: {
-    title: "Money Mastery Code | Make money. Manage money. Multiply money.",
-    description:
-      "Eight recorded lectures on making money, managing what you earn, and putting it to work. From N15,000.",
-    type: "website",
-  },
-};
+import { storefrontMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = storefrontMetadata();
 
 /* Marks this page as the challenger wherever a purchase is attributed. */
 const VARIANT = "b";

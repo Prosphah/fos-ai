@@ -101,11 +101,18 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // /api/checkout builds its Paystack callbackUrl from the request origin plus
-  // /money-mastery-code/success, so that exact path has to keep resolving on
-  // the sales hostname. Letting it through also keeps it out of the test, so a
-  // buyer is never re-shuffled onto a different page after they pay.
-  if (request.nextUrl.pathname === "/money-mastery-code/success") {
+  // Everything under /money-mastery-code/ is the app's own addressing and must
+  // keep resolving on the sales hostname. That covers the Paystack callbackUrl,
+  // which is built from the request origin plus /money-mastery-code/success,
+  // and the generated Open Graph image, which link unfurlers fetch by its own
+  // URL and which would otherwise be rewritten into a page of HTML.
+  //
+  // Matched as a prefix rather than listing paths, so a route added later is
+  // reachable here by default instead of silently breaking.
+  //
+  // It also keeps these requests out of the test, so a buyer is never
+  // re-shuffled onto a different page after they pay.
+  if (request.nextUrl.pathname.startsWith("/money-mastery-code/")) {
     return NextResponse.next();
   }
 

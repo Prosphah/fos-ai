@@ -40,6 +40,7 @@ import {
   ToolsPhone,
 } from "@/components/sales/phone-mockups";
 import { COURSE_TIERS } from "@/lib/money-mastery";
+import { storefrontMetadata } from "@/lib/seo";
 import { SALES_TESTIMONIALS } from "@/lib/sales-testimonials";
 
 import "./v3.css";
@@ -69,17 +70,7 @@ import "./v3.css";
  * debt list and the punchline that depends on it.
  */
 
-export const metadata: Metadata = {
-  title: "Money Mastery Code: Make money. Manage money. Multiply money.",
-  description:
-    "Eight recorded workshops on making more money, managing it intentionally, and putting it to work through investments. Lifetime access. Beginner-friendly.",
-  openGraph: {
-    title: "Money Mastery Code",
-    description:
-      "Eight recorded workshops. Lifetime access. Beginner-friendly.",
-    type: "website",
-  },
-};
+export const metadata: Metadata = storefrontMetadata();
 
 /**
  * The mock set its own theme colour to the forest green.
