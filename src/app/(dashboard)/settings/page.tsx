@@ -10,6 +10,7 @@ import { useTheme } from "next-themes";
 import { ShieldCheck, Fingerprint, Trash2, MessageSquare, ChevronRight, Sun, Moon, LogOut, Plus, Bell } from "lucide-react";
 import { PinSetup, PinInput, type PinInputHandle } from "@/components/app-lock";
 import { createClient } from "@/lib/supabase/client";
+import { AccountDataSection } from "@/components/settings/AccountDataSection";
 import { useRouter } from "next/navigation";
 
 const inputStyle = {
@@ -1176,9 +1177,9 @@ export default function SettingsPage() {
               width: "100%",
               padding: "14px 16px",
               borderRadius: "var(--radius-sm)",
-              border: "1px solid var(--rose-soft)",
-              background: "var(--rose-soft)",
-              color: "var(--rose)",
+              border: "1px solid var(--glass-border)",
+              background: "var(--glass-bg)",
+              color: "var(--text-1)",
               textAlign: "left",
               cursor: "pointer",
               fontWeight: 500,
@@ -1186,7 +1187,7 @@ export default function SettingsPage() {
             }}
           >
             <span style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <LogOut size={18} />
+              <LogOut size={18} style={{ color: "var(--text-3)" }} />
               <span>
                 <span style={{ display: "block", fontWeight: 600 }}>Log out</span>
                 <span style={{ display: "block", marginTop: "3px", fontSize: "0.75rem", color: "var(--text-3)" }}>
@@ -1194,8 +1195,10 @@ export default function SettingsPage() {
                 </span>
               </span>
             </span>
-            <ChevronRight size={18} />
+            <ChevronRight size={18} style={{ color: "var(--text-3)" }} />
           </button>
+
+          <AccountDataSection />
         </div>
         </>
       )}
