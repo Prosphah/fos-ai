@@ -117,7 +117,22 @@ export async function markCheckoutFailed(reference: string): Promise<void> {
       createAdminClient()
         .from("enrollments")
         .update({ status: "failed" })
-        .eq("paystack_reference", reference),
+        .eq("paystack_reference", reference)
+        // Only a checkout that has not completed can fail. Filtering on the
+        // status keeps this update from ever overwriting a paid enrolment.
+        //
+        // Today the caller only reaches here when initializeTransaction threw,
+        // and the buyer never receives an authorization URL in that case, so
+        // there is nothing for them to pay and the webhook cannot have fired.
+        // That makes this unreachable rather than merely unlikely, which is not
+        // a good reason to leave it out: the guarantee currently rests on
+        // control flow spanning two files instead of on the query itself.
+        //
+        // The cost of being wrong is high. A paid row downgraded to failed
+        // disappears from the variant analytics and is skipped by the
+        // purchase-email sweep, so the customer who paid is never emailed their
+        // access. Silently, and with nothing in the logs to point at it.
+        .eq("status", "pending"),
       WRITE_TIMEOUT_MS,
     );
 
