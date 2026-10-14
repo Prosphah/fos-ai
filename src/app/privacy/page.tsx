@@ -2,7 +2,8 @@ import { BackButton } from "./BackButton";
 
 export const metadata = {
   title: "Privacy Policy — FOS·AI",
-  description: "How FOS·AI collects, uses, and protects your personal and financial data.",
+  description:
+    "How FOS·AI collects, uses, and protects your personal and financial data.",
 };
 
 export default function PrivacyPage() {
@@ -12,215 +13,741 @@ export default function PrivacyPage() {
         minHeight: "100vh",
         background: "var(--bg)",
         color: "var(--text-1)",
-        padding: "32px 16px",
+        padding: "32px 16px 80px",
       }}
     >
-      <div style={{ maxWidth: "680px", margin: "0 auto" }}>
+      <div style={{ maxWidth: "720px", margin: "0 auto" }}>
         <BackButton />
 
         <h1
           style={{
             fontFamily: "var(--font-display-family)",
-            fontSize: "1.75rem",
+            fontSize: "1.875rem",
             fontWeight: 700,
+            letterSpacing: "-0.02em",
+            color: "var(--text-1)",
             marginBottom: "8px",
           }}
         >
           Privacy Policy
         </h1>
-        <p style={{ fontSize: "0.8125rem", color: "var(--text-3)", marginBottom: "32px" }}>
-          Last updated: September 9, 2026
-        </p>
-
-        <div
+        <p
           style={{
-            borderRadius: "var(--radius)",
-            border: "1px solid var(--glass-border)",
-            background: "var(--glass-bg)",
-            backdropFilter: "blur(20px) saturate(1.3)",
-            WebkitBackdropFilter: "blur(20px) saturate(1.3)",
-            padding: "32px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "28px",
-            fontSize: "0.875rem",
-            lineHeight: 1.7,
-            color: "var(--text-2)",
+            fontFamily: "var(--font-mono-family)",
+            fontSize: "0.6875rem",
+            fontWeight: 600,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            color: "var(--text-3)",
+            marginBottom: "36px",
           }}
         >
-          <Section title="1. Introduction">
-            <p>
-              FOS·AI (&quot;we,&quot; &quot;us,&quot; or &quot;our&quot;) is a personal finance management application
-              that helps you track your financial health, manage investments, and make informed
-              financial decisions. This Privacy Policy explains how we collect, use, disclose, and
-              safeguard your information when you use our application and related services.
-            </p>
-            <p>
-              By using FOS·AI, you agree to the collection and use of information in accordance
-              with this policy. If you do not agree, please discontinue use of the application.
-            </p>
+          Effective 13 October 2026
+        </p>
+
+        <Card>
+          <Section title="1. Who we are" id="who-we-are">
+            <P>
+              This policy explains how Prosper Betiang (&ldquo;FOS&middot;AI,&rdquo;{" "}
+              <em>we</em>, <em>us</em>, or <em>our</em>), the data controller, collects, uses,
+              shares, and protects your personal information when you use FOS&middot;AI
+              (the &ldquo;App&rdquo;) at fos-ai.app.
+            </P>
+            <P>
+              FOS&middot;AI is a financial planning tool. It helps you organise and calculate with
+              information you provide. It is not a bank, a broker, or a licensed financial
+              adviser, and it does not connect to your bank accounts.
+            </P>
+            <DefinitionList
+              items={[
+                ["Data controller", "Prosper Betiang"],
+                ["Privacy contact", "privacy@fos-ai.app"],
+                ["Country of establishment", "Nigeria"],
+              ]}
+            />
+            <Subheading>Scope</Subheading>
+            <P>
+              This policy covers the App and its sales pages. It does not cover third-party
+              websites we link to, including payment providers and market data sources, which
+              have their own policies.
+            </P>
+            <Subheading>Legal basis</Subheading>
+            <P>
+              We process personal data on the following bases, under the Nigeria Data Protection
+              Act 2023 (NDPA) and, where it applies to you, the GDPR.
+            </P>
+            <Table
+              head={["Processing activity", "Legal basis"]}
+              rows={[
+                ["Creating and operating your account", "Performance of a contract"],
+                ["Storing your financial profile, transactions, budgets, and goals", "Performance of a contract"],
+                ["Calculating health scores, net worth, and projections", "Performance of a contract"],
+                ["Processing a payment you have authorised", "Performance of a contract"],
+                ["Generating AI explanations and stock analysis", "Legitimate interests"],
+                ["Sending service and reminder notifications", "Legitimate interests"],
+                ["Detecting fraud and abuse", "Legitimate interests"],
+                ["Responding to support requests", "Legitimate interests"],
+                ["Meeting legal and tax obligations", "Legal obligation"],
+              ]}
+            />
+            <P>
+              Where we rely on legitimate interests you have the right to object. See section 7.
+            </P>
           </Section>
 
-          <Section title="2. Information We Collect">
-            <h4 style={{ fontWeight: 600, color: "var(--text-1)", marginBottom: "8px" }}>
-              2.1 Information You Provide
-            </h4>
-            <ul style={{ paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "4px" }}>
-              <li><strong style={{ color: "var(--text-1)" }}>Account Information:</strong> Email address, name, and password used to create your account.</li>
-              <li><strong style={{ color: "var(--text-1)" }}>Financial Profile:</strong> Income, expenses, assets, debts, investment holdings, savings goals, and risk tolerance data you enter during onboarding and ongoing use.</li>
-              <li><strong style={{ color: "var(--text-1)" }}>Transaction Data:</strong> Financial transactions you log through the money manager feature.</li>
-              <li><strong style={{ color: "var(--text-1)" }}>Preferences:</strong> Currency, country, employment status, and other profile settings.</li>
-            </ul>
+          <Section title="2. Information we collect" id="what-we-collect">
+            <P>
+              We collect only what we need to operate a financial planning tool. We do not
+              collect information about your race, religion, health, political opinions, sexual
+              orientation, or biometric identifiers. If you use biometric unlock, that
+              credential is generated and stored on your device only — we never receive it.
+            </P>
 
-            <h4 style={{ fontWeight: 600, color: "var(--text-1)", marginTop: "16px", marginBottom: "8px" }}>
-              2.2 Information Collected Automatically
-            </h4>
-            <ul style={{ paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "4px" }}>
-              <li><strong style={{ color: "var(--text-1)" }}>Usage Data:</strong> Pages visited, features used, timestamps, and interaction patterns within the application.</li>
-              <li><strong style={{ color: "var(--text-1)" }}>Device Information:</strong> Browser type, operating system, screen resolution, and device identifiers.</li>
-              <li><strong style={{ color: "var(--text-1)" }}>Log Data:</strong> IP address, access times, and error logs for security and debugging purposes.</li>
-            </ul>
+            <Subheading>2.1 Information you provide</Subheading>
+            <Bullets
+              items={[
+                { label: "Account information.", text: "Email address and password. Your password is hashed by our authentication provider and is never stored or transmitted by us in readable form. Your name is collected during onboarding if you choose to provide it." },
+                { label: "Financial profile.", text: "Age, country, currency, employment status, income and income frequency, monthly living expenses, debt repayments, savings, and other income." },
+                { label: "Balance sheet.", text: "Total cash, investments, retirement accounts, property value, business ownership, other assets, and each category of debt (credit card, personal loan, student loan, mortgage, car loan, other)." },
+                { label: "Risk assessment.", text: "Your answers to the risk questionnaire, the resulting risk score, and your risk profile." },
+                { label: "Transactions.", text: "Amounts, descriptions, dates, categories, notes, and tags for every transaction you log." },
+                { label: "Accounts and institutions.", text: "Account names, types, balances, currencies, and the financial institution each account belongs to. Institution names are typed by you; we have no connection to any financial institution." },
+                { label: "Budgets and goals.", text: "Monthly budget amounts per category, savings goal targets and progress, retirement age target, emergency fund target, investment horizon, and planned major purchases." },
+                { label: "Payments.", text: "Email address, amount, currency, and a payment reference, if you buy something from us. See section 5." },
+                { label: "Feedback and waitlist.", text: "The area, type, and message you submit through the feedback form, and your email address and requested feature if you join a waitlist." },
+                { label: "Preferences.", text: "Reminder schedule, timezone, currency, and notification settings." },
+              ]}
+            />
 
-            <h4 style={{ fontWeight: 600, color: "var(--text-1)", marginTop: "16px", marginBottom: "8px" }}>
-              2.3 Third-Party Data
-            </h4>
-            <ul style={{ paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "4px" }}>
-              <li><strong style={{ color: "var(--text-1)" }}>Market Data:</strong> Stock prices, market indices, and financial data from third-party providers (Finnhub, NGX data sources) used for investment analysis features.</li>
-              <li><strong style={{ color: "var(--text-1)" }}>AI Analysis:</strong> Financial insights generated by AI models based on your data. These insights are generated in real-time and are not stored beyond your session.</li>
-            </ul>
+            <Subheading>2.2 Information we calculate</Subheading>
+            <P>
+              These are derived from the data above and stored so your dashboard can load: net
+              worth, debt ratio, savings rate, emergency fund coverage in months, and your
+              financial health score alongside your previous score.
+            </P>
+
+            <Subheading>2.3 Information collected automatically</Subheading>
+            <Bullets
+              items={[
+                { label: "Push notification subscription.", text: "If you enable notifications we store your push service endpoint, its cryptographic keys, and your browser's user agent string." },
+                { label: "In-app notifications and reminder deliveries.", text: "The reminders you have scheduled and whether each was delivered." },
+              ]}
+            />
+
+            <Subheading>2.4 Information from our hosting provider</Subheading>
+            <P>
+              Our hosting provider, Vercel, processes technical connection data in order to
+              serve the App securely. This may include your IP address, browser and device type,
+              request timestamps, referring page, and error logs. We do not use it to build
+              advertising profiles, and we run no third-party advertising or cross-site
+              tracking on the App.
+            </P>
+
+            <Subheading>2.5 What we do not collect</Subheading>
+            <Bullets
+              items={[
+                "No bank credentials, card numbers, or transaction histories imported from your bank. You enter figures yourself.",
+                "No government identification numbers.",
+                "No biometric templates. Biometric unlock uses your device's credential store and the credential never leaves your device.",
+                "No advertising identifiers.",
+              ]}
+            />
+
+            <Subheading>2.6 Data stored on your device only</Subheading>
+            <P>
+              Some data never reaches our servers. It lives in your browser&rsquo;s local storage and
+              is removed when you clear browser data or uninstall the App: your app-lock PIN
+              (stored only as a salted hash), your device unlock credential, your last activity
+              timestamp and lock state, and dismissal flags for install and notification prompts.
+            </P>
           </Section>
 
-          <Section title="3. How We Use Your Information">
-            <ul style={{ paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "4px" }}>
-              <li>To provide, maintain, and improve the FOS·AI application and its features.</li>
-              <li>To personalize your financial dashboard and provide tailored insights.</li>
-              <li>To calculate financial health scores and investment recommendations.</li>
-              <li>To authenticate your identity and protect your account from unauthorized access.</li>
-              <li>To communicate with you about updates, security alerts, and support.</li>
-              <li>To detect and prevent fraud, abuse, and technical issues.</li>
-              <li>To comply with legal obligations and enforce our terms of service.</li>
-            </ul>
+          <Section title="3. How we use your information" id="how-we-use-it">
+            <NumberedList
+              items={[
+                "Create and authenticate your account and keep it secure.",
+                "Display your dashboard, briefing, health score, net worth, and financial position.",
+                "Calculate budgets, savings rates, projections, and goal progress.",
+                "Generate plain-language explanations of your position using AI, grounded in your own data.",
+                "Analyse the stocks you ask about, using market prices from third-party providers.",
+                "Send the reminders and notifications you have configured, including scheduled budget reminders delivered by web push.",
+                "Process payments you have authorised and provide what you purchased.",
+                "Respond to your feedback and support requests.",
+                "Detect fraud, abuse, and security incidents, and maintain the reliability of the service.",
+                "Meet our legal and tax obligations as a business.",
+              ]}
+            />
+            <Callout tone="info">
+              We do not use your personal information for advertising. We do not sell or rent
+              your data to anyone. We do not use your financial data to train general-purpose AI
+              models.
+            </Callout>
           </Section>
 
-          <Section title="4. Data Storage and Security">
-            <p>
-              Your data is stored securely using Supabase, a trusted cloud database provider.
-              We implement industry-standard security measures including:
-            </p>
-            <ul style={{ paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "4px" }}>
-              <li>Encryption of data in transit (TLS/SSL) and at rest.</li>
-              <li>Row-level security policies ensuring only you can access your data.</li>
-              <li>Regular security audits and monitoring.</li>
-              <li>Secure authentication with encrypted session tokens.</li>
-            </ul>
-            <p>
-              While we take reasonable precautions, no method of electronic storage is 100% secure.
-              We cannot guarantee absolute security of your data.
-            </p>
+          <Section title="4. How AI features use your data" id="ai">
+            <P>
+              Some features use Google&rsquo;s Gemini models through the Google AI API. Here is exactly
+              what that involves.
+            </P>
+            <Subheading>What is sent</Subheading>
+            <P>
+              When you request an AI explanation we send the specific context needed to answer
+              your question: parts of your financial profile, your health score or net worth
+              calculation, relevant goals, and current market data for the stock you asked about.
+              We send only what the request requires. We do not send your full transaction
+              history unless a request genuinely depends on it.
+            </P>
+            <Subheading>What is not sent</Subheading>
+            <P>
+              Your account credentials and your payment records are never included in AI
+              context.
+            </P>
+            <Subheading>Retention</Subheading>
+            <P>
+              Prompts and responses are processed to generate your answer. We do not retain a
+              history of your AI conversations in our database and we do not build a profile of
+              you from them.
+            </P>
+            <Subheading>Training</Subheading>
+            <P>
+              We do not use your data to train AI models. Google does not use data submitted
+              through the paid Gemini API to train its models.
+            </P>
+            <Subheading>Market data providers</Subheading>
+            <P>
+              Stock prices, ratios, and company information come from third-party providers
+              including Finnhub, KoboTerminal, Oanor, and NGN Market. These requests transmit the
+              stock symbol you searched for. They do not transmit your identity or your
+              financial profile.
+            </P>
+            <Callout tone="warn">
+              AI output is generated. It can be incomplete or wrong. It is educational, not
+              advice, and it does not predict prices or guarantee returns. Deterministic
+              calculations such as net worth, savings rate, and health score are computed in
+              software, not by the model — the AI explains those figures rather than generating
+              them.
+            </Callout>
           </Section>
 
-          <Section title="5. Data Sharing and Disclosure">
-            <p>
-              We do <strong style={{ color: "var(--text-1)" }}>not</strong> sell, trade, or rent your personal or financial data to third parties.
-              We may share information only in the following circumstances:
-            </p>
-            <ul style={{ paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "4px" }}>
-              <li><strong style={{ color: "var(--text-1)" }}>Service Providers:</strong> With trusted third-party services that help us operate the application (hosting, database, AI providers), bound by confidentiality obligations.</li>
-              <li><strong style={{ color: "var(--text-1)" }}>Legal Requirements:</strong> When required by law, regulation, or valid legal process.</li>
-              <li><strong style={{ color: "var(--text-1)" }}>Safety:</strong> To protect the rights, property, or safety of FOS·AI, our users, or the public.</li>
-              <li><strong style={{ color: "var(--text-1)" }}>Business Transfers:</strong> In connection with a merger, acquisition, or sale of assets, with prior notice.</li>
-            </ul>
+          <Section title="5. Payments" id="payments">
+            <P>
+              Payments are processed by Paystack. We never see or store your card or bank account
+              number.
+            </P>
+            <P>
+              When you pay, Paystack sends us your email address, the amount, the currency, and a
+              transaction reference. We store these so we can confirm the payment and provide
+              what you purchased. Paystack processes your payment details under its own privacy
+              policy, and we are not responsible for their handling of your payment credentials.
+            </P>
+            <P>
+              We retain payment records for as long as tax and accounting law requires, even
+              after you close your FOS&middot;AI account.
+            </P>
           </Section>
 
-          <Section title="6. AI and Automated Decision-Making">
-            <p>
-              FOS·AI uses artificial intelligence (Google Gemini) to generate financial insights,
-              stock analysis, and health scores. Please note:
-            </p>
-            <ul style={{ paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "4px" }}>
-              <li>AI-generated insights are for informational purposes only and do not constitute financial advice.</li>
-              <li>Your data is sent to AI providers only when you actively request analysis.</li>
-              <li>We do not use your data to train AI models.</li>
-              <li>You can delete your data at any time, which will prevent future AI analysis.</li>
-            </ul>
+          <Section title="6. How we share your information" id="sharing">
+            <P>
+              We do not sell, trade, or rent your personal or financial data. We share data only
+              in these circumstances.
+            </P>
+            <Subheading>Service providers</Subheading>
+            <P>
+              Each provider is bound by contract and limited to the work we ask of them.
+            </P>
+            <Table
+              head={["Provider", "Role", "Data involved"]}
+              rows={[
+                ["Supabase", "Hosting, database, authentication", "Account and financial data"],
+                ["Vercel", "Application hosting and delivery", "Connection and log data (2.4)"],
+                ["Paystack", "Payment processing", "Payment details, then email, amount, reference"],
+                ["Google (Gemini API)", "AI generation", "Context for the specific request (4)"],
+                ["Finnhub, KoboTerminal, Oanor, NGN Market", "Market data", "Stock symbol searched"],
+              ]}
+            />
+            <Subheading>Legal requirement</Subheading>
+            <P>
+              Where we are required by law, regulation, or valid legal process we will disclose
+              data. Where permitted we will notify you beforehand unless prohibited.
+            </P>
+            <Subheading>Safety</Subheading>
+            <P>
+              To protect the rights, property, or safety of FOS&middot;AI, our users, or the
+              public.
+            </P>
+            <Subheading>Business transfer</Subheading>
+            <P>
+              In a merger, acquisition, or sale of assets we will give notice before your
+              information becomes subject to a different policy.
+            </P>
+            <Subheading>At your direction</Subheading>
+            <P>When you ask us to do something with your data, such as exporting it.</P>
           </Section>
 
-          <Section title="7. Your Rights and Choices">
-            <ul style={{ paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "4px" }}>
-              <li><strong style={{ color: "var(--text-1)" }}>Access:</strong> You can view all your data within the application at any time.</li>
-              <li><strong style={{ color: "var(--text-1)" }}>Correction:</strong> You can update your profile and financial data directly in the app.</li>
-              <li><strong style={{ color: "var(--text-1)" }}>Deletion:</strong> You can request deletion of your account and all associated data by contacting us.</li>
-              <li><strong style={{ color: "var(--text-1)" }}>Export:</strong> You can request a copy of your data in a portable format.</li>
-              <li><strong style={{ color: "var(--text-1)" }}>Restriction:</strong> You can limit how your data is processed by adjusting your preferences.</li>
-            </ul>
+          <Section title="7. Your rights" id="your-rights">
+            <Table
+              head={["Right", "What it means", "How to exercise it"]}
+              rows={[
+                ["Access", "See the personal data we hold about you", "View it in the App, or request it by email"],
+                ["Correction", "Have inaccurate data fixed", "Edit it in the App, or request it by email"],
+                ["Deletion", "Have your account and data erased", "Settings, or email us"],
+                ["Portability", "Receive your data in a machine-readable format", "Settings, or email us"],
+                ["Restriction", "Ask us to pause or limit how we use your data", "Email privacy@fos-ai.app"],
+                ["Objection", "Object to processing based on legitimate interests, including AI features", "Email privacy@fos-ai.app"],
+                ["Withdraw consent", "Withdraw consent where you gave it", "Email privacy@fos-ai.app"],
+                ["Complaint", "Complain to a supervisory authority", "Contact the Nigeria Data Protection Commission, or your local authority in the EEA"],
+              ]}
+            />
+            <P>
+              Deletion and data download are self-service in Settings. For anything else, or if
+              you cannot access your account, email{" "}
+              <Mono>privacy@fos-ai.app</Mono> with the subject line &ldquo;Data rights
+              request&rdquo; and the email address on your account. We will verify your identity
+              before acting, so that no one else can request your data.
+            </P>
+            <P>
+              We respond to verified requests within 30 days. If a request is complex we will tell
+              you and agree an extension. We do not charge for a reasonable request. We may
+              refuse a manifestly unfounded or excessive request, and we will explain why.
+            </P>
+            <Subheading>Deletion</Subheading>
+            <P>
+              You can delete your account at any time from Settings, without emailing us. The App
+              asks you to confirm with your password and the word DELETE, so that a stolen
+              session alone cannot erase your records.
+            </P>
+            <P>
+              Deletion happens immediately and cannot be undone. It removes your profile, risk
+              assessment, transactions, accounts, categories, budgets, goals, reminders,
+              notifications, push subscriptions, and feedback in a single operation. If any part
+              of that fails, nothing is deleted.
+            </P>
+            <P>
+              Two things survive. We keep payment and transaction records as long as tax and
+              accounting law requires, and we sever their link to your account so the retained
+              record no longer points at you. We also keep records needed to establish or defend
+              a legal claim, and any data required to comply with a legal order.
+            </P>
+            <Subheading>Portability</Subheading>
+            <P>
+              You can download your data at any time from Settings, without emailing us. Choose
+              &ldquo;Download everything&rdquo; for a single JSON file containing your profile,
+              transactions, accounts, budgets, goals, settings, and feedback, or take one table
+              at a time as CSV for a spreadsheet.
+            </P>
+            <P>
+              Exports are generated on demand and are not stored by us. Once you download the
+              file, it is yours and it is your responsibility.
+            </P>
           </Section>
 
-          <Section title="8. Data Retention">
-            <p>
-              We retain your personal and financial data for as long as your account is active
-              or as needed to provide the application. If you delete your account, we will remove
-              your data within 30 days, except where retention is required by law or for
-              legitimate business purposes (such as fraud prevention).
-            </p>
+          <Section title="8. Security" id="security">
+            <P>
+              FOS&middot;AI contains your complete financial picture, so we take the protection
+              of your data seriously.
+            </P>
+            <Subheading>Technical measures in place</Subheading>
+            <Bullets
+              items={[
+                "Encryption in transit using TLS across all connections.",
+                "Encryption at rest by our database and hosting providers.",
+                "Row-level security policies in the database, so a query for your data returns your data and cannot return another user's.",
+                "Password hashing performed by our authentication provider; we never store readable passwords.",
+                "Row-level access control on every user data table.",
+                "Server-side authorisation checks on every request that reads or writes your financial data.",
+                "Restricted access to production systems for the operator.",
+              ]}
+            />
+            <Subheading>Data minimisation</Subheading>
+            <P>
+              The AI layer sends only the context a request requires, not your entire profile.
+              Biometric credentials and your app-lock PIN are never transmitted to us.
+            </P>
+            <Subheading>Your responsibility</Subheading>
+            <P>
+              Keep your password confidential, use a strong one, and enable the app lock on
+              devices others can access. If you believe your account has been compromised, email{" "}
+              <Mono>privacy@fos-ai.app</Mono> immediately.
+            </P>
+            <Callout tone="warn">
+              No system is perfectly secure. If a breach affects your data we will notify you
+              and the relevant supervisory authority as required by law.
+            </Callout>
           </Section>
 
-          <Section title="9. Children&apos;s Privacy">
-            <p>
-              FOS·AI is not intended for users under the age of 18. We do not knowingly collect
-              personal information from children. If we become aware that a child has provided
-              us with personal data, we will take steps to delete it promptly.
-            </p>
+          <Section title="9. How long we keep your data" id="retention">
+            <Table
+              head={["Data", "Retained until"]}
+              rows={[
+                ["Account and authentication data", "Account deletion"],
+                ["Financial profile, transactions, accounts, budgets, goals", "Account deletion"],
+                ["Calculated metrics and health scores", "Account deletion"],
+                ["Reminders, notifications, push subscriptions", "Account deletion"],
+                ["Feedback", "12 months after submission"],
+                ["Waitlist entries", "Until you reach the waitlist or ask us to remove you"],
+                ["Payment and transaction records", "As long as tax and accounting law requires"],
+                ["Security and error logs", "90 days"],
+              ]}
+            />
+            <P>
+              Deleting your account does not delete your payment records, which we are required
+              to keep for tax and accounting purposes. Those records are unlinked from your
+              deleted account. If you want them removed too, email us — though we may be
+              required to retain them.
+            </P>
           </Section>
 
-          <Section title="10. International Data Transfers">
-            <p>
-              Your data may be processed in countries other than your own. We ensure that
-              appropriate safeguards are in place for international transfers, including
-              standard contractual clauses where required by applicable data protection laws.
-            </p>
+          <Section title="10. International transfers" id="transfers">
+            <P>
+              Some of our providers process data outside Nigeria. Supabase, Vercel, Paystack, and
+              Google operate infrastructure in other countries, which means your data may be
+              processed in the United States, the European Economic Area, or elsewhere.
+            </P>
+            <P>
+              Where data leaves Nigeria we rely on an appropriate transfer mechanism. Where the
+              GDPR applies this includes adequacy decisions or standard contractual clauses. You
+              may request information about the safeguards we use by emailing us.
+            </P>
           </Section>
 
-          <Section title="11. Changes to This Policy">
-            <p>
-              We may update this Privacy Policy from time to time. We will notify you of
-              significant changes by posting the new policy in the application and updating
-              the &quot;Last updated&quot; date. Your continued use of FOS·AI after changes
-              constitutes acceptance of the updated policy.
-            </p>
+          <Section title="11. Children's privacy" id="children">
+            <P>
+              FOS&middot;AI is not intended for anyone under 18. Onboarding asks for your age,
+              and we do not provide accounts to children. We do not knowingly collect personal
+              information from children. If you believe a child has created an account or
+              provided us with personal data, email us and we will delete it.
+            </P>
           </Section>
 
-          <Section title="12. Contact Us">
-            <p>
-              If you have questions about this Privacy Policy or wish to exercise your data
-              rights, please contact us at:
-            </p>
-            <p style={{ color: "var(--accent)", fontWeight: 500 }}>
-              privacy@fos-ai.app
-            </p>
+          <Section title="12. Cookies and local storage" id="cookies">
+            <P>
+              FOS&middot;AI uses cookies that are strictly necessary to keep you signed in. They
+              store your session and nothing else. Because the App has no advertising, no
+              analytics, and no third-party marketing cookies, no consent banner is required.
+            </P>
+            <P>
+              As described in 2.6, your app-lock PIN hash, biometric credential, and interface
+              preferences are stored in your browser and never transmitted to us.
+            </P>
+            <P>
+              The App uses a service worker to cache application resources so the interface loads
+              while offline. The cache holds application files, not your financial data.
+            </P>
           </Section>
-        </div>
+
+          <Section title="13. Changes to this policy" id="changes">
+            <P>
+              We may update this policy as the App changes or the law does. We will update the
+              date at the top and, for changes that materially affect how we use your data,
+              notify you in the App before the change takes effect. Continuing to use the App
+              after a change means you accept the updated policy.
+            </P>
+          </Section>
+
+          <Section title="14. Contact us" id="contact">
+            <P>
+              Questions about this policy, or to exercise any right in section 7:
+            </P>
+            <div
+              style={{
+                padding: "16px 20px",
+                borderRadius: "var(--radius-xs)",
+                background: "var(--accent-soft)",
+                border: "1px solid var(--glass-border)",
+              }}
+            >
+              <p style={{ margin: 0, fontWeight: 600, color: "var(--text-1)" }}>
+                Prosper Betiang
+              </p>
+              <p style={{ margin: "4px 0 0", fontFamily: "var(--font-mono-family)" }}>
+                <Mono>privacy@fos-ai.app</Mono>
+              </p>
+            </div>
+            <P>
+              If you are in the European Economic Area and are unsatisfied with our response, you
+              may complain to your local supervisory authority.
+            </P>
+          </Section>
+        </Card>
+
+        <p
+          style={{
+            marginTop: "28px",
+            textAlign: "center",
+            fontSize: "0.75rem",
+            color: "var(--text-3)",
+          }}
+        >
+          <a href="/login" style={{ color: "var(--text-2)", textDecoration: "none" }}>
+            Back to sign in
+          </a>
+        </p>
       </div>
     </main>
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+/* ── Layout ─────────────────────────────────────────────────────── */
+
+const body: React.CSSProperties = {
+  fontSize: "0.875rem",
+  lineHeight: 1.75,
+  color: "var(--text-2)",
+};
+
+function Card({ children }: { children: React.ReactNode }) {
   return (
-    <div>
-      <h3
+    <div
+      style={{
+        borderRadius: "var(--radius)",
+        border: "1px solid var(--glass-border)",
+        background: "var(--glass-bg)",
+        backdropFilter: "blur(20px) saturate(1.3)",
+        WebkitBackdropFilter: "blur(20px) saturate(1.3)",
+        boxShadow: "var(--shadow-card)",
+        padding: "clamp(24px, 5vw, 40px)",
+        display: "flex",
+        flexDirection: "column",
+        gap: "36px",
+        ...body,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function Section({
+  title,
+  id,
+  children,
+}: {
+  title: string;
+  id: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section id={id} style={{ scrollMarginTop: "24px" }}>
+      <h2
         style={{
           fontFamily: "var(--font-display-family)",
-          fontSize: "1rem",
-          fontWeight: 600,
+          fontSize: "1.0625rem",
+          fontWeight: 700,
+          letterSpacing: "-0.01em",
           color: "var(--text-1)",
-          marginBottom: "12px",
+          margin: "0 0 14px",
+          paddingBottom: "10px",
+          borderBottom: "1px solid var(--glass-border)",
         }}
       >
         {title}
-      </h3>
-      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+      </h2>
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
         {children}
       </div>
+    </section>
+  );
+}
+
+function Subheading({ children }: { children: React.ReactNode }) {
+  return (
+    <h3
+      style={{
+        fontFamily: "var(--font-display-family)",
+        fontSize: "0.9375rem",
+        fontWeight: 600,
+        color: "var(--text-1)",
+        margin: "10px 0 0",
+      }}
+    >
+      {children}
+    </h3>
+  );
+}
+
+function P({ children }: { children: React.ReactNode }) {
+  return <p style={{ margin: 0 }}>{children}</p>;
+}
+
+function Mono({ children }: { children: React.ReactNode }) {
+  return (
+    <span style={{ fontFamily: "var(--font-mono-family)", color: "var(--accent)" }}>
+      {children}
+    </span>
+  );
+}
+
+/** A bullet is either plain text or a bolded lead-in followed by explanation. */
+type Bullet = string | { label: string; text: string };
+
+function Bullets({ items }: { items: Bullet[] }) {
+  return (
+    <ul
+      style={{
+        margin: 0,
+        paddingLeft: "20px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "8px",
+      }}
+    >
+      {items.map((item, i) => (
+        <li key={i} style={{ color: "var(--text-2)" }}>
+          {typeof item === "string" ? (
+            item
+          ) : (
+            <>
+              <strong style={{ color: "var(--text-1)" }}>{item.label}</strong> {item.text}
+            </>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function NumberedList({ items }: { items: string[] }) {
+  return (
+    <ol
+      style={{
+        margin: 0,
+        paddingLeft: "20px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "8px",
+        listStyleType: "decimal",
+      }}
+    >
+      {items.map((item, i) => (
+        <li key={i} style={{ color: "var(--text-2)" }}>
+          {item}
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function Table({ head, rows }: { head: string[]; rows: string[][] }) {
+  return (
+    <div
+      style={{
+        margin: "4px 0",
+        overflowX: "auto",
+        border: "1px solid var(--glass-border)",
+        borderRadius: "var(--radius-xs)",
+      }}
+    >
+      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.8125rem" }}>
+        <thead>
+          <tr style={{ background: "var(--accent-softer)" }}>
+            {head.map((cell, i) => (
+              <th
+                key={i}
+                scope="col"
+                style={{
+                  textAlign: "left",
+                  padding: "10px 14px",
+                  fontWeight: 600,
+                  color: "var(--text-1)",
+                  whiteSpace: "nowrap",
+                  borderBottom: "1px solid var(--glass-border)",
+                }}
+              >
+                {cell}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, i) => (
+            <tr
+              key={i}
+              style={{
+                borderTop: i === 0 ? "none" : "1px solid var(--glass-border)",
+              }}
+            >
+              {row.map((cell, j) => (
+                <td
+                  key={j}
+                  style={{
+                    padding: "10px 14px",
+                    verticalAlign: "top",
+                    color: j === 0 ? "var(--text-1)" : "var(--text-2)",
+                    fontWeight: j === 0 ? 500 : 400,
+                  }}
+                >
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function DefinitionList({
+  items,
+}: {
+  items: [string, string][];
+}) {
+  return (
+    <dl
+      style={{
+        margin: 0,
+        padding: "14px 18px",
+        borderRadius: "var(--radius-xs)",
+        background: "var(--accent-softer)",
+        border: "1px solid var(--glass-border)",
+        display: "flex",
+        flexDirection: "column",
+        gap: "8px",
+      }}
+    >
+      {items.map(([term, value], i) => (
+        <div key={i} style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+          <dt
+            style={{
+              fontFamily: "var(--font-mono-family)",
+              fontSize: "0.75rem",
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              color: "var(--text-3)",
+              minWidth: "160px",
+            }}
+          >
+            {term}
+          </dt>
+          <dd style={{ margin: 0, color: "var(--text-1)", fontWeight: 500 }}>{value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+function Callout({
+  tone,
+  children,
+}: {
+  tone: "info" | "warn";
+  children: React.ReactNode;
+}) {
+  const bg = tone === "warn" ? "var(--amber-soft)" : "var(--accent-soft)";
+  const color = tone === "warn" ? "var(--amber)" : "var(--text-2)";
+  const border = tone === "warn" ? "var(--amber)" : "var(--glass-border)";
+  return (
+    <div
+      style={{
+        padding: "14px 18px",
+        borderRadius: "var(--radius-xs)",
+        background: bg,
+        borderLeft: `2px solid ${border}`,
+        color,
+        fontSize: "0.8125rem",
+      }}
+    >
+      {children}
     </div>
   );
 }
