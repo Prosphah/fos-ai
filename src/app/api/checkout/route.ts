@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getTier } from "@/lib/money-mastery";
 import { generateReference, initializeTransaction } from "@/lib/paystack";
+import { parseFullName } from "@/lib/validation/checkout";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -15,7 +16,7 @@ function parseVariant(value: unknown): "a" | "b" | "c" | null {
 }
 
 export async function POST(request: Request) {
-  let body: { tier?: string; email?: string; variant?: string };
+  let body: { tier?: string; email?: string; fullName?: string; variant?: string };
 
   try {
     body = await request.json();
@@ -27,6 +28,11 @@ export async function POST(request: Request) {
   const email = body.email?.trim().toLowerCase() ?? "";
   const variant = parseVariant(body.variant);
 
+  // Required, not optional. It is the buyer's name on a course enrolment and
+  // the name their FOS*AI account is created under, so a purchase made without
+  // one is a purchase we cannot fulfil usefully.
+  const fullName = parseFullName(body.fullName);
+
   if (!tier) {
     return NextResponse.json({ error: "Unknown option." }, { status: 400 });
   }
@@ -34,6 +40,13 @@ export async function POST(request: Request) {
   if (!EMAIL_PATTERN.test(email)) {
     return NextResponse.json(
       { error: "Enter a valid email address." },
+      { status: 400 }
+    );
+  }
+
+  if (!fullName) {
+    return NextResponse.json(
+      { error: "Enter your full name." },
       { status: 400 }
     );
   }
@@ -53,6 +66,11 @@ export async function POST(request: Request) {
         tier: tier.id,
         tier_name: tier.name,
         course: "Money Mastery Code",
+        // The webhook is the only thing that writes to enrollments, and it has
+        // no session to read a name from, so the name has to make the round
+        // trip through Paystack metadata. Key is alphanumeric-safe and well
+        // under Paystack's 45-character key limit.
+        full_name: fullName,
         // Carried through to enrollments.source_variant by the webhook so
         // conversion can be compared per storefront variant.
         source_variant: variant ?? "control",

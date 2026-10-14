@@ -55,7 +55,18 @@ export async function fulfilEnrollment(params: {
   }
 
   try {
-    const { data, error } = await admin.auth.admin.inviteUserByEmail(normalizedEmail);
+    // Carry the buyer's name onto the FOS*AI account, so the invitation and
+    // the profile it creates are not blank on first sign-in. The key is omitted
+    // entirely rather than written as null, which would put a literal null into
+    // user_metadata where the app expects a string.
+    const inviteOptions = params.fullName
+      ? { data: { full_name: params.fullName } }
+      : undefined;
+
+    const { data, error } = await admin.auth.admin.inviteUserByEmail(
+      normalizedEmail,
+      inviteOptions,
+    );
 
     if (error) {
       // Already registered means the buyer already has an account. Link it.

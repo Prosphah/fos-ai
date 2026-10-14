@@ -26,6 +26,7 @@ export function CheckoutForm({
   /** Which storefront page this purchase came from, for A/B attribution. */
   variant?: "a" | "b";
 }) {
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState("");
@@ -39,7 +40,7 @@ export function CheckoutForm({
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tier: tier.id, email, variant }),
+        body: JSON.stringify({ tier: tier.id, email, fullName, variant }),
       });
 
       const payload = await response.json();
@@ -65,12 +66,57 @@ export function CheckoutForm({
   // needs a darker grey to hold 4.5:1.
   const quietTone = light ? (mmb ? "#3f463c" : "#64685d") : "var(--sales-text-3)";
 
+  const labelStyle = {
+    marginBottom: "8px",
+    display: "block",
+    fontSize: "11px",
+    fontWeight: 600,
+    textTransform: "uppercase",
+    letterSpacing: "0.14em",
+    color: quietTone,
+  } as const;
+
+  const inputStyle = light
+    ? {
+        background: "#ffffff",
+        borderColor: mmb ? "var(--mmb-ink)" : "#c6cabe",
+        borderWidth: mmb ? 2 : 1,
+        color: "#171914",
+      }
+    : {
+        background: mmb ? "rgba(255,255,255,0.06)" : "var(--sales-surface-hover)",
+        borderColor: mmb ? "rgba(255,255,255,0.32)" : "var(--sales-border)",
+        color: mmb ? "#ffffff" : "var(--sales-text-1)",
+      };
+
+  const inputClass =
+    "sales-focus w-full rounded-xl border px-4 py-3 text-[15px] outline-none transition-colors";
+
   return (
     <form onSubmit={startCheckout} className="mt-7">
+      {/* Name first, then email. Required, because it is what the enrolment
+          and the invited FOS*AI account are identified by. It also goes first
+          deliberately: browsers that autofill a name almost always fill the
+          email alongside it, so the order decides how much typing is left. */}
+      <label htmlFor={`name-${tier.id}`} style={labelStyle}>
+        Your full name
+      </label>
+
+      <input
+        id={`name-${tier.id}`}
+        type="text"
+        required
+        autoComplete="name"
+        placeholder="Ada Lovelace"
+        value={fullName}
+        onChange={(event) => setFullName(event.target.value)}
+        className={inputClass}
+        style={inputStyle}
+      />
+
       <label
         htmlFor={`email-${tier.id}`}
-        className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.14em]"
-        style={{ color: quietTone }}
+        style={{ ...labelStyle, marginTop: "0.9rem" }}
       >
         Where we send your access
       </label>
@@ -84,21 +130,8 @@ export function CheckoutForm({
         placeholder="you@example.com"
         value={email}
         onChange={(event) => setEmail(event.target.value)}
-        className="sales-focus w-full rounded-xl border px-4 py-3 text-[15px] outline-none transition-colors"
-        style={
-          light
-            ? {
-                background: "#ffffff",
-                borderColor: mmb ? "var(--mmb-ink)" : "#c6cabe",
-                borderWidth: mmb ? 2 : 1,
-                color: "#171914",
-              }
-            : {
-                background: mmb ? "rgba(255,255,255,0.06)" : "var(--sales-surface-hover)",
-                borderColor: mmb ? "rgba(255,255,255,0.32)" : "var(--sales-border)",
-                color: mmb ? "#ffffff" : "var(--sales-text-1)",
-              }
-        }
+        className={inputClass}
+        style={inputStyle}
       />
 
       <button

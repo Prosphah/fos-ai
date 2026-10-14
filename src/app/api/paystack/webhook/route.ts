@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { fulfilEnrollment } from "@/lib/fulfilment";
 import { getTier, type CourseTier } from "@/lib/money-mastery";
 import { verifyWebhookSignature } from "@/lib/paystack";
+import { parseFullName } from "@/lib/validation/checkout";
 
 type PaystackEvent = {
   event?: string;
@@ -14,7 +15,7 @@ type PaystackEvent = {
     customer?: { email?: string };
     paid_at?: string | null;
     id?: number;
-    metadata?: { tier?: string; source_variant?: string };
+    metadata?: { tier?: string; source_variant?: string; full_name?: string };
   };
 };
 
@@ -61,7 +62,10 @@ export async function POST(request: Request) {
 
   const result = await fulfilEnrollment({
     email,
-    fullName: null,
+    // Normalised here as well as at checkout. The webhook is the only writer
+    // of this column, so this is the last point at which a bad value can be
+    // caught before it becomes a row.
+    fullName: parseFullName(data?.metadata?.full_name),
     tier: tier.id as CourseTier,
     amount: data?.amount ?? tier.amount,
     reference,

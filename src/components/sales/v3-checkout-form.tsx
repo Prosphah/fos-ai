@@ -20,10 +20,10 @@ type Status = "idle" | "loading" | "error";
  * 1. `variant: "c"`, so a sale made here is attributable to this page the
  *    same way "a" and "b" are. The route whitelists it; an unrecognised
  *    value would be stored as null and quietly pool into the control.
- * 2. The input sits above the button rather than beside it. Both price
- *    cards stack to full width on a phone, and a side-by-side row leaves
- *    the email field about half the width of the card, which is where
- *    people give up on typing an address.
+ * 2. The inputs sit above the button rather than beside it. Both price
+ *    cards stack to full width on a phone, and a side-by-side row leaves the
+ *    fields about half the width of the card, which is where people give up on
+ *    typing.
  */
 export function CheckoutForm({
   tier,
@@ -34,6 +34,7 @@ export function CheckoutForm({
   label: string;
   variant?: "a" | "b" | "c";
 }) {
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState("");
@@ -47,7 +48,7 @@ export function CheckoutForm({
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tier: tier.id, email, variant }),
+        body: JSON.stringify({ tier: tier.id, email, fullName, variant }),
       });
 
       const payload = await response.json();
@@ -67,7 +68,30 @@ export function CheckoutForm({
 
   return (
     <form onSubmit={startCheckout} style={{ marginTop: "auto" }}>
-      <label htmlFor={`v3-email-${tier.id}`} className="field-label">
+      {/* Name first, then email. Required, because it is what the enrolment
+          and the invited FOS*AI account are identified by. It also goes first
+          deliberately: browsers that autofill a name almost always fill the
+          email alongside it, so the order decides how much typing is left. */}
+      <label htmlFor={`v3-name-${tier.id}`} className="field-label">
+        Your full name
+      </label>
+
+      <input
+        id={`v3-name-${tier.id}`}
+        type="text"
+        required
+        autoComplete="name"
+        placeholder="Ada Lovelace"
+        value={fullName}
+        onChange={(event) => setFullName(event.target.value)}
+        className="field"
+      />
+
+      <label
+        htmlFor={`v3-email-${tier.id}`}
+        className="field-label"
+        style={{ marginTop: "0.9rem" }}
+      >
         Where we send your access
       </label>
 
