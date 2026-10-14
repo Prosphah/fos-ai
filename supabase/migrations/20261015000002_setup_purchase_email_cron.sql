@@ -1,0 +1,31 @@
+-- This cron setup is run manually via the SQL Editor, not as an automatic migration.
+--
+-- The resend sweep for purchase confirmations. The pg_cron job is named
+-- 'resend-purchase-emails' and runs hourly.
+--
+--   select cron.schedule(
+--     'resend-purchase-emails',
+--     '17 * * * *',                    -- :17 past every hour
+--     $$select net.http_get(
+--         url := 'https://fos-ai.betiangli.xyz/api/cron/resend-purchase-emails',
+--         headers := jsonb_build_object(
+--             'Content-Type', 'application/json',
+--             'Authorization', 'Bearer <CRON_SECRET>'
+--         )
+--     );$$
+--   );
+--
+-- Off the hour on purpose. Everything else in this project is scheduled on a
+-- clean boundary, and pg_cron would otherwise run this at the same instant as
+-- every other :00 job in the account.
+--
+-- Minute 17 rather than 0 also keeps the sweep clear of the 1-hour cutoff: a
+-- purchase confirmed at 09:58 is not eligible until 10:58, so a run at 10:17
+-- would skip it and only catch it at 11:17. Hourly is the right cadence
+-- regardless, since the delay being absorbed is "somebody who paid this
+-- morning".
+--
+-- pg_cron jobs do not survive a Supabase project restart or a Free-plan pause.
+-- Re-check after either happens:
+--
+--   select * from cron.job where jobname = 'resend-purchase-emails';
