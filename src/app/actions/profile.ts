@@ -57,5 +57,17 @@ export async function updateProfile(data: {
     .eq("user_id", user.id);
 
   if (error) return { error: error.message };
+
+  // Currency lives in two columns: financial_profiles.currency drives the
+  // briefing, user_settings.currency drives Money Manager. The settings page
+  // exposes a single control, so write both or the two surfaces disagree.
+  if (data.currency !== undefined) {
+    const { error: settingsError } = await supabase.rpc("upsert_user_settings", {
+      p_user_id: user.id,
+      p_currency: data.currency,
+    });
+    if (settingsError) return { error: settingsError.message };
+  }
+
   return { success: true };
 }

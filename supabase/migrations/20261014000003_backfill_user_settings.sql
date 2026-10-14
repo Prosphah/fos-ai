@@ -30,12 +30,17 @@
 -- default is still '{1,2,3,4,5,6,7}' - 1-indexed with a 7. The cron route's
 -- dayMap (Sun:0..Sat:6) has no 7, so a default row would match no weekday at
 -- all and silently never fire. See the note under step 2.
+-- ON CONFLICT guards against a concurrent write: if onboarding creates a
+-- user_settings row between this statement's snapshot and its insert, the
+-- NOT EXISTS filter cannot see it and the unique primary key would otherwise
+-- abort the whole migration.
 INSERT INTO user_settings (user_id, reminder_days)
 SELECT u.id, ARRAY[0, 1, 2, 3, 4, 5, 6]
 FROM auth.users u
 WHERE NOT EXISTS (
   SELECT 1 FROM user_settings s WHERE s.user_id = u.id
-);
+)
+ON CONFLICT (user_id) DO NOTHING;
 
 -- =============================================
 -- 2. FIX THE COLUMN DEFAULT
@@ -62,9 +67,19 @@ WHERE 7 = ANY(reminder_days);
 -- 3. CLOSE THE WRITE GAP
 -- =============================================
 
--- on_auth_user_created inserts a row for every NEW signup, so the scheduler
--- never has to guess about users who skipped onboarding. Matches the defaults
--- the settings page already displays when a row is missing.
+-- Inserts a user_settings row for every NEW signup, so the scheduler never has
+-- to guess about users who skipped onboarding. Matches the defaults the
+-- settings page already displays when a row is missing.
+--
+-- Verified against the live database before adopting this name: the only
+-- AFTER INSERT trigger on auth.users is the on_auth_user_created created by
+-- this same migration. No other signup trigger exists, so there is no profile
+-- creation or other signup logic to preserve.
+--
+-- Re-check with:
+--   SELECT t.tgname, p.proname, pg_get_functiondef(p.oid)
+--   FROM pg_trigger t JOIN pg_proc p ON p.oid = t.tgfoid
+--   WHERE t.tgrelid = 'auth.users'::regclass AND NOT t.tgisinternal;
 CREATE OR REPLACE FUNCTION public.on_auth_user_created()
 RETURNS TRIGGER
 LANGUAGE plpgsql

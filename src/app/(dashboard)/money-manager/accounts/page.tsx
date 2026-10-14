@@ -121,6 +121,7 @@ export default function AccountsPage() {
         name: form.name,
         type: form.type,
         balance: form.balance,
+        currency: form.currency,
         institution: form.institution || null,
         accountNumberLast4: form.accountNumberLast4 || null,
       });
@@ -143,7 +144,13 @@ export default function AccountsPage() {
     loadAccounts();
   };
 
-  const totalBalance = accounts.reduce((s, a) => s + Number(a.balance), 0);
+  // Summing raw balances across different currencies would add naira to dollars,
+// so restrict the total to accounts denominated in the dashboard currency.
+// There is no FX rate source in this app, and converting would invent numbers.
+const currencyOf = (a: Account) => a.currency || userCurrency;
+const sameCurrencyAccounts = accounts.filter((a) => currencyOf(a) === userCurrency);
+const foreignCurrencyAccounts = accounts.filter((a) => currencyOf(a) !== userCurrency);
+const totalBalance = sameCurrencyAccounts.reduce((s, a) => s + Number(a.balance), 0);
 
   const modalFields = (
     <>
@@ -258,7 +265,10 @@ export default function AccountsPage() {
           {formatCurrency(totalBalance, userCurrency)}
         </p>
         <p className="mt-1 text-xs text-accent/70">
-          Across {accounts.length} account{accounts.length !== 1 ? "s" : ""}
+          Across {sameCurrencyAccounts.length} account{sameCurrencyAccounts.length !== 1 ? "s" : ""}
+          {foreignCurrencyAccounts.length > 0
+            ? ` · ${foreignCurrencyAccounts.length} in another currency not included`
+            : ""}
         </p>
       </div>
 
@@ -297,7 +307,7 @@ export default function AccountsPage() {
                 </div>
               </div>
               <p className="mt-4 text-xl font-bold text-text-primary">
-                {formatCurrency(account.balance, userCurrency)}
+                {formatCurrency(account.balance, account.currency || userCurrency)}
               </p>
               {account.institution && (
                 <p className="mt-1 text-[11px] text-text-secondary">{account.institution}</p>

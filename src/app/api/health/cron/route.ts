@@ -20,6 +20,10 @@ interface CronJobRow {
   last_run_at: string | null;
   last_status: string | null;
   last_return_message: string | null;
+  is_http: boolean | null;
+  last_http_status: number | null;
+  last_http_body: string | null;
+  last_http_at: string | null;
 }
 
 export async function GET(request: Request) {
@@ -85,8 +89,49 @@ export async function GET(request: Request) {
       };
     }
 
-    // A non-success return usually means the job's HTTP call is failing. For
-    // send-reminders this is how a missing VAPID_* env var shows up.
+    // For HTTP jobs, pg_cron's own status proves nothing. net.http_get queues
+    // the request and returns, so cron reports "succeeded" even when the
+    // endpoint 503s - which is exactly how a missing VAPID_* env var hid for a
+    // week. Trust the recorded HTTP status instead.
+    if (job.is_http) {
+      const httpStatus = job.last_http_status;
+
+      if (httpStatus == null) {
+        problems.push(`${expected.name}: HTTP job but no recorded response`);
+        return {
+          job: expected.name,
+          ok: false,
+          reason: "no_http_response",
+          schedule: job.schedule,
+        };
+      }
+
+      if (httpStatus < 200 || httpStatus >= 300) {
+        problems.push(
+          `${expected.name}: HTTP ${httpStatus} - ${job.last_http_body ?? "no body"}`
+        );
+        return {
+          job: expected.name,
+          ok: false,
+          reason: "http_error",
+          schedule: job.schedule,
+          httpStatus,
+          httpBody: job.last_http_body,
+          lastHttpAt: job.last_http_at,
+        };
+      }
+
+      return {
+        job: expected.name,
+        ok: true,
+        schedule: job.schedule,
+        lastRunAt: job.last_run_at,
+        httpStatus,
+        silentMinutes,
+      };
+    }
+
+    // Non-HTTP job: the cron run status is the only signal available.
     if (job.last_status && job.last_status !== "succeeded") {
       problems.push(
         `${expected.name}: last run ${job.last_status} - ${job.last_return_message ?? "no detail"}`
@@ -106,6 +151,7 @@ export async function GET(request: Request) {
       ok: true,
       schedule: job.schedule,
       lastRunAt: job.last_run_at,
+      lastStatus: job.last_status,
       silentMinutes,
     };
   });

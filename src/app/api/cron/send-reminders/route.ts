@@ -78,8 +78,7 @@ export async function GET(request: Request) {
 
   const { data: settings, error: fetchError } = await supabase
     .from("user_settings")
-    .select("user_id, reminder_enabled, reminder_time, reminder_days, timezone")
-    .eq("reminder_enabled", true);
+    .select("user_id, reminder_enabled, reminder_time, reminder_days, timezone");
 
   if (fetchError) {
     console.error("[Cron] Failed to fetch reminder settings:", fetchError);
@@ -87,26 +86,40 @@ export async function GET(request: Request) {
   }
 
   if (!settings || settings.length === 0) {
-    // No opted-in settings rows at all. This is almost always an environment
-    // problem (unbackfilled table, half-finished migration), not a genuine
-    // "nobody wants reminders" state, so make it loud instead of returning a
-    // cheerful no-op that looks identical to a healthy idle run.
+    // No settings rows exist at all. That is an environment problem, not a
+    // user choice: rows are created at signup, so an empty table means the
+    // backfill never ran. Make it loud rather than a cheerful no-op that looks
+    // identical to a healthy idle run.
     console.error(
-      "[Cron] No user_settings rows with reminder_enabled=true. " +
-        "Reminders cannot be delivered. Run supabase/migrations/20261014000003_backfill_user_settings.sql " +
+      "[Cron] user_settings is empty. Reminders cannot be delivered. " +
+        "Run supabase/migrations/20261014000003_backfill_user_settings.sql " +
         "and confirm the VAPID_* env vars are set on the deployment."
     );
     return NextResponse.json(
-      { error: "No reminder-enabled user settings found", processed: 0, sent: 0, failed: 0 },
+      { error: "user_settings is empty", processed: 0, sent: 0, failed: 0 },
       { status: 503 }
     );
+  }
+
+  // Rows exist but none are opted in. That is a legitimate idle state: every
+  // user turned reminders off. Return 200 so the watchdog stays quiet.
+  const enabledSettings = settings.filter((s) => s.reminder_enabled === true);
+
+  if (enabledSettings.length === 0) {
+    return NextResponse.json({
+      success: true,
+      reason: "no users have reminders enabled",
+      processed: 0,
+      sent: 0,
+      failed: 0,
+    });
   }
 
   let processed = 0;
   let sent = 0;
   let failed = 0;
 
-  for (const setting of settings) {
+  for (const setting of enabledSettings) {
     const tz = setting.timezone || "UTC";
     const { hours, minutes, day, dateKey } = getTimeInTimezone(tz);
 

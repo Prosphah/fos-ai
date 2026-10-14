@@ -169,6 +169,7 @@ export async function updateAccount(
     name?: string;
     type?: "cash" | "current" | "savings" | "investment" | "credit" | "other";
     balance?: number;
+    currency?: string;
     institution?: string | null;
     accountNumberLast4?: string | null;
     isActive?: boolean;
@@ -181,6 +182,7 @@ export async function updateAccount(
       ...(data.name !== undefined && { name: data.name }),
       ...(data.type !== undefined && { type: data.type }),
       ...(data.balance !== undefined && { balance: data.balance }),
+      ...(data.currency !== undefined && { currency: data.currency }),
       ...(data.institution !== undefined && { institution: data.institution }),
       ...(data.accountNumberLast4 !== undefined && {
         account_number_last4: data.accountNumberLast4,

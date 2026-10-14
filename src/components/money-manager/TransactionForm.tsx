@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { recordTransactionSchema, type RecordTransactionForm } from "@/lib/validation/money-manager";
 import { Button } from "@/components/ui/button";
 import { CurrencyInput } from "@/components/ui/currency-input";
+import { CalculatorSheet } from "@/components/money-manager/CalculatorSheet";
 import { formatCurrency } from "@/lib/format";
 import { toLocalDateString } from "@/lib/date";
 import { addTransaction, listCategories, listAccounts } from "@/app/money-manager/actions";
@@ -35,6 +36,7 @@ import {
   BarChart3,
   MoreHorizontal,
   Wallet,
+  Calculator,
 } from "lucide-react";
 import type { Category, Account } from "@/types/database";
 import type { Resolver } from "react-hook-form";
@@ -104,6 +106,7 @@ export function TransactionForm({ onSuccess, defaultType = "expense", defaultDat
   const [categories, setCategories] = useState<Category[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [serverError, setServerError] = useState<string | null>(null);
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
 
   const today = defaultDate ?? toLocalDateString(new Date());
 
@@ -111,6 +114,7 @@ export function TransactionForm({ onSuccess, defaultType = "expense", defaultDat
     register,
     handleSubmit,
     control,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<RecordTransactionForm>({
     resolver: zodResolver(recordTransactionSchema) as Resolver<RecordTransactionForm>,
@@ -130,6 +134,7 @@ export function TransactionForm({ onSuccess, defaultType = "expense", defaultDat
   });
 
   const txType = useWatch({ control, name: "type" });
+  const amountValue = useWatch({ control, name: "amount" });
   const isRecurring = useWatch({ control, name: "isRecurring" });
   const selectedCategoryId = useWatch({ control, name: "categoryId" });
 
@@ -225,14 +230,55 @@ export function TransactionForm({ onSuccess, defaultType = "expense", defaultDat
             name="amount"
             control={control}
             render={({ field }) => (
-              <CurrencyInput
-                {...field}
-                placeholder="0.00"
-                style={{ ...inputStyle, fontSize: "1.5rem", fontWeight: 700, minHeight: "56px" }}
-              />
+              <div style={{ position: "relative" }}>
+                <CurrencyInput
+                  {...field}
+                  placeholder="0.00"
+                  style={{
+                    ...inputStyle,
+                    fontSize: "1.5rem",
+                    fontWeight: 700,
+                    minHeight: "56px",
+                    // Leave room for the calculator button on the right.
+                    paddingRight: "56px",
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setCalculatorOpen(true)}
+                  aria-label="Open calculator"
+                  title="Open calculator"
+                  style={{
+                    position: "absolute",
+                    right: "6px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    width: "44px",
+                    height: "44px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: "var(--radius-xs)",
+                    color: "var(--accent)",
+                    background: "transparent",
+                    transition: "background 0.15s var(--ease)",
+                    WebkitTapHighlightColor: "transparent",
+                  }}
+                  className="hover:bg-accent/10"
+                >
+                  <Calculator size={20} />
+                </button>
+              </div>
             )}
           />
         </div>
+        {calculatorOpen && (
+          <CalculatorSheet
+            initialValue={amountValue}
+            onDone={(value) => setValue("amount", value)}
+            onClose={() => setCalculatorOpen(false)}
+          />
+        )}
         {errors.amount && <p className="mt-1.5" style={{ fontSize: "0.75rem", color: "var(--rose)" }}>{errors.amount.message}</p>}
       </div>
 

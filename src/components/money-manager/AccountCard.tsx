@@ -33,6 +33,7 @@ const typeColors: Record<string, { bg: string; color: string }> = {
 
 interface Props {
   account: Account;
+  /** Fallback when an account row predates the currency column. */
   currency: string;
 }
 
@@ -40,7 +41,9 @@ export function AccountCard({ account, currency }: Props) {
   const Icon = typeIcons[account.type];
   const colors = typeColors[account.type] ?? typeColors.other;
   const balance = Number(account.balance);
-  const formatted = formatCurrency(balance, currency);
+  // Format from the account's own currency so a balance is never labelled with
+  // a symbol that does not match its denomination.
+  const formatted = formatCurrency(balance, account.currency || currency);
 
   return (
     <div

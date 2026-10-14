@@ -15,9 +15,12 @@
 -- 1. OCCURRENCE LINKING
 -- =============================================
 
+-- ON DELETE SET NULL, not CASCADE: deleting a recurring template should remove
+-- only the template. The occurrences it already generated are real money
+-- movements with applied balance effects, so they must survive their parent.
 ALTER TABLE transactions
   ADD COLUMN IF NOT EXISTS recurring_parent_id UUID
-    REFERENCES transactions(id) ON DELETE CASCADE;
+    REFERENCES transactions(id) ON DELETE SET NULL;
 
 -- Partial index: templates are the only rows we ever scan.
 CREATE INDEX IF NOT EXISTS idx_transactions_recurring_templates
@@ -108,12 +111,12 @@ SET search_path = public
 AS $$
 DECLARE
   v_template      transactions%ROWTYPE;
-  v_cursor        DATE;
   v_next          DATE;
   v_end_date      DATE;
   v_interval      INT;
   v_frequency     TEXT;
   v_generated     INT;
+  v_step          INT;
   v_safety        INT := 0;
 BEGIN
   FOR v_template IN
@@ -129,20 +132,29 @@ BEGIN
     );
     v_end_date  := NULLIF(v_template.recurring_config ->> 'end_date', '')::DATE;
 
-    -- Resume from the latest generated occurrence so a missed run catches up
-    -- rather than silently skipping days. Falls back to the template date.
-    SELECT MAX(t2.transaction_date) INTO v_cursor
-    FROM transactions t2
-    WHERE t2.recurring_parent_id = v_template.id;
-
-    v_cursor := COALESCE(v_cursor, v_template.transaction_date);
     v_generated := 0;
+    -- Reset per template: the guard is meant to bound a single template's
+    -- catch-up, not the whole batch. Sharing one counter across the loop
+    -- silently starves later templates once earlier ones use it up.
+    v_safety := 0;
+    v_step := 1;
 
     LOOP
       v_safety := v_safety + 1;
       EXIT WHEN v_safety > 2000;  -- guards against a pathological config
 
-      v_next := public.next_recurring_date(v_cursor, v_frequency, v_interval);
+      -- Always derive from the template's own date using the cumulative
+      -- step count. Advancing from the previous occurrence would let a
+      -- clamped date become the new anchor: a Jan 31 template clamps to
+      -- Feb 28, and the next step would then land on Mar 28, permanently
+      -- drifting away from the original day-of-month.
+      v_next := public.next_recurring_date(
+        v_template.transaction_date,
+        v_frequency,
+        v_interval * v_step
+      );
+      v_step := v_step + 1;
+
       EXIT WHEN v_next IS NULL;                          -- unknown frequency
       EXIT WHEN v_next > CURRENT_DATE;                  -- not due yet
       EXIT WHEN v_end_date IS NOT NULL AND v_next > v_end_date;
@@ -181,8 +193,6 @@ BEGIN
 
         v_generated := v_generated + 1;
       END IF;
-
-      v_cursor := v_next;
     END LOOP;
 
     IF v_generated > 0 THEN
