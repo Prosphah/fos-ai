@@ -32,6 +32,9 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# The template is documentation, not a secret: it lists every variable the
+# app reads so a fresh clone or a new Vercel project knows what to set.
+!.env.example
 
 # vercel
 .vercel
