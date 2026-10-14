@@ -9,10 +9,25 @@ import type { Metadata } from "next";
  * situation canonical URLs exist to collapse.
  */
 
+/**
+ * Reads an env var, treating a blank value as absent.
+ *
+ * `??` is not enough. `.env.example` ships `NEXT_PUBLIC_SITE_URL=` with nothing
+ * after the equals, so a fresh clone has the variable *set* to an empty string
+ * rather than undefined. Nullish coalescing would sail straight past that and
+ * hand an empty string to `new URL`, which throws and takes the whole build
+ * down with a stack pointing at generated code.
+ */
+function envOr(name: string, fallback: string): string {
+  const value = process.env[name]?.trim();
+  return value ? value : fallback;
+}
+
 /** The app's own origin. Also the Paystack callback origin. */
-export const SITE_ORIGIN = (
-  process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
-).replace(/\/+$/, "");
+export const SITE_ORIGIN = envOr("NEXT_PUBLIC_SITE_URL", "http://localhost:3000").replace(
+  /\/+$/,
+  "",
+);
 
 /**
  * Where the storefront is meant to be indexed.
