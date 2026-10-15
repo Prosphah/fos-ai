@@ -1141,30 +1141,73 @@ html:has(.v3-root) { scroll-behavior: smooth; }
 .v3-root .secure strong { color: var(--volt); }
 
 /* -- FOS-AI ------------------------------------------------------- */
+/* A grid, not a scroller. Five pills in a row of five overflows a
+   phone, and an `overflow-x: auto` strip hides two capabilities past the
+   right edge with nothing to hint that it scrolls. Two columns keeps all
+   five on screen; the last pill spans both so the final row is a
+   deliberate full-width row instead of one pill short of a third column.
+   The tracks are `minmax(0, 1fr)` rather than plain `1fr` so a long label
+   can break onto a second line instead of stretching its track past the
+   grid. */
 .v3-root .fos__tabs {
-  display: flex;
-  gap: 0.5rem;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  margin: 1.75rem calc(var(--gutter) * -1) 1.25rem;
-  padding: 0.25rem var(--gutter) 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+  margin: 0.5rem 0 1.5rem;
 }
 .v3-root .fos__tabs button {
-  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
   cursor: pointer;
-  min-height: 2.9rem;
-  padding: 0.4rem 1.1rem;
-  border-radius: 999px;
+  min-height: 3.25rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 18px;
   border: 2px solid #fff;
   background: transparent;
   color: #fff;
-  font: 700 0.8125rem/1 var(--sans);
-  white-space: nowrap;
+  font: 700 0.875rem/1.25 var(--sans);
+  text-align: left;
+}
+.v3-root .fos__tabs button span { min-width: 0; }
+.v3-root .fos__tabs .fos__go {
+  flex: none;
+  width: 1.05rem;
+  height: 1.05rem;
+  opacity: 0.6;
+  transition: transform 0.2s ease, opacity 0.2s ease;
 }
 .v3-root .fos__tabs button[aria-selected="true"] {
   background: var(--volt);
   color: var(--forest);
   border-color: var(--volt);
+}
+.v3-root .fos__tabs button[aria-selected="true"] .fos__go { opacity: 1; }
+.v3-root .fos__tabs button:active .fos__go { transform: translateX(2px); }
+
+/* The full-width row. `:last-child` rather than a modifier, so the grid
+   keeps working when a panel is added or removed. */
+.v3-root .fos__tabs button:last-child { grid-column: 1 / -1; }
+
+/* The line above the grid. Lives here rather than inline in page.tsx
+   because it is part of how the pills read, not part of the section's
+   argument: a grid of pills gives no positional cue that they open
+   anything, so it has to be said. */
+.v3-root .fos__hint {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0.9rem 0 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.78);
+}
+.v3-root .fos__hint .ic {
+  flex: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  color: var(--volt);
 }
 
 .v3-root .fos__panel { display: grid; gap: 1.5rem; align-items: center; }
@@ -1596,7 +1639,11 @@ html:has(.v3-root) { scroll-behavior: smooth; }
   .v3-root .final .btn { width: auto; min-width: 19rem; }
   .v3-root .quotes { margin-inline: 0; padding-inline: 0; }
   .v3-root .how { grid-template-columns: repeat(4, 1fr); }
-  .v3-root .fos__tabs { margin-inline: 0; padding-inline: 0; }
+  .v3-root .fos__tabs { gap: 0.7rem; }
+  .v3-root .fos__tabs button {
+    padding: 0.7rem 1.1rem;
+    font-size: 0.9375rem;
+  }
 }
 
 @media (min-width: 960px) {
@@ -1630,6 +1677,13 @@ html:has(.v3-root) { scroll-behavior: smooth; }
   }
   .v3-root .split .nofit { margin-top: 0; }
   .v3-root .fos__panel { grid-template-columns: 1.1fr 0.9fr; gap: 3rem; }
+
+  /* Back to a single row once there is room for all five. The
+     full-width last pill is a phone constraint, not a shape the pills
+     should keep on a wide screen, so it is dropped here. */
+  .v3-root .fos__tabs { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .v3-root .fos__tabs button:last-child { grid-column: auto; }
+  .v3-root .fos__tabs button { flex-direction: column; align-items: flex-start; }
   .v3-root .chipgrid { grid-template-columns: repeat(4, 1fr); }
   .v3-root .trio { grid-template-columns: repeat(3, 1fr); }
 }

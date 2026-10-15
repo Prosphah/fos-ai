@@ -11,6 +11,7 @@ import {
   Info,
   KeyRound,
   MonitorPlay,
+  MousePointerClick,
   ShieldCheck,
   Sprout,
   Wallet,
@@ -323,26 +324,6 @@ const FOS_PANELS: FosPanel[] = [
     ),
   },
   {
-    id: "research",
-    label: "Investment research",
-    content: (
-      <>
-        <div>
-          <h3>Investment research</h3>
-          <p>
-            Explore stock information and analysis to support your own
-            research. This is an aid to understanding, not a substitute for
-            independent judgment or professional advice.
-          </p>
-        </div>
-        <figure className="v3-shot">
-          <StockAnalyzerPhone />
-          <figcaption>Research</figcaption>
-        </figure>
-      </>
-    ),
-  },
-  {
     id: "calc",
     label: "Calculators",
     content: (
@@ -380,8 +361,8 @@ const FOS_PANELS: FosPanel[] = [
           <p>
             For explaining a term or working through a question from the
             lectures. This one is still being built, so it is not something
-            to wait for. Everything above it is available now, and your
-            access keeps up with whatever FOS·AI gains from here on.
+            to wait for. Every other capability here is available now, and
+            your access keeps up with whatever FOS·AI gains from here on.
           </p>
         </div>
         <div className="notice" style={{ margin: 0 }}>
@@ -390,6 +371,31 @@ const FOS_PANELS: FosPanel[] = [
             tab will carry the real one.
           </p>
         </div>
+      </>
+    ),
+  },
+  /* Last on purpose, and the order is load-bearing rather than editorial.
+     The pills are laid out as two columns on a phone, so a panel in this
+     position is the one that takes the full width of the final row. Move
+     it and the grid needs a `:nth-child` rule instead of the single
+     `:last-child` it uses now. */
+  {
+    id: "research",
+    label: "Investment research",
+    content: (
+      <>
+        <div>
+          <h3>Investment research</h3>
+          <p>
+            Explore stock information and analysis to support your own
+            research. This is an aid to understanding, not a substitute for
+            independent judgment or professional advice.
+          </p>
+        </div>
+        <figure className="v3-shot">
+          <StockAnalyzerPhone />
+          <figcaption>Research</figcaption>
+        </figure>
       </>
     ),
   },
@@ -1145,6 +1151,14 @@ export default function MoneyMasteryCodeVariantC() {
 
             <Reveal as="h3" style={{ marginTop: "1.75rem" }}>
               What you can do in FOS·AI
+            </Reveal>
+
+            {/* Said here because a grid of pills no longer reads as a tab
+                strip by position: without this line a reader has no reason
+                to expect that tapping one of them shows a screen. */}
+            <Reveal as="p" className="fos__hint">
+              <MousePointerClick className="ic" aria-hidden="true" />
+              Tap any one of these to see what it looks like.
             </Reveal>
 
             <Reveal>

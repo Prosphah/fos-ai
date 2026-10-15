@@ -595,13 +595,21 @@ export type FosPanel = {
 };
 
 /**
- * The tab strip, and nothing else.
+ * The pill grid, and nothing else.
  *
  * Panels arrive as server-rendered `children` and this island only owns
  * `aria-selected` and the `hidden` attribute. That is deliberate: the
  * panels hold the real product screens, and routing them through here
  * would drag the phone mock-ups into the client bundle for the sake of
  * eleven buttons.
+ *
+ * The pills are laid out as a grid rather than a scrolling strip. A
+ * horizontal scroller hides two of the five capabilities past the right
+ * edge of a phone with nothing to say so, and the reader never finds out
+ * what else FOS·AI does. Two columns puts all five on screen at once,
+ * with the last pill taking the full width so the last row reads as a
+ * deliberate full-width row rather than as one item short of a third
+ * column.
  *
  * Arrow keys, Home and End all move the selection, matching the WAI-ARIA
  * tabs pattern, with the roving tabindex the pattern requires.
@@ -647,7 +655,22 @@ export function FosTabs({ panels }: { panels: FosPanel[] }) {
             tabIndex={index === active ? 0 : -1}
             onClick={() => select(index)}
           >
-            {panel.label}
+            <span>{panel.label}</span>
+            {/* On every pill, not just the selected one. In a grid the
+                pills no longer read as a tab strip by position alone, so
+                each one carries its own "this opens something" signal. */}
+            <svg
+              className="fos__go"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2.5}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M9 6l6 6-6 6" />
+            </svg>
           </button>
         ))}
       </div>
@@ -815,21 +838,31 @@ export function StickyBar() {
 /* ── Anchor navigation ───────────────────────────────────────────── */
 
 /**
- * Lets an in-page link reach something inside a collapsed lecture.
+ * Makes every in-page link on the page actually arrive.
  *
- * The mock's "Where did you come from?" links point at `#gold`,
- * `#mutual-funds` and `#lecture-8`, all of which live inside a closed
- * `<details>`. Without this, tapping one scrolls to a closed row and
- * nothing appears to happen. This island owns the whole behaviour: open
- * every collapsed ancestor, then let the browser scroll.
+ * Two jobs, both of which the browser cannot do on its own.
+ *
+ * 1. "Where did you come from?" points at `#gold`, `#mutual-funds` and
+ *    `#lecture-8`, all of which live inside a closed `<details>`. Opening
+ *    those first is what makes a link to a collapsed lecture reach its
+ *    target instead of parking on a closed row.
+ * 2. Every jump is scrolled by hand, because preventing the default is
+ *    unavoidable for the collapsed ones and a default that only runs for
+ *    some links is worse than none. The hero CTA, the sticky bar and the
+ *    footer's "Choose your option" all depend on this.
  *
  * Renders nothing. It is mounted once, near the top of the page.
  */
 export function AnchorNavigation() {
-  useEffect(() => {
-    function openAncestors(target: Element | null) {
-      if (!target) return false;
+  const reducedMotion = useRef(false);
 
+  useEffect(() => {
+    reducedMotion.current =
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }, []);
+
+  useEffect(() => {
+    function openAncestors(target: Element) {
       for (
         let node: Element | null = target;
         node && node !== document.body;
@@ -837,8 +870,6 @@ export function AnchorNavigation() {
       ) {
         if (node.tagName === "DETAILS") (node as HTMLDetailsElement).open = true;
       }
-
-      return true;
     }
 
     function onClick(event: MouseEvent) {
@@ -852,16 +883,39 @@ export function AnchorNavigation() {
       const id = anchor.getAttribute("href")?.slice(1);
       if (!id) return;
 
-      if (openAncestors(document.getElementById(id))) {
-        event.preventDefault();
-        history.replaceState(null, "", `#${id}`);
-      }
+      const target = document.getElementById(id);
+      if (!target) return;
+
+      /* Every in-page jump is handled here rather than left to the browser.
+       * Two reasons, and the second is why the default action cannot simply be
+       * allowed to run:
+       *
+       *   1. `#gold`, `#mutual-funds` and `#lecture-8` live inside a closed
+       *      <details>. The ancestors have to be opened first, and the browser
+       *      would already have given up on the scroll by then.
+       *   2. `preventDefault()` is unavoidable in that case, so the scroll has
+       *      to be performed by hand for *every* jump or the target ones are
+       *      the only ones that arrive. `replaceState` rewrites the URL without
+       *      navigating, so on its own it moves nothing on screen. */
+      event.preventDefault();
+      openAncestors(target);
+      history.replaceState(null, "", `#${id}`);
+
+      // One frame after the details have opened, so the target is measured
+      // against the expanded layout rather than the collapsed one.
+      requestAnimationFrame(() => {
+        target.scrollIntoView({
+          block: "start",
+          behavior: reducedMotion ? "auto" : "smooth",
+        });
+      });
     }
 
     function onHashChange() {
       const id = window.location.hash.slice(1);
       if (!id) return;
-      openAncestors(document.getElementById(id));
+      const target = document.getElementById(id);
+      if (target) openAncestors(target);
     }
 
     document.addEventListener("click", onClick);

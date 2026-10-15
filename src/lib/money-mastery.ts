@@ -1,5 +1,17 @@
 export type CourseTier = "course" | "course_fosai";
 
+/**
+ * Storefront variant -> the route that renders it. Mirrors VARIANT_ROUTES in
+ * src/proxy.ts, which is what makes the sales hostname serve these paths.
+ */
+type Variant = "a" | "b" | "c";
+
+const VARIANT_ROUTES: Record<Variant, string> = {
+  a: "/money-mastery-code/v1",
+  b: "/money-mastery-code/v2",
+  c: "/money-mastery-code/v3",
+};
+
 export type TierConfig = {
   id: CourseTier;
   name: string;
@@ -65,11 +77,67 @@ export function formatNaira(amountInKobo: number): string {
 /**
  * Where buyers are sent to watch the lectures.
  *
- * The recordings currently live on Google Drive. Set COURSE_ACCESS_URL once the
- * Drive folder is fronted by a custom domain. While it is unset the success page
- * hides its "open your lectures" button rather than linking somewhere wrong.
+ * The recordings live on Google Drive. Set COURSE_ACCESS_URL once the folder is
+ * fronted by a custom domain.
+ *
+ * Currently unreferenced: access is granted by hand, so the success page asks
+ * the buyer to message rather than handing out a link anyone could forward.
+ * Kept because the moment a direct link is wanted again it is one line, and
+ * the env var is already set.
  */
 export function getCourseAccessUrl(): string | null {
   const value = process.env.COURSE_ACCESS_URL?.trim();
   return value ? value : null;
+}
+
+/**
+ * A WhatsApp deep link that opens a conversation with the message already
+ * typed out.
+ *
+ * NEXT_PUBLIC_WHATSAPP_NUMBER is the instructor's number in international
+ * format. wa.me does not accept a leading `+`, a space or a dash, so the value
+ * is stripped to digits rather than trusted: a number pasted as "+234 801 234
+ * 5678" is the obvious way to write it and it produces a dead link if taken
+ * verbatim.
+ *
+ * Returns null when the number is unset so a caller can fall back to email
+ * rather than rendering a button that opens nothing.
+ */
+export function getWhatsAppUrl(message: string): string | null {
+  const digits = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER?.replace(/\D/g, "");
+
+  return digits
+    ? `https://wa.me/${digits}?text=${encodeURIComponent(message)}`
+    : null;
+}
+
+/**
+ * The storefront root, for a buyer who needs to go back to the sales page.
+ *
+ * `/money-mastery-code` is not a route: only the three variant directories
+ * under it are, so linking there answers 404 — which is exactly what a buyer
+ * returning from Paystack sees first.
+ *
+ * `sourceVariant` is the value the purchase was attributed to, and it decides
+ * where the link goes when there is no sales host:
+ *
+ *   - On the sales hostname the root *is* the storefront. src/proxy.ts
+ *     rewrites it onto whichever variant the `mmc_variant` cookie pinned, so
+ *     this is where a "back to the sales page" link belongs.
+ *   - In local development no rewriting happens, and there is no storefront
+ *     route at all, so the variant recorded against the purchase is used
+ *     rather than dropping the buyer on the app's home page.
+ */
+export function getStorefrontUrl(sourceVariant?: string): string {
+  const host = process.env.NEXT_PUBLIC_SALES_HOST?.trim();
+
+  if (host) return `https://${host}/`;
+
+  const route = isVariant(sourceVariant) ? VARIANT_ROUTES[sourceVariant] : null;
+
+  return route ?? VARIANT_ROUTES.c;
+}
+
+function isVariant(value: string | undefined): value is Variant {
+  return value === "a" || value === "b" || value === "c";
 }

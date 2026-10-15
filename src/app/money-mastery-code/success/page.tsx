@@ -6,10 +6,15 @@ import {
   GraduationCap,
   Loader2,
   Mail,
+  MessageCircle,
   TriangleAlert,
 } from "lucide-react";
 
-import { getCourseAccessUrl, getTier } from "@/lib/money-mastery";
+import {
+  getStorefrontUrl,
+  getTier,
+  getWhatsAppUrl,
+} from "@/lib/money-mastery";
 import { verifyTransaction } from "@/lib/paystack";
 import { parseFullName } from "@/lib/validation/checkout";
 
@@ -50,10 +55,17 @@ function Shell({ children }: { children: React.ReactNode }) {
   );
 }
 
-function BackToPricing() {
+/**
+ * Back to the sales page.
+ *
+ * The href is passed in by the enrolled state, which knows which variant the
+ * buyer came from. The three states above a verified payment have no
+ * transaction to read that from, so they fall back to the storefront root.
+ */
+function BackToPricing({ href = getStorefrontUrl() }: { href?: string }) {
   return (
     <Link
-      href="/money-mastery-code#pricing"
+      href={href}
       className="sales-focus inline-flex items-center gap-2 text-[14px] font-medium"
       style={{ color: "var(--sales-accent)" }}
     >
@@ -151,12 +163,36 @@ export default async function SuccessPage({ searchParams }: PageProps) {
   }
 
   const tier = getTier(String(transaction.metadata?.tier ?? ""));
-  const accessUrl = getCourseAccessUrl();
 
   // Read back out of Paystack rather than from anything the browser sent, so
   // the greeting matches the name recorded against the payment rather than
   // anything that could have been edited into the URL.
-  const buyer = firstName(parseFullName(transaction.metadata?.full_name));
+  const fullName = parseFullName(transaction.metadata?.full_name);
+  const buyer = firstName(fullName);
+
+  /* Access is granted by hand, so the page's job is to make that one message
+   * easy to send and impossible to send incomplete. The reference is the part
+   * that matters: it is the join key between this conversation and the
+   * payment, so it goes in the composed message rather than being asked for in
+   * a follow-up. */
+  const requestMessage = [
+    "Hi, I just paid for the Money Mastery Code.",
+    fullName ? `My name is ${fullName}.` : null,
+    `The email on the payment is ${transaction.email}.`,
+    `Reference: ${transaction.reference}.`,
+    "I'd like to request access to the lectures.",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  // WhatsApp when a number is configured, email when one is not. A button
+  // that opens nothing is the same as no button, and the buyer has just paid.
+  const whatsappUrl = getWhatsAppUrl(requestMessage);
+  const requestUrl =
+    whatsappUrl ??
+    `mailto:refunds@betiangli.xyz?subject=${encodeURIComponent(
+      "Money Mastery Code — access request"
+    )}&body=${encodeURIComponent(requestMessage)}`;
 
   return (
     <Shell>
@@ -191,28 +227,39 @@ export default async function SuccessPage({ searchParams }: PageProps) {
             <div>
               <p className="text-[15px] font-semibold">Your lectures</p>
               <p className="mt-1.5 text-[14px] leading-6" style={{ color: "var(--sales-text-2)" }}>
-                The recording link is on its way to {transaction.email}. If it has
-                not arrived within a few minutes, check your spam folder, then email
-                me and I will resend it.
+                Every participant is granted access by me, and added to the community. Message me
+                below and I will send you the access link, usually within 10 minutes and
+                always the same day.
               </p>
             </div>
           </div>
 
-          {accessUrl ? (
-            <a
-              href={accessUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="sales-focus flex items-center justify-center gap-2 rounded-full px-6 py-4 text-[15px] font-semibold transition hover:-translate-y-0.5"
-              style={{
-                background: "var(--sales-accent)",
-                color: "var(--sales-accent-contrast)",
-              }}
-            >
-              Open your lectures
-              <ArrowRight size={17} />
-            </a>
-          ) : null}
+          <a
+            href={requestUrl}
+            target={whatsappUrl ? "_blank" : undefined}
+            rel="noreferrer"
+            className="sales-focus flex items-center justify-center gap-2 rounded-full px-6 py-4 text-[15px] font-semibold transition hover:-translate-y-0.5"
+            style={{
+              background: "var(--sales-accent)",
+              color: "var(--sales-accent-contrast)",
+            }}
+          >
+            {whatsappUrl ? (
+              <MessageCircle size={17} />
+            ) : (
+              <Mail size={17} />
+            )}
+            {whatsappUrl ? "Request access on WhatsApp" : "Request access by email"}
+            <ArrowRight size={17} />
+          </a>
+
+          <p
+            className="text-center text-[13px] leading-6"
+            style={{ color: "var(--sales-text-3)" }}
+          >
+            Your name, email and reference go into the message, so there is
+            nothing left to fill in.
+          </p>
 
           {tier?.id === "course_fosai" ? (
             <div
@@ -240,12 +287,16 @@ export default async function SuccessPage({ searchParams }: PageProps) {
           style={{ color: "var(--sales-text-3)" }}
         >
           Watch the lectures in order. Start with the Money Management code even if
-          you came for the investing content. Email me any time in the first 180
-          days, including if you decide it was not for you.
+          you came for the investing content. Message or email me any time in the
+          first 180 days, including if you decide it was not for you.
         </p>
 
         <div className="mt-9 text-center">
-          <BackToPricing />
+          <BackToPricing
+            href={getStorefrontUrl(
+              String(transaction.metadata?.source_variant ?? "")
+            )}
+          />
         </div>
       </div>
     </Shell>
