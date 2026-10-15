@@ -41,7 +41,7 @@ import {
   ToolsPhone,
 } from "@/components/sales/phone-mockups";
 import { COURSE_TIERS } from "@/lib/money-mastery";
-import { storefrontMetadata } from "@/lib/seo";
+import { SITE_ORIGIN, storefrontMetadata } from "@/lib/seo";
 import { SALES_TESTIMONIALS } from "@/lib/sales-testimonials";
 
 import "./v3.css";
@@ -1388,6 +1388,11 @@ export default function MoneyMasteryCodeVariantC() {
             Refunds:{" "}
             <a href="mailto:refunds@betiangli.xyz">refunds@betiangli.xyz</a>
             <br />© 2026 Prosper Betiang
+            {/* Absolute, not a relative link. On the sales hostname the proxy
+                rewrites every path outside /money-mastery-code/, so /privacy
+                would return another copy of this page. */}
+            <br />
+            <a href={`${SITE_ORIGIN}/privacy#sales-pages`}>Privacy notice for these sales pages</a>
           </p>
         </div>
       </footer>

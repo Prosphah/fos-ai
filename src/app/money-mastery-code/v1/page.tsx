@@ -44,7 +44,7 @@ import { SalesProgressBar } from "@/components/sales/sales-progress";
 import { StickyEnrolBar } from "@/components/sales/sticky-enrol-bar";
 import { Testimonials } from "@/components/sales/testimonials";
 import { COURSE_TIERS } from "@/lib/money-mastery";
-import { storefrontMetadata } from "@/lib/seo";
+import { SITE_ORIGIN, storefrontMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = storefrontMetadata();
 
@@ -1651,6 +1651,22 @@ export default function MoneyMasteryCodePage() {
               acting on it. Features in development are subject to change, and future
               functionality is not promised for any particular date. Your access does
               not change. Interface previews on this page use sample data.
+            </p>
+
+            {/* Absolute, not Link. On the sales hostname the proxy rewrites every
+                path outside /money-mastery-code/, so a relative /privacy would
+                return another copy of this page instead of the policy. */}
+            <p className="max-w-[104ch] text-[11.5px] leading-6" style={{ color: "#92988a" }}>
+              These sales pages are a separate property from the FOS·AI app and have their
+              own privacy notice.{" "}
+              <a
+                href={`${SITE_ORIGIN}/privacy#sales-pages`}
+                className="underline underline-offset-4"
+                style={{ color: "#b8bcb1" }}
+              >
+                Read it
+              </a>
+              .
             </p>
           </div>
         </div>

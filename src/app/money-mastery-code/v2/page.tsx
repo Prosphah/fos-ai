@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
 import { CheckoutForm } from "@/components/sales/checkout-form";
 import { CountUp, Reveal, RevealItem, ScrollProgress, StickyCta } from "@/components/sales/mmb-motion";
@@ -36,7 +35,7 @@ import { COURSE_TIERS } from "@/lib/money-mastery";
  * floating CTA instead of variant A's sticky mobile bar.
  */
 
-import { storefrontMetadata } from "@/lib/seo";
+import { SITE_ORIGIN, storefrontMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = storefrontMetadata();
 
@@ -973,15 +972,19 @@ export default function MoneyMasteryCodeVariantB() {
           or availability is not guaranteed.
         </p>
         <p className="flex flex-wrap items-center gap-5">
-          <Link href="/fos-ai" className="underline-offset-4 hover:underline">
+          {/* Absolute, not Link. On the sales hostname the proxy rewrites every
+              path that is not under /money-mastery-code/, so a relative
+              /privacy would hand the visitor another copy of this page instead
+              of the policy. That applies to every destination on the app host. */}
+          <a href={`${SITE_ORIGIN}/fos-ai`} className="underline-offset-4 hover:underline">
             About FOS·AI
-          </Link>
-          <Link href="/login" className="underline-offset-4 hover:underline">
+          </a>
+          <a href={`${SITE_ORIGIN}/login`} className="underline-offset-4 hover:underline">
             FOS·AI sign in
-          </Link>
-          <Link href="/privacy" className="underline-offset-4 hover:underline">
+          </a>
+          <a href={`${SITE_ORIGIN}/privacy`} className="underline-offset-4 hover:underline">
             Privacy
-          </Link>
+          </a>
         </p>
       </footer>
 

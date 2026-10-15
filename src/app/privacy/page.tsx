@@ -67,9 +67,15 @@ export default function PrivacyPage() {
             />
             <Subheading>Scope</Subheading>
             <P>
-              This policy covers the App and its sales pages. It does not cover third-party
-              websites we link to, including payment providers and market data sources, which
-              have their own policies.
+              This policy covers the FOS&middot;AI app at fos-ai.app and nothing else. The
+              course sales pages are a separate property at a different address, operated by
+              the same person, and are described in section 15. They are kept separate
+              deliberately: the App carries no advertising and no analytics, and that stays
+              true of it precisely because they are not part of this policy.
+            </P>
+            <P>
+              This policy also does not cover third-party websites we link to, including
+              payment providers and market data sources, which have their own policies.
             </P>
             <Subheading>Legal basis</Subheading>
             <P>
@@ -426,6 +432,10 @@ export default function PrivacyPage() {
               analytics, and no third-party marketing cookies, no consent banner is required.
             </P>
             <P>
+              This is true of the App alone. The sales pages described in section 15 are a
+              different property and are not covered by this section.
+            </P>
+            <P>
               As described in 2.6, your app-lock PIN hash, biometric credential, and interface
               preferences are stored in your browser and never transmitted to us.
             </P>
@@ -466,6 +476,71 @@ export default function PrivacyPage() {
             <P>
               If you are in the European Economic Area and are unsatisfied with our response, you
               may complain to your local supervisory authority.
+            </P>
+          </Section>
+
+          <Section title="15. The course sales pages" id="sales-pages">
+            <P>
+              This section is the privacy notice for the Money Mastery Code sales pages, served
+              at mmc.betiangli.xyz. Those pages are a separate property, are operated by the same
+              person, and are outside sections 1 to 14 of this policy. This section is the whole
+              of their notice.
+            </P>
+
+            <Subheading>What they collect</Subheading>
+            <P>
+              The sales pages exist to sell one course and, with it, access to the FOS&middot;AI
+              app. They collect what you type into the checkout form, which is your name, your
+              email address, and which of the two packages you chose. Nothing else is asked of
+              you.
+            </P>
+            <P>
+              A record is written the moment you start a checkout, so that a purchase which is
+              not completed is still visible to us as an unfinished attempt. If you abandon one,
+              we keep your name, email address, and the package you were looking at, and use it
+              only to send you follow-up emails about that purchase.
+            </P>
+
+            <Subheading>Cookies they set</Subheading>
+            <Table
+              head={["Cookie", "Purpose", "Duration"]}
+              rows={[
+                ["mmc_variant", "Keeps you on the same version of the page between visits, so the A/B test compares like with like. First-party, never shared, never used to identify you.", "90 days"],
+              ]}
+            />
+            <P>
+              There are no advertising cookies on the sales pages at present, and no consent
+              banner is shown because none is required for what they do today.
+            </P>
+
+            <Subheading>Who processes what</Subheading>
+            <Table
+              head={["Provider", "Role", "Data involved"]}
+              rows={[
+                ["Vercel", "Hosting and delivery of the page", "Connection and log data"],
+                ["Paystack", "Payment processing", "Payment details, then your email address, the amount, and a transaction reference"],
+                ["Supabase", "Our database", "Your name, email address, and what you bought"],
+                ["Zoho Mail", "Sending your confirmation email", "Your name, email address, and order details"],
+                ["Make.com", "Passing a completed purchase to that email system", "Your name, email address, and order details"],
+              ]}
+            />
+
+            <Subheading>Retention</Subheading>
+            <P>
+              Completed purchases are kept as a sales and tax record for as long as tax and
+              accounting law requires, and are deleted or anonymised on request.
+            </P>
+            <P>
+              Unfinished checkouts are deleted after 90 days. After that they are not used and
+              not contacted.
+            </P>
+
+            <Subheading>Your choices</Subheading>
+            <P>
+              You can ask what we hold about you, have it corrected, or have it erased by
+              emailing the address in section 14. If you would rather not be contacted about an
+              unfinished checkout, say so in that email and we will close it immediately and
+              stop.
             </P>
           </Section>
         </Card>
