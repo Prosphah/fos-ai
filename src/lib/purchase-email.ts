@@ -37,13 +37,19 @@ import { createAdminClient } from "@/lib/supabase/admin";
 const WEBHOOK_URL = process.env.PURCHASE_EMAIL_WEBHOOK_URL?.trim();
 
 /**
- * Optional shared secret, sent as a header.
+ * The webhook's API key, sent as a header.
  *
- * Make's webhook URLs contain a long random token and are not guessable, so
- * this is defence in depth rather than the actual defence. It matters because
- * the payload carries a customer's name and email: if the URL ever leaked from
- * a log or a screenshot, this is what stops someone using it to send mail to
- * arbitrary addresses.
+ * This is Make's own webhook authentication, not a convention of ours. A
+ * custom webhook module with any API key added answers 401 to a request that
+ * does not carry a matching one, and Make compares against every key on the
+ * module, so any single one of them grants access.
+ *
+ * Required whenever an API key is configured on the Make module. The header
+ * name is exact and case-insensitive; the value is what has to match.
+ *
+ * Make's webhook URLs already contain a long unguessable token, so this is not
+ * the only thing standing between a leaked URL and arbitrary mail. It matters
+ * because the payload carries a customer's name and email.
  */
 const WEBHOOK_SECRET = process.env.PURCHASE_EMAIL_WEBHOOK_SECRET?.trim();
 
@@ -199,7 +205,19 @@ export async function triggerPurchaseEmail(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(WEBHOOK_SECRET ? { "X-Purchase-Email-Secret": WEBHOOK_SECRET } : {}),
+        ...(WEBHOOK_SECRET
+          ? {
+              // Make rejects with 401 unless the API key arrives under this
+              // exact name. Sending it under our own header name instead looks
+              // correct and silently fails, which is the whole of the 401 this
+              // was traced back to.
+              "x-make-apikey": WEBHOOK_SECRET,
+              // Also kept under our own name, so a scenario can still tell an
+              // authorised post from an arbitrary one that somehow learned the
+              // URL. Make ignores headers it does not recognise.
+              "X-Purchase-Email-Secret": WEBHOOK_SECRET,
+            }
+          : {}),
       },
       body: JSON.stringify(payloadFor(purchase)),
       signal: AbortSignal.timeout(TRIGGER_TIMEOUT_MS),
