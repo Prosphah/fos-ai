@@ -11,47 +11,65 @@
 -- The pg_cron job is named 'resend-purchase-emails'.
 --
 -- ---------------------------------------------------------------------------
--- RUN THIS FIRST, IN ITS OWN STATEMENT. The migration below raises an
--- exception and does nothing without it:
+-- RUN THIS FIRST, IN ITS OWN STATEMENT:
 --
---   alter database postgres
---     set "app.settings.cron_secret" = '<the same value as Vercel CRON_SECRET>';
+--   select vault.create_secret('<CRON_SECRET>', 'mmc_cron_secret');
 --
--- It lives in the database rather than inline here so the secret is never
--- written into cron.job, where anyone able to read that table can read it.
+-- Use the same value as Vercel's CRON_SECRET. The migration below raises an
+-- exception and schedules nothing without it.
+--
+-- The secret lives in Vault rather than inline in the job command because the
+-- command is stored in cron.job as readable text. Supabase has exposed that
+-- table to logged-in users before, so a literal there is a literal in the
+-- hands of anyone who can query it. Resolving it at run time means the
+-- command holds a reference, not the secret.
+--
+-- A database-level setting (ALTER DATABASE ... SET) is the other option and
+-- is not used here: the SQL editor's role cannot set custom parameters, and
+-- the error it produces is opaque enough to look like a quoting problem.
 -- ---------------------------------------------------------------------------
 
 create extension if not exists pg_net;
 create extension if not exists pg_cron;
 
--- Unsubscribe first so re-running this is safe. cron.schedule raises
--- "job name already exists" on a re-run rather than updating in place, which
--- would make this migration fail the second time it is applied.
---
--- The body is a literal so the dollar quoting of the inner statement does not
--- collide with the DO block's own delimiter.
 do $$
 declare
-  sweep_command text := $cron$
+  sweep_command text;
+  secret_exists boolean;
+begin
+  -- Refuse to register a job that cannot authenticate. Without this the
+  -- header would be 'Bearer ' concatenated with null, the sweep would answer
+  -- 401 on every run, and nothing would surface it until a buyer reported a
+  -- missing email.
+  select exists (
+    select 1 from vault.decrypted_secrets where name = 'mmc_cron_secret'
+  ) into secret_exists;
+
+  if not secret_exists then
+    raise exception
+      'Vault secret mmc_cron_secret not found. Run: select vault.create_secret(''<CRON_SECRET>'', ''mmc_cron_secret'');';
+  end if;
+
+  -- Nested dollar tag so the inner statement does not collide with the DO
+  -- block's own delimiter.
+  sweep_command := $cron$
     select net.http_get(
         url := 'https://fos-ai.betiangli.xyz/api/cron/resend-purchase-emails',
         headers := jsonb_build_object(
             'Content-Type', 'application/json',
-            'Authorization', 'Bearer ' || current_setting('app.settings.cron_secret', true)
+            'Authorization', 'Bearer ' || (
+                select decrypted_secret
+                from vault.decrypted_secrets
+                where name = 'mmc_cron_secret'
+            )
         ),
         timeout_milliseconds := 60000
     );
   $cron$;
-  secret text := current_setting('app.settings.cron_secret', true);
-begin
-  -- Refuse to register a job that cannot authenticate. Without this the header
-  -- would be 'Bearer ' || null, the sweep would answer 401 on every run, and
-  -- nothing would surface it until a buyer reported a missing email.
-  if secret is null or secret = '' then
-    raise exception
-      'app.settings.cron_secret is not set. Run: alter database postgres set "app.settings.cron_secret" = ''<same value as Vercel CRON_SECRET>'';';
-  end if;
 
+  -- Unsubscribe first so re-running this is safe. cron.schedule raises
+  -- "job name already exists" on a re-run rather than updating in place, which
+  -- would make this migration fail the second time it is applied.
   if exists (select 1 from cron.job where jobname = 'resend-purchase-emails') then
     perform cron.unschedule('resend-purchase-emails');
   end if;
@@ -68,18 +86,32 @@ end $$;
 -- 60s matches the maxDuration exported by the route. Raising one without the
 -- other reintroduces the same mismatch in the other direction.
 --
--- timeout_milliseconds has been available since pg_net 0.3. Supabase ships
--- newer than that. Named notation is used so the argument position does not
--- matter; pg_net moved timeout_milliseconds one place along when it gained a
--- body parameter.
+-- Named notation is used so the argument position does not matter; pg_net
+-- moved timeout_milliseconds one place along when it gained a body parameter.
 --
--- CRON_SECRET: see the header. If you skipped that statement the migration
--- raised an exception rather than registering a job that cannot authenticate.
---
--- Verify:
+-- Verify the job exists, and that its command holds no secret:
 --
 --   select jobname, schedule, active from cron.job
 --    where jobname = 'resend-purchase-emails';
+--
+-- Verify the sweep actually authenticates, by firing it once by hand:
+--
+--   select net.http_get(
+--       url := 'https://fos-ai.betiangli.xyz/api/cron/resend-purchase-emails',
+--       headers := jsonb_build_object(
+--           'Authorization', 'Bearer ' || (
+--               select decrypted_secret from vault.decrypted_secrets
+--                where name = 'mmc_cron_secret'
+--           )
+--       ),
+--       timeout_milliseconds := 60000
+--   );
+--
+--   select status, content from cron.job_run_details
+--    where jobname = 'resend-purchase-emails' order by start_time desc limit 1;
+--
+-- A 200 means it authenticated. A 401 means the Vault secret and Vercel's
+-- CRON_SECRET have drifted apart.
 --
 -- pg_cron jobs do not survive a Supabase project restart or a Free-plan
 -- pause. Re-check after either happens.
