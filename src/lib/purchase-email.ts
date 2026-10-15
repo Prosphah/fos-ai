@@ -50,12 +50,12 @@ const WEBHOOK_SECRET = process.env.PURCHASE_EMAIL_WEBHOOK_SECRET?.trim();
 /**
  * Well inside the Paystack webhook window.
  *
- * fulfilment runs first and itself makes a Supabase call, so this is additive
- * on top of that, not the whole request. If it ever does overrun, Paystack
- * retries the webhook and fulfilment is idempotent on the reference, so the
- * cost is a repeated upsert rather than a repeated account invite.
+ * Two budgets depend on this number. In the webhook it is additive on top of
+ * fulfilment's own Supabase call, because a slow post means a slow response and
+ * Paystack replays a webhook that does not answer in time. In the sweep it is
+ * multiplied by the batch size, which is why that is kept small.
  */
-const TRIGGER_TIMEOUT_MS = 5_000;
+const TRIGGER_TIMEOUT_MS = 3_000;
 
 /** Everything the scenario needs to write the email. */
 export type PurchaseEmail = {
@@ -101,17 +101,70 @@ function payloadFor(purchase: PurchaseEmail) {
   };
 }
 
-async function markSent(reference: string): Promise<void> {
-  const { error } = await createAdminClient()
-    .from("enrollments")
-    .update({ purchase_email_sent_at: new Date().toISOString() })
-    .eq("paystack_reference", reference)
-    // Keeps a concurrent retry from rewriting a timestamp that is already
-    // correct, and makes a duplicate Paystack webhook a no-op here.
-    .is("purchase_email_sent_at", null);
+/**
+ * Takes exclusive ownership of a purchase before anything is sent.
+ *
+ * The update is a compare-and-swap: it only writes when the column is still
+ * null, and returns the row it touched. That single conditional is what makes
+ * two concurrent callers resolve to one sender, because the database decides
+ * the winner rather than the application.
+ *
+ * The timestamp is written before the post rather than after, because checking
+ * for null after posting is not a lock. A Paystack replay and a sweep running
+ * at the same moment both read null, both post, and the buyer gets the
+ * confirmation twice.
+ */
+async function claim(reference: string): Promise<boolean> {
+  try {
+    const { data, error } = await createAdminClient()
+      .from("enrollments")
+      .update({ purchase_email_sent_at: new Date().toISOString() })
+      .eq("paystack_reference", reference)
+      .is("purchase_email_sent_at", null)
+      .select("paystack_reference")
+      .maybeSingle();
 
-  if (error) {
-    console.error("[purchase-email] Could not mark as sent:", error.message);
+    if (error) {
+      console.error("[purchase-email] Could not claim:", error.message);
+      return false;
+    }
+
+    return data !== null;
+  } catch (error) {
+    console.error(
+      "[purchase-email] Could not claim:",
+      error instanceof Error ? error.message : "Unknown error",
+    );
+    return false;
+  }
+}
+
+/**
+ * Hands a claim back so the sweep can retry it.
+ *
+ * This makes the whole flow at-least-once rather than exactly-once, which is
+ * the deliberate choice. An HTTP post has no way to distinguish "the scenario
+ * never received this" from "the scenario received it and the response was
+ * lost", so releasing on any failure risks a second confirmation email. The
+ * alternative is holding the claim on failure, which risks a buyer who paid
+ * never receiving anything. A duplicate email is an annoyance; a missing one
+ * is a refund request.
+ */
+async function release(reference: string): Promise<void> {
+  try {
+    const { error } = await createAdminClient()
+      .from("enrollments")
+      .update({ purchase_email_sent_at: null })
+      .eq("paystack_reference", reference);
+
+    if (error) {
+      console.error("[purchase-email] Could not release claim:", error.message);
+    }
+  } catch (error) {
+    console.error(
+      "[purchase-email] Could not release claim:",
+      error instanceof Error ? error.message : "Unknown error",
+    );
   }
 }
 
@@ -128,7 +181,17 @@ export async function triggerPurchaseEmail(
   if (!WEBHOOK_URL) {
     // Not an error. A deployment without Make configured must still complete
     // purchases, it just does not send confirmations.
+    //
+    // Returns before claiming anything. Claiming here would stamp every row as
+    // sent while nothing was sent, and the sweep would then skip all of them
+    // once the URL was finally configured.
     return { triggered: false, marked: false, reason: "not-configured" };
+  }
+
+  if (!(await claim(purchase.reference))) {
+    // Either a concurrent caller got there first, or the claim failed
+    // outright. Neither is a reason to send.
+    return { triggered: false, marked: false, reason: "already-claimed" };
   }
 
   try {
@@ -147,11 +210,11 @@ export async function triggerPurchaseEmail(
       console.error(
         `[purchase-email] Scenario returned ${response.status} for ${purchase.reference}`,
       );
+      await release(purchase.reference);
       return { triggered: false, marked: false, reason: `http-${response.status}` };
     }
 
-    await markSent(purchase.reference);
-
+    // The claim doubles as the record that the confirmation went out.
     return { triggered: true, marked: true, reason: "accepted" };
   } catch (error) {
     // AbortError here is the timeout firing, which is the expected shape of a
@@ -160,6 +223,7 @@ export async function triggerPurchaseEmail(
     console.error(
       `[purchase-email] Could not reach the scenario for ${purchase.reference}: ${reason}`,
     );
+    await release(purchase.reference);
     return { triggered: false, marked: false, reason };
   }
 }

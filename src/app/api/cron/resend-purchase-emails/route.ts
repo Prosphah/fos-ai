@@ -21,11 +21,24 @@ const RETRY_AFTER_MINUTES = 60;
 /**
  * Ceiling on one run.
  *
- * The volume this will ever see is the number of purchases that failed to
- * send an email, which should be zero most days. The limit exists so that a
- * bad run cannot turn into a burst of thousands of POSTs against Make.
+ * This is a time budget as much as a count. Each row costs one sequential post
+ * to Make, and when Make is down each one burns the full trigger timeout, so
+ * the worst case is BATCH_LIMIT multiplied by that timeout. Ten rows at three
+ * seconds is about thirty seconds, which leaves headroom under the pg_net
+ * timeout below and under this function's own maxDuration.
+ *
+ * Ten is also comfortably more than this will ever see. The rows reaching it
+ * are purchases whose confirmation never landed, which should be zero on most
+ * days.
  */
-const BATCH_LIMIT = 25;
+const BATCH_LIMIT = 10;
+
+/**
+ * The sweep has to finish before Vercel kills it, and before pg_net gives up
+ * waiting for it. Thirty seconds of worst-case work against a sixty second
+ * ceiling.
+ */
+export const maxDuration = 60;
 
 type UnconfirmedRow = {
   paystack_reference: string;
@@ -62,7 +75,18 @@ export async function GET(request: Request) {
     .eq("status", "paid")
     .is("purchase_email_sent_at", null)
     .lt("created_at", cutoff)
-    .order("created_at", { ascending: true })
+    // Newest first, deliberately.
+    //
+    // A row that keeps failing keeps its claim released and stays eligible
+    // forever, and the oldest eligible row would otherwise sort to the front of
+    // every single run. Past the batch limit that is starvation: one purchase
+    // that cannot be delivered fills every slot on every run and newer
+    // purchases are never attempted at all.
+    //
+    // Ordering newest-first means a stuck row sinks behind them instead. It is
+    // still retried, just only once the queue above it has drained, and the
+    // buyers most likely to still be waiting come first.
+    .order("created_at", { ascending: false })
     .limit(BATCH_LIMIT);
 
   if (error) {
@@ -80,10 +104,13 @@ export async function GET(request: Request) {
 
   const failures: { reference: string; reason: string }[] = [];
   let sent = 0;
+  let skipped = 0;
 
   // Sequential on purpose. These are rare, the count is bounded, and firing
   // them in parallel would trade a careful trickle against Make for a burst
-  // during exactly the outage where Make is least able to absorb it.
+  // during exactly the outage where Make is least able to absorb it. It also
+  // keeps the worst case at BATCH_LIMIT multiplied by the trigger timeout,
+  // which is the budget this endpoint is sized against.
   for (const row of rows) {
     const result = await triggerPurchaseEmail({
       reference: row.paystack_reference,
@@ -100,18 +127,23 @@ export async function GET(request: Request) {
 
     if (result.triggered) {
       sent += 1;
+    } else if (result.reason === "already-claimed") {
+      // The webhook got there first, or another sweep is mid-flight. Not a
+      // failure, and counting it as one would report noise every hour.
+      skipped += 1;
     } else {
       failures.push({ reference: row.paystack_reference, reason: result.reason });
     }
   }
 
   console.error(
-    `[resend-purchase-emails] ${rows.length} unconfirmed, ${sent} sent, ${failures.length} still failing`,
+    `[resend-purchase-emails] ${rows.length} unconfirmed, ${sent} sent, ${skipped} claimed elsewhere, ${failures.length} still failing`,
   );
 
   return NextResponse.json({
     checked: rows.length,
     sent,
+    skipped,
     failed: failures.length,
     // Returned so a failing scenario is visible without reading logs.
     failures: failures.slice(0, 10),

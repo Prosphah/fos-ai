@@ -11,9 +11,27 @@
 --         headers := jsonb_build_object(
 --             'Content-Type', 'application/json',
 --             'Authorization', 'Bearer <CRON_SECRET>'
---         )
+--         ),
+--         timeout_milliseconds := 60000
 --     );$$
 --   );
+--
+-- The explicit timeout matters. pg_net defaults to 5 seconds, and this
+-- endpoint is allowed up to 60: ten rows, each a sequential post that can burn
+-- the full three-second trigger timeout when Make is down. At the default the
+-- cron job would give up while the sweep was still working and report a
+-- failure for a run that then carried on server-side.
+--
+-- 60s matches the maxDuration exported by the route. Raising one without the
+-- other reintroduces the same mismatch in the other direction.
+--
+-- timeout_milliseconds has been available since pg_net 0.3. Supabase ships
+-- newer than that, but if the call fails with a function-signature error:
+--
+--   select extversion from pg_extension where extname = 'pg_net';
+--
+-- Named notation is used so the argument position does not matter. pg_net
+-- moved timeout_milliseconds one place along when it gained a body parameter.
 --
 -- Off the hour on purpose. Everything else in this project is scheduled on a
 -- clean boundary, and pg_cron would otherwise run this at the same instant as
