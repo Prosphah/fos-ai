@@ -5,6 +5,17 @@ import webPush from "web-push";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+/**
+ * Matches timeout_milliseconds on the pg_net job that calls this route.
+ *
+ * The route walks every opted-in user whose reminder time falls inside the
+ * catch-up window, claiming and pushing to each in turn. Normally that is a
+ * handful of rows, but after downtime the window holds more, and a run that
+ * outlived the caller's timeout would look like a failure to pg_net while
+ * still completing here.
+ */
+export const maxDuration = 60;
+
 const vapidPublicKey = process.env.VAPID_PUBLIC_KEY;
 const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
 const vapidEmail = process.env.VAPID_EMAIL;
