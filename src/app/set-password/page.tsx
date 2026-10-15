@@ -1,13 +1,8 @@
-import Link from "next/link";
 import type { Metadata } from "next";
-import { TriangleAlert } from "lucide-react";
 
 import { LogoIcon } from "@/components/brand/LogoIcon";
-import { createClient } from "@/lib/supabase/server";
 
-import SetPasswordForm from "./set-password-form";
-
-export const dynamic = "force-dynamic";
+import SetPasswordClient from "./set-password-client";
 
 export const metadata: Metadata = {
   title: "Set your password | FOS·AI",
@@ -20,28 +15,13 @@ export const metadata: Metadata = {
 /**
  * Where a bundle buyer lands after following their invitation.
  *
- * Supabase has already verified the token by the time they arrive, so a
- * session exists and `updateUser({ password })` will succeed. That is the whole
- * point of this page: without it the invitation redirected to "/" with no
- * session ever exchanged, which bounced straight back to /login and asked for
- * a password the buyer had never chosen.
+ * Deliberately a client component. Supabase verifies the invitation server-side
+ * and redirects with the session in a URL fragment, which no server ever
+ * receives, so this page has to read window.location.hash and call setSession
+ * before it can know who is arriving. A server component would render "this
+ * link no longer works" for every buyer, every time.
  */
-export default async function SetPasswordPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    return <LinkExpired />;
-  }
-
-  // Written at invite time from the name collected at checkout.
-  const fullName = user.user_metadata?.full_name;
-  const firstName = typeof fullName === "string" ? fullName.split(" ")[0] : null;
-
-  return <SetPasswordForm email={user.email ?? ""} firstName={firstName} />;
-}
-
-function Card({ children }: { children: React.ReactNode }) {
+export default function SetPasswordPage() {
   return (
     <main
       style={{
@@ -97,71 +77,10 @@ function Card({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="glass" style={{ padding: "32px" }}>
-            {children}
+            <SetPasswordClient />
           </div>
         </div>
       </div>
     </main>
-  );
-}
-
-/**
- * Reached when the invitation link is expired, or has already been used.
- *
- * Both are ordinary rather than exceptional: people double-click, and people
- * forward the email to themselves and try again on another device. Saying so
- * plainly and offering sign-in is the difference between a dead end and a
- * misunderstanding.
- */
-function LinkExpired() {
-  return (
-    <Card>
-      <div style={{ textAlign: "center" }}>
-        <TriangleAlert
-          size={28}
-          className="mx-auto"
-          style={{ color: "var(--amber)" }}
-        />
-        <h1
-          style={{
-            marginTop: "16px",
-            fontFamily: "var(--font-display-family)",
-            fontSize: "1.25rem",
-            fontWeight: 700,
-            letterSpacing: "-0.02em",
-            color: "var(--text-1)",
-          }}
-        >
-          This link no longer works
-        </h1>
-        <p
-          style={{
-            marginTop: "10px",
-            fontSize: "0.875rem",
-            lineHeight: 1.7,
-            color: "var(--text-3)",
-          }}
-        >
-          Invitation links work once and expire. If you have already set a
-          password, sign in below. If not, email me from the address you
-          purchased with and I will send a fresh link.
-        </p>
-      </div>
-
-      <div style={{ marginTop: "24px", textAlign: "center" }}>
-        <Link
-          href="/login"
-          style={{
-            display: "inline-block",
-            fontSize: "0.875rem",
-            fontWeight: 600,
-            color: "var(--accent)",
-            textDecoration: "none",
-          }}
-        >
-          Go to sign in
-        </Link>
-      </div>
-    </Card>
   );
 }

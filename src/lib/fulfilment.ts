@@ -56,24 +56,29 @@ export async function fulfilEnrollment(params: {
   }
 
   try {
-    // The invitation has to land on /auth/callback with this marker, not on the
-    // site root.
+    // The invitation has to land directly on /set-password, not on the site
+    // root and not through /auth/callback.
     //
-    // Supabase verifies the token itself and then redirects to redirect_to. The
-    // default is the Site URL, which is "/", and nothing there exchanges the
-    // session that verification just produced. The buyer arrives at a page that
-    // finds no user and bounces them to /login, which asks for a password they
-    // have never chosen. Signing up instead fails, because the address they
-    // bought with already exists.
+    // Supabase verifies the token server-side and redirects to redirect_to
+    // carrying the session as a URL fragment:
     //
-    // The intent is an exact match rather than a path, so the callback cannot
-    // be steered somewhere else by whoever holds the link.
+    //   https://fos-ai.betiangli.xyz/set-password#access_token=...&refresh_token=...
+    //
+    // A fragment is never transmitted to a server. The root page therefore sees
+    // no session and redirects to /login, which asks a buyer for a password
+    // they have never chosen; signing up instead fails because the address
+    // already exists. Routing through /auth/callback does not help either,
+    // because the server redirect that follows drops the fragment on the floor
+    // before the next page ever sees it.
+    //
+    // /set-password reads window.location.hash and establishes the session in
+    // the browser, which is the only place the tokens exist.
     const inviteOptions = {
-      redirectTo: `${SITE_ORIGIN}/auth/callback?intent=set-password`,
-      // Carry the buyer's name into user_metadata so the FOS·AI account is not
-      // anonymous and the set-password page can greet them. Omitted entirely
-      // rather than written as null, which would put a literal null where the
-      // app expects a string.
+      redirectTo: `${SITE_ORIGIN}/set-password`,
+      // Carry the buyer's name into user_metadata so the account is not
+      // anonymous and the page can greet them. Omitted entirely rather than
+      // written as null, which would put a literal null where the app expects a
+      // string.
       ...(params.fullName ? { data: { full_name: params.fullName } } : {}),
     };
 
