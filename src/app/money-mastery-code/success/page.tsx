@@ -227,8 +227,8 @@ export default async function SuccessPage({ searchParams }: PageProps) {
             <div>
               <p className="text-[15px] font-semibold">Your lectures</p>
               <p className="mt-1.5 text-[14px] leading-6" style={{ color: "var(--sales-text-2)" }}>
-                Every participant is granted access by me, and added to the community. Message me
-                below and I will send you the access link, usually within 10 minutes and
+                Every participant is granted access by me, and added to the community. Check your email for the access link, or message me
+                using the button below and I will send you the access link, usually within 10 minutes and
                 always the same day.
               </p>
             </div>
