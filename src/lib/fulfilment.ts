@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCourseAccessUrl, type CourseTier } from "@/lib/money-mastery";
+import { SITE_ORIGIN } from "@/lib/seo";
 
 /**
  * Turns a verified payment into access.
@@ -55,13 +56,26 @@ export async function fulfilEnrollment(params: {
   }
 
   try {
-    // Carry the buyer's name onto the FOS*AI account, so the invitation and
-    // the profile it creates are not blank on first sign-in. The key is omitted
-    // entirely rather than written as null, which would put a literal null into
-    // user_metadata where the app expects a string.
-    const inviteOptions = params.fullName
-      ? { data: { full_name: params.fullName } }
-      : undefined;
+    // The invitation has to land on /auth/callback with this marker, not on the
+    // site root.
+    //
+    // Supabase verifies the token itself and then redirects to redirect_to. The
+    // default is the Site URL, which is "/", and nothing there exchanges the
+    // session that verification just produced. The buyer arrives at a page that
+    // finds no user and bounces them to /login, which asks for a password they
+    // have never chosen. Signing up instead fails, because the address they
+    // bought with already exists.
+    //
+    // The intent is an exact match rather than a path, so the callback cannot
+    // be steered somewhere else by whoever holds the link.
+    const inviteOptions = {
+      redirectTo: `${SITE_ORIGIN}/auth/callback?intent=set-password`,
+      // Carry the buyer's name into user_metadata so the FOS·AI account is not
+      // anonymous and the set-password page can greet them. Omitted entirely
+      // rather than written as null, which would put a literal null where the
+      // app expects a string.
+      ...(params.fullName ? { data: { full_name: params.fullName } } : {}),
+    };
 
     const { data, error } = await admin.auth.admin.inviteUserByEmail(
       normalizedEmail,
