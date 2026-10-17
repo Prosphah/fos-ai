@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { ArrowUpDown } from "lucide-react";
 
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { inputStyle, labelStyle, useAnimatedNumber, useFocusStyle } from "./calculator-primitives";
 
 const CURRENCIES = [
@@ -113,12 +114,11 @@ export function CurrencyConverter() {
             >
               {getSymbol(fromCurrency)}
             </span>
-            <input
-              type="number"
-              value={amount || ""}
-              onChange={(e) => setAmount(Math.max(0, Number(e.target.value)))}
+            <CurrencyInput
+              value={amount}
+              onChange={(next) => setAmount(Math.max(0, next))}
+              allowDecimals
               placeholder="0"
-              inputMode="decimal"
               style={{
                 ...inputStyle,
                 paddingLeft: "32px",
@@ -128,7 +128,8 @@ export function CurrencyConverter() {
                 border: amountFocus.border,
                 boxShadow: amountFocus.shadow,
               }}
-              {...amountFocus.bind}
+              onFocus={amountFocus.bind.onFocus}
+              onBlur={amountFocus.bind.onBlur}
             />
           </div>
           <select

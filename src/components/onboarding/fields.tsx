@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Info } from "lucide-react";
 
 import { CurrencyInput } from "@/components/ui/currency-input";
@@ -44,32 +44,26 @@ function daysInMonth(month: string, year: string): number {
   return new Date(y, m, 0).getDate();
 }
 
-function WhyWeAsk({ text }: { text: string }) {
-  const [open, setOpen] = useState(false);
-  const panelId = useId();
-
+function WhyWeAskTrigger({
+  panelId,
+  open,
+  onToggle,
+}: {
+  panelId: string;
+  open: boolean;
+  onToggle: () => void;
+}) {
   return (
-    <span className="relative inline-flex">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        aria-controls={panelId}
-        aria-label="Why we ask for this"
-        className="inline-flex size-4 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors outline-none hover:text-accent focus-visible:ring-3 focus-visible:ring-ring/50"
-      >
-        <Info className="size-3.5" aria-hidden="true" />
-      </button>
-      {open && (
-        <span
-          id={panelId}
-          role="note"
-          className="absolute top-6 left-0 z-30 block w-64 rounded-md border border-border bg-card p-3 text-xs leading-relaxed font-normal text-text-secondary shadow-lg"
-        >
-          {text}
-        </span>
-      )}
-    </span>
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={open}
+      aria-controls={panelId}
+      aria-label="Why we ask for this"
+      className="inline-flex size-4 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors outline-none hover:text-accent focus-visible:ring-3 focus-visible:ring-ring/50"
+    >
+      <Info className="size-3.5" aria-hidden="true" />
+    </button>
   );
 }
 
@@ -95,19 +89,46 @@ function FieldShell({
   const hintId = `${id}-hint`;
   const errorId = `${id}-error`;
   const describedBy = error ? errorId : helper ? hintId : undefined;
+  const panelId = `${id}-why`;
+  const [whyOpen, setWhyOpen] = useState(false);
 
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="flex items-center gap-1.5">
-        <label htmlFor={id} className="text-sm font-medium text-text-primary">
-          {label}
-        </label>
-        {optional && (
-          <span className="text-xs font-normal text-muted-foreground">
-            Optional
-          </span>
+      {/*
+        The panel is anchored to this full width wrapper rather than to the icon
+        button. Anchoring it to the button made it start near the right edge of a
+        long label, so a fixed width card ran past the viewport on a phone and
+        dragged the whole page sideways. left-0 right-0 clamps it to the field,
+        which is already inside the form's padding, so it cannot overflow.
+      */}
+      <div className="relative">
+        <div className="flex items-center gap-1.5">
+          <label htmlFor={id} className="text-sm font-medium text-text-primary">
+            {label}
+          </label>
+          {optional && (
+            <span className="text-xs font-normal text-muted-foreground">
+              Optional
+            </span>
+          )}
+          {whyWeAsk && (
+            <WhyWeAskTrigger
+              panelId={panelId}
+              open={whyOpen}
+              onToggle={() => setWhyOpen((v) => !v)}
+            />
+          )}
+        </div>
+
+        {whyWeAsk && whyOpen && (
+          <div
+            id={panelId}
+            role="note"
+            className="absolute top-full left-0 right-0 z-30 mt-1.5 rounded-md border border-border bg-card p-3 text-xs leading-relaxed text-text-secondary shadow-lg sm:left-auto sm:right-0 sm:w-80"
+          >
+            {whyWeAsk}
+          </div>
         )}
-        {whyWeAsk && <WhyWeAsk text={whyWeAsk} />}
       </div>
 
       {children(describedBy)}
@@ -429,7 +450,16 @@ export function DateSelects({
       whyWeAsk={whyWeAsk}
     >
       {() => (
-        <div className="flex gap-2" role="group" aria-label={label}>
+        // Two columns on a phone, because .select-chevron reserves 36px on the
+        // right of every select for the arrow and three of them in one flex row
+        // left almost no room for the text. Day and month share the first row and
+        // the year takes the full width underneath, which also suits a 4 digit
+        // year. From sm up it is a single row again.
+        <div
+          className="grid grid-cols-2 gap-2 sm:grid-cols-[1fr_2fr_1.4fr]"
+          role="group"
+          aria-label={label}
+        >
           <select
             id={`${idPrefix}-day`}
             value={day}
@@ -437,7 +467,7 @@ export function DateSelects({
             aria-label="Day"
             aria-describedby={describedBy}
             aria-invalid={error ? true : undefined}
-            className={cn(selectClasses, "flex-1")}
+            className={cn(selectClasses, "min-w-0")}
           >
             <option value="">Day</option>
             {days.map((d) => (
@@ -452,7 +482,7 @@ export function DateSelects({
             value={month}
             onChange={(e) => handleMonth(e.target.value)}
             aria-label="Month"
-            className={cn(selectClasses, "flex-[2]")}
+            className={cn(selectClasses, "min-w-0")}
           >
             <option value="">Month</option>
             {MONTH_NAMES.map((name, index) => {
@@ -474,7 +504,7 @@ export function DateSelects({
             value={year}
             onChange={(e) => handleYear(e.target.value)}
             aria-label="Year"
-            className={cn(selectClasses, "flex-[1.4]")}
+            className={cn(selectClasses, "col-span-2 min-w-0 sm:col-span-1")}
           >
             <option value="">Year</option>
             {years.map((y) => (

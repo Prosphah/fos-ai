@@ -151,24 +151,46 @@ export function StepOwnAndOwe({ currency, onNext, onBack }: Props) {
         )}
       />
 
+      {/*
+        Running total for the five boxes above.
+
+        The three figures are not peers: net worth is the answer, assets and owed
+        are the inputs the app just used to reach it. So net worth leads and is
+        the largest. On a phone it sits on its own full width line, and assets and
+        owed become label left, value right rows, which gives each amount the
+        whole width rather than half of it. From sm up it is a single row reading
+        Assets, Owed, then net worth on the right, so the arithmetic still reads
+        left to right on a wide screen.
+
+        There is deliberately no truncate. At 360px the old three column grid gave
+        each column about 90px, which cut a formatted amount short, and silently
+        hiding digits of a balance is the worst thing this block could do: someone
+        has to be able to tell N12,000,000 from N120,000,000 at a glance.
+
+        tabular-nums keeps the digits from shifting sideways as the value updates
+        while you type.
+      */}
       <div className="rounded-md border border-border bg-card px-4 py-4">
-        <div className="grid grid-cols-3 gap-2 text-center">
-          <div className="min-w-0">
-            <p className="text-xs text-muted-foreground">Assets</p>
-            <p className="mt-0.5 truncate font-display text-lg font-semibold text-text-primary">
-              {formatMoney(assets, currency)}
-            </p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
+          <div className="order-2 flex flex-col gap-1.5 border-t border-border pt-3 sm:order-1 sm:flex-row sm:gap-8 sm:border-t-0 sm:pt-0">
+            <div className="flex items-baseline justify-between gap-4 sm:block">
+              <p className="text-xs text-muted-foreground">Assets</p>
+              <p className="font-display text-base font-semibold tabular-nums text-text-primary sm:mt-0.5">
+                {formatMoney(assets, currency)}
+              </p>
+            </div>
+            <div className="flex items-baseline justify-between gap-4 sm:block">
+              <p className="text-xs text-muted-foreground">Owed</p>
+              <p className="font-display text-base font-semibold tabular-nums text-text-primary sm:mt-0.5">
+                {formatMoney(owed, currency)}
+              </p>
+            </div>
           </div>
-          <div className="min-w-0">
-            <p className="text-xs text-muted-foreground">Owed</p>
-            <p className="mt-0.5 truncate font-display text-lg font-semibold text-text-primary">
-              {formatMoney(owed, currency)}
-            </p>
-          </div>
-          <div className="min-w-0">
+
+          <div className="order-1 min-w-0 sm:order-2 sm:text-right">
             <p className="text-xs text-muted-foreground">Net worth</p>
             <p
-              className={`mt-0.5 truncate font-display text-lg font-semibold ${
+              className={`mt-0.5 font-display text-2xl font-semibold tabular-nums sm:text-xl ${
                 netWorth < 0 ? "text-rose" : "text-accent"
               }`}
             >

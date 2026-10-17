@@ -147,12 +147,12 @@ export function StepAboutYou({ onNext }: Props) {
           <div className="flex flex-col gap-2">
             <MoneyField
               id="monthlyIncome"
-              label="How much lands in your account each month?"
+              label="How much income do you make each month?"
               value={field.value}
               onChange={field.onChange}
               currency={currency || ""}
               helper="Take home, after tax, averaged over a year. A rough figure is fine."
-              whyWeAsk="Your income is one of four things that build your financial health score. It is the number everything else is measured against. We only use what you tell us here."
+              whyWeAsk="Why we ask this? Your income is one of four things that build your financial health score. It is the number everything else is measured against. We only use what you tell us here."
               error={errors.monthlyIncome?.message}
             />
             {touchedFields.monthlyIncome && field.value === 0 && (
