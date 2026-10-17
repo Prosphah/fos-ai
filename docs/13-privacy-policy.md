@@ -33,7 +33,7 @@ presented as a tracking system you operate.
 | Waitlist signups | `waitlist` table |
 | App-lock PIN hash, WebAuthn credential | `localStorage`, `src/hooks/use-app-lock.ts` |
 | Session cookies and offline cache | `@supabase/ssr`, Serwist service worker (`src/app/sw.ts`) |
-| Age, country, employment status, risk assessment answers | `financial_profiles`, `risk_assessments` tables |
+| Date of birth, risk assessment answers, investing experience | `financial_profiles`, `risk_assessments` tables |
 
 **Legal framing added.** The live policy names no jurisdiction. Given Paystack, NGN, and NGX
 as the primary market, the **Nigeria Data Protection Act 2023** is the governing statute and
@@ -117,22 +117,22 @@ your device only — we never receive it.
 - **Account information.** Email address and password. Your password is hashed by our
   authentication provider and is never stored or transmitted by us in readable form. Your name
   is collected during onboarding if you choose to provide it.
-- **Financial profile.** Age, country, currency, employment status, income and income frequency,
-  monthly living expenses, debt repayments, savings, and other income. Collected during
-  onboarding and editable afterward in Settings.
-- **Balance sheet.** Total cash, investments, retirement accounts, property value, business
-  ownership, other assets, and each category of debt (credit card, personal loan, student loan,
-  mortgage, car loan, other).
-- **Risk assessment.** Your answers to the risk questionnaire, the resulting risk score, and
-  your risk profile (for example Conservative, Balanced, or Growth).
+- **Financial profile.** Your first and last name, date of birth, currency, monthly take home
+  income, monthly living expenses, monthly debt repayments, and what you manage to save.
+  Collected during onboarding and editable afterward in Settings.
+- **Balance sheet.** Cash you can reach today, investments and retirement accounts combined,
+  property and valuables, a business or other assets you own, and one total for everything you
+  owe.
+- **Risk assessment.** Your answers to the risk questionnaire, the resulting risk score and risk
+  profile, and how much investing experience you have told us you have.
 - **Transactions.** Amounts, descriptions, dates, categories, notes, and tags for every
   transaction you log. Recurring transaction configuration is stored where you set one up.
 - **Accounts and institutions.** Account names, types, balances, currencies, and the financial
   institution each account belongs to. Institution names are typed by you; we have no connection
   to any financial institution.
 - **Budgets, goals, and savings.** Monthly budget amounts per category, savings goal targets
-  and progress, retirement age target, emergency fund target, investment horizon, and planned
-  major purchases.
+  and progress, the target amount and date of the goal you set during onboarding, and the
+  investment horizon worked out from that date.
 - **Feedback and waitlist.** The area, type, and message you submit through the feedback form,
   and your email address and requested feature if you join a waitlist.
 - **Preferences.** Reminder schedule, timezone, currency, and notification settings.
@@ -389,7 +389,8 @@ about the safeguards we use by emailing `fosai@betiangli.xyz`.
 
 ## 11. Children's privacy
 
-FOS·AI is not intended for anyone under 18. Onboarding asks for your age, and we do not
+FOS·AI is not intended for anyone under 18. Onboarding asks for your date of birth so we
+can confirm you are at least 18, and we do not
 provide accounts to children.
 
 We do not knowingly collect personal information from children. If you believe a child has

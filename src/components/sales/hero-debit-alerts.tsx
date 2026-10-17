@@ -32,7 +32,7 @@ const ALERTS: DebitAlert[] = [
   { channel: "Debit · Data", balance: "Bal ₦175,200", amount: "-₦8,300", delay: "0.6s" },
   { channel: "Debit · Transfer", balance: "Bal ₦150,200", amount: "-₦25,000", delay: "0.85s" },
   { channel: "Debit · POS", balance: "Bal ₦143,450", amount: "-₦6,750", delay: "1.1s" },
-  { channel: "Month end", balance: "Where did it go?", amount: "₦3,120", delay: "1.35s", end: true },
+  { channel: "Month end", balance: "Where did it all go?", amount: "₦3,120", delay: "1.35s", end: true },
 ];
 
 export function HeroDebitAlerts() {

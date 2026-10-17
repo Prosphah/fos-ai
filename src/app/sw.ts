@@ -191,8 +191,12 @@ self.addEventListener("notificationclick", (event) => {
   );
 });
 
+// The service worker types do not declare `periodicsync`, so this narrows to the
+// two properties actually used rather than falling back to `any`.
+type PeriodicSyncEvent = ExtendableEvent & { tag: string };
+
 self.addEventListener("periodicsync", (event) => {
-  const syncEvent = event as any;
+  const syncEvent = event as PeriodicSyncEvent;
   if (syncEvent.tag === "daily-reminder-check") {
     syncEvent.waitUntil(checkAndFireReminders());
   }

@@ -7,20 +7,18 @@ export interface FinancialProfile {
   // Personal Snapshot
   first_name: string | null;
   last_name: string | null;
+  // Age is derived from this. The legacy `age` column is kept only for rows
+  // written before onboarding started collecting a date of birth.
+  date_of_birth: string | null;
   age: number | null;
-  country: string | null;
   currency: string | null;
-  employment_status: string | null;
   monthly_income: number | null;
-  income_frequency: string | null;
 
   // Cash Flow
   monthly_expenses: number | null;
   monthly_living_expenses: number | null;
   debt_repayments_monthly: number | null;
   monthly_savings: number | null;
-  other_income: number | null;
-  expected_major_expenses: string[] | null;
 
   // Assets
   total_cash: number | null;
@@ -39,10 +37,7 @@ export interface FinancialProfile {
   other_debts: number | null;
 
   // Goals
-  retirement_age_target: number | null;
-  emergency_fund_target_months: number | null;
   investment_horizon_years: number | null;
-  major_purchases_planned: string[] | null;
 
   // Risk
   risk_answers: RiskAnswer[] | null;
@@ -57,7 +52,6 @@ export interface FinancialProfile {
   savings_rate: number | null;
   emergency_fund_months: number | null;
   investment_experience: string | null;
-  financial_goals: string | null;
   financial_health_score: number | null;
   previous_financial_health_score: number | null;
   previous_score_month: string | null;

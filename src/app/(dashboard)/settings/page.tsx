@@ -34,11 +34,32 @@ const labelStyle = {
   color: "var(--text-1)",
 };
 
+/**
+ * Age is derived from the stored date of birth. `legacyAge` covers accounts that
+ * were created before onboarding collected a date, where only the old age column
+ * was ever written.
+ */
+function resolveAge(dateOfBirth: string, legacyAge: string): string {
+  if (dateOfBirth) {
+    const [y, m, d] = dateOfBirth.split("-").map(Number);
+    if (y && m && d) {
+      const today = new Date();
+      let age = today.getFullYear() - y;
+      const hadBirthday =
+        today.getMonth() > m - 1 ||
+        (today.getMonth() === m - 1 && today.getDate() >= d);
+      if (!hadBirthday) age -= 1;
+      if (age >= 0 && age < 130) return String(age);
+    }
+  }
+  return legacyAge;
+}
+
 export default function SettingsPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [age, setAge] = useState("");
-  const [country, setCountry] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [legacyAge, setLegacyAge] = useState("");
   const [currency, setCurrency] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -106,8 +127,8 @@ export default function SettingsPage() {
       if (p) {
         setFirstName(p.first_name ?? "");
         setLastName(p.last_name ?? "");
-        setAge(p.age?.toString() ?? "");
-        setCountry(p.country ?? "");
+        setDateOfBirth(p.date_of_birth ?? "");
+        setLegacyAge(p.age?.toString() ?? "");
         setCurrency(p.currency ?? "");
       }
     }).catch(() => {
@@ -143,13 +164,17 @@ export default function SettingsPage() {
       const result = await updateProfile({
         firstName: firstName.trim(),
         lastName: lastName.trim(),
-        age: age ? parseInt(age, 10) : undefined,
-        country: country.trim() || undefined,
+        dateOfBirth: dateOfBirth || undefined,
         currency: currency || undefined,
       });
 
       if (result.error) {
-        setError(result.error);
+        setError(
+          typeof result.error === "string"
+            ? result.error
+            : Object.values(result.error as Record<string, string[]>)[0]?.[0] ??
+              "Please check the details you entered."
+        );
         return false;
       } else {
         setSuccess(true);
@@ -332,8 +357,7 @@ export default function SettingsPage() {
             }}
           >
             {[
-              { label: "Age", value: age },
-              { label: "Country", value: country },
+              { label: "Age", value: resolveAge(dateOfBirth, legacyAge) },
               { label: "Currency", value: currency },
             ].map(({ label, value }) => (
               <div key={label}>
@@ -776,29 +800,15 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-                  <div>
-                    <label htmlFor="age" style={labelStyle}>Age</label>
-                    <input
-                      id="age"
-                      type="number"
-                      value={age}
-                      onChange={(e) => setAge(e.target.value)}
-                      placeholder="e.g. 30"
-                      style={inputStyle}
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="country" style={labelStyle}>Country</label>
-                    <input
-                      id="country"
-                      type="text"
-                      value={country}
-                      onChange={(e) => setCountry(e.target.value)}
-                      placeholder="e.g. Nigeria"
-                      style={inputStyle}
-                    />
-                  </div>
+                <div>
+                  <label htmlFor="date-of-birth" style={labelStyle}>Date of birth</label>
+                  <input
+                    id="date-of-birth"
+                    type="date"
+                    value={dateOfBirth}
+                    onChange={(e) => setDateOfBirth(e.target.value)}
+                    style={inputStyle}
+                  />
                 </div>
 
                 <div>

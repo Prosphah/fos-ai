@@ -1563,8 +1563,15 @@ html:has(.v3-root) { scroll-behavior: smooth; }
 }
 .v3-root .badge180 b {
   display: block;
-  font: 800 3.2rem/0.9 var(--display);
-  letter-spacing: -0.06em;
+  font: 800 4.4rem/0.94 var(--display);
+  /* Was -0.06em, tighter than any other display figure on the page
+     (.wordmark is -0.045em, .karat__num -0.05em). Negative tracking earns
+     its keep on a headline word; on three digits it eats the gap between
+     them and the figure reads condensed rather than emphatic. */
+  letter-spacing: -0.01em;
+  /* The figure counts up from 0, so every intermediate value is briefly on
+     screen. Matches .karat__num, the other large numeral here. */
+  font-variant-numeric: tabular-nums;
 }
 .v3-root .badge180 span {
   display: block;

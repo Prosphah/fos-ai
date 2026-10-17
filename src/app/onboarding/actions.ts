@@ -2,86 +2,93 @@
 
 import { createClient } from "@/lib/supabase/server";
 import {
-  stepPersonalSchema,
-  stepCashflowSchema,
-  stepAssetsSchema,
-  stepGoalsSchema,
-  stepRiskSchema,
+  stepAboutYouSchema,
+  stepMonthToMonthSchema,
+  stepOwnAndOweSchema,
+  stepGoalsAndRiskSchema,
 } from "@/lib/validation/onboarding";
 import {
-  saveStepPersonal,
-  saveStepCashflow,
-  saveStepAssets,
-  saveStepGoals,
-  saveStepRisk,
+  saveStepAboutYou,
+  saveStepMonthToMonth,
+  saveStepOwnAndOwe,
+  saveStepGoalsAndRisk,
   completeOnboarding,
 } from "@/services/onboarding.service";
 import type {
-  StepPersonalForm,
-  StepCashflowForm,
-  StepAssetsForm,
-  StepGoalsForm,
-  StepRiskForm,
+  StepAboutYouForm,
+  StepMonthToMonthForm,
+  StepOwnAndOweForm,
+  StepGoalsAndRiskForm,
 } from "@/lib/validation/onboarding";
+
+const DB_ERROR =
+  "Database error saving your data. Please make sure the required tables exist in Supabase.";
 
 async function getUserId(): Promise<string> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) throw new Error("Not authenticated");
   return user.id;
 }
 
 async function saveData<T>(
-  saveFn: (userId: string, data: T, profileId?: string | null) => Promise<{ error?: unknown; profileId?: string }>,
+  saveFn: (
+    userId: string,
+    data: T,
+    profileId?: string | null
+  ) => Promise<{ error?: unknown; profileId?: string }>,
   data: T,
   profileId?: string | null
 ) {
   const userId = await getUserId();
   const result = await saveFn(userId, data, profileId);
   if (result.error) {
-    return { error: "Database error saving your data. Please make sure the required tables exist in Supabase." };
+    return { error: DB_ERROR };
   }
   return { success: true, profileId: result.profileId };
 }
 
-export async function savePersonal(data: StepPersonalForm) {
-  const parsed = stepPersonalSchema.safeParse(data);
+export async function saveAboutYou(data: StepAboutYouForm) {
+  const parsed = stepAboutYouSchema.safeParse(data);
   if (!parsed.success) {
     return { error: parsed.error.flatten().fieldErrors };
   }
-  return saveData(saveStepPersonal, parsed.data);
+  return saveData(saveStepAboutYou, parsed.data);
 }
 
-export async function saveCashflow(data: StepCashflowForm, profileId?: string | null) {
-  const parsed = stepCashflowSchema.safeParse(data);
+export async function saveMonthToMonth(
+  data: StepMonthToMonthForm,
+  profileId?: string | null
+) {
+  const parsed = stepMonthToMonthSchema.safeParse(data);
   if (!parsed.success) {
     return { error: parsed.error.flatten().fieldErrors };
   }
-  return saveData(saveStepCashflow, parsed.data, profileId);
+  return saveData(saveStepMonthToMonth, parsed.data, profileId);
 }
 
-export async function saveAssets(data: StepAssetsForm, profileId?: string | null) {
-  const parsed = stepAssetsSchema.safeParse(data);
+export async function saveOwnAndOwe(
+  data: StepOwnAndOweForm,
+  profileId?: string | null
+) {
+  const parsed = stepOwnAndOweSchema.safeParse(data);
   if (!parsed.success) {
     return { error: parsed.error.flatten().fieldErrors };
   }
-  return saveData(saveStepAssets, parsed.data, profileId);
+  return saveData(saveStepOwnAndOwe, parsed.data, profileId);
 }
 
-export async function saveGoals(data: StepGoalsForm, profileId?: string | null) {
-  const parsed = stepGoalsSchema.safeParse(data);
+export async function saveGoalsAndRisk(
+  data: StepGoalsAndRiskForm,
+  profileId?: string | null
+) {
+  const parsed = stepGoalsAndRiskSchema.safeParse(data);
   if (!parsed.success) {
     return { error: parsed.error.flatten().fieldErrors };
   }
-  return saveData(saveStepGoals, parsed.data, profileId);
-}
-
-export async function saveRisk(data: StepRiskForm, profileId?: string | null) {
-  const parsed = stepRiskSchema.safeParse(data);
-  if (!parsed.success) {
-    return { error: parsed.error.flatten().fieldErrors };
-  }
-  return saveData(saveStepRisk, parsed.data, profileId);
+  return saveData(saveStepGoalsAndRisk, parsed.data, profileId);
 }
 
 export async function finishOnboarding(profileId?: string | null) {
@@ -92,36 +99,82 @@ export async function finishOnboarding(profileId?: string | null) {
   return completeOnboarding(userId);
 }
 
+/**
+ * Where a returning visitor should land. The first step with a missing answer wins,
+ * so the ladder is ordered by the sequence they are asked in.
+ */
+function determineCurrentStep(
+  profile: {
+    date_of_birth: string | null;
+    monthly_living_expenses: number | null;
+    total_cash: number | null;
+    risk_score: number | null;
+  },
+  hasGoal: boolean
+): number {
+  if (!profile.date_of_birth) return 1;
+  if (profile.monthly_living_expenses == null) return 2;
+  if (profile.total_cash == null) return 3;
+  if (!hasGoal || profile.risk_score == null) return 4;
+  return 4;
+}
+
 export async function getOnboardingStatus() {
+  const notOnboarded = {
+    onboarded: false,
+    currentStep: 1,
+    profileId: null as string | null,
+  };
+
   try {
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { onboarded: false };
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return notOnboarded;
 
     const { data } = await supabase
       .from("financial_profiles")
-      .select("id, onboarding_completed, first_name, last_name, age, country, currency, employment_status, income_frequency, monthly_income, monthly_living_expenses, debt_repayments_monthly, monthly_savings, other_income, expected_major_expenses, total_cash, total_investments, total_retirement_accounts, total_property_value, total_business_ownership, total_other_assets, credit_card_debt, personal_loan_debt, student_loan_debt, mortgage_debt, car_loan_debt, other_debts, retirement_age_target, emergency_fund_target_months, investment_horizon_years, major_purchases_planned, risk_answers, risk_score, risk_profile")
+      .select(
+        "id, onboarding_completed, date_of_birth, monthly_living_expenses, total_cash, risk_score"
+      )
       .eq("user_id", user.id)
       .maybeSingle();
 
-    if (!data) return { onboarded: false };
+    if (!data) return notOnboarded;
+
+    const { count } = await supabase
+      .from("financial_goals")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id);
 
     return {
       onboarded: !!data.onboarding_completed,
-      currentStep: determineCurrentStep(data),
-      savedData: data,
-      profileId: (data as Record<string, unknown>).id as string | undefined,
+      currentStep: determineCurrentStep(data, (count ?? 0) > 0),
+      profileId: data.id as string | null,
     };
   } catch {
-    return { onboarded: false };
+    return notOnboarded;
   }
 }
 
-function determineCurrentStep(data: Record<string, unknown>): number {
-  if (data.age == null) return 1;
-  if (data.monthly_living_expenses == null) return 2;
-  if (data.total_cash == null) return 3;
-  if (data.retirement_age_target == null) return 4;
-  if (data.risk_score == null) return 5;
-  return 5;
+/** Reads the score the success page shows. */
+export async function getOnboardingScore() {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { score: null as number | null };
+
+    const { data } = await supabase
+      .from("financial_profiles")
+      .select("financial_health_score")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    return { score: (data?.financial_health_score as number | null) ?? null };
+  } catch {
+    return { score: null as number | null };
+  }
 }

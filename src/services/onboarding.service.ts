@@ -2,6 +2,25 @@ import { createClient } from "@/lib/supabase/server";
 import type { FinancialProfile } from "@/types/database";
 import { randomUUID } from "crypto";
 
+/**
+ * Liabilities come from the single total recorded at onboarding. The six per
+ * category columns are the legacy shape and are still read for rows written
+ * before the questionnaire was shortened. This mirrors the COALESCE in
+ * supabase/migrations/20261015000005_fix_sync_financial_profile.sql; the two
+ * must stay in step or a person's score changes the moment a sync runs.
+ */
+function totalLiabilities(p: Partial<FinancialProfile>): number {
+  if (p.total_debt != null) return p.total_debt;
+  return (
+    (p.credit_card_debt ?? 0) +
+    (p.personal_loan_debt ?? 0) +
+    (p.student_loan_debt ?? 0) +
+    (p.mortgage_debt ?? 0) +
+    (p.car_loan_debt ?? 0) +
+    (p.other_debts ?? 0)
+  );
+}
+
 function totalAssets(p: Partial<FinancialProfile>): number {
   return (
     (p.total_cash ?? 0) +
@@ -10,17 +29,6 @@ function totalAssets(p: Partial<FinancialProfile>): number {
     (p.total_property_value ?? 0) +
     (p.total_business_ownership ?? 0) +
     (p.total_other_assets ?? 0)
-  );
-}
-
-function totalLiabilities(p: Partial<FinancialProfile>): number {
-  return (
-    (p.credit_card_debt ?? 0) +
-    (p.personal_loan_debt ?? 0) +
-    (p.student_loan_debt ?? 0) +
-    (p.mortgage_debt ?? 0) +
-    (p.car_loan_debt ?? 0) +
-    (p.other_debts ?? 0)
   );
 }
 
@@ -68,11 +76,39 @@ export function calculateRiskProfile(answers: { score: number }[]): {
   profile: string;
 } {
   if (answers.length === 0) return { score: 50, profile: "moderate" };
-  const avg =
-    answers.reduce((sum, a) => sum + a.score, 0) / answers.length;
+  const avg = answers.reduce((sum, a) => sum + a.score, 0) / answers.length;
   const score = Math.round((avg / 3) * 100);
-  const profile = score >= 66 ? "aggressive" : score >= 33 ? "moderate" : "conservative";
+  const profile =
+    score >= 66 ? "aggressive" : score >= 33 ? "moderate" : "conservative";
   return { score, profile };
+}
+
+/**
+ * Whole years from now until the goal's target date, rounded down and never
+ * negative. This feeds investment_horizon_years, which the stock analysis prompt
+ * reads, so it is derived from the one date the person actually gave us rather
+ * than asking a second question.
+ */
+export function calculateInvestmentHorizonYears(
+  targetDate: string,
+  now: Date = new Date()
+): number {
+  const [year, month, day] = targetDate.split("-").map(Number);
+  if (!year || !month || !day) return 0;
+
+  const target = new Date(year, month - 1, day);
+  if (target.getTime() <= now.getTime()) return 0;
+
+  // Counted on the calendar rather than by dividing milliseconds, because a
+  // span of two calendar years is 730 or 731 days depending on leap years, and
+  // dividing by 365.25 would floor an exact two year goal down to one.
+  let years = target.getFullYear() - now.getFullYear();
+  const hadAnniversary =
+    target.getMonth() > now.getMonth() ||
+    (target.getMonth() === now.getMonth() && target.getDate() >= now.getDate());
+  if (!hadAnniversary) years -= 1;
+
+  return Math.max(0, years);
 }
 
 function monthlyExpenses(p: Partial<FinancialProfile>): number {
@@ -104,17 +140,14 @@ function resolveProfileId(
   return profileId ?? existingId ?? randomUUID();
 }
 
-export async function saveStepPersonal(
+export async function saveStepAboutYou(
   userId: string,
   data: {
     firstName: string;
     lastName: string;
-    age: number;
-    country: string;
+    dateOfBirth: string;
     currency: string;
-    employmentStatus: string;
     monthlyIncome: number;
-    incomeFrequency: string;
   },
   profileId?: string | null
 ): Promise<{ error?: unknown; profileId?: string }> {
@@ -127,12 +160,9 @@ export async function saveStepPersonal(
     user_id: userId,
     first_name: data.firstName,
     last_name: data.lastName,
-    age: data.age,
-    country: data.country,
+    date_of_birth: data.dateOfBirth,
     currency: data.currency,
-    employment_status: data.employmentStatus,
     monthly_income: data.monthlyIncome,
-    income_frequency: data.incomeFrequency,
     updated_at: new Date().toISOString(),
   });
 
@@ -144,14 +174,12 @@ export async function saveStepPersonal(
   return { error: result.error, profileId: id };
 }
 
-export async function saveStepCashflow(
+export async function saveStepMonthToMonth(
   userId: string,
   data: {
     monthlyLivingExpenses: number;
     debtRepaymentsMonthly: number;
     monthlySavings: number;
-    otherIncome: number;
-    expectedMajorExpenses: string[];
   },
   profileId?: string | null
 ): Promise<{ error?: unknown; profileId?: string }> {
@@ -165,33 +193,24 @@ export async function saveStepCashflow(
     monthly_living_expenses: data.monthlyLivingExpenses,
     debt_repayments_monthly: data.debtRepaymentsMonthly,
     monthly_savings: data.monthlySavings,
-    other_income: data.otherIncome,
     monthly_expenses: monthlyExpenses({
       monthly_living_expenses: data.monthlyLivingExpenses,
       debt_repayments_monthly: data.debtRepaymentsMonthly,
     }),
-    expected_major_expenses: data.expectedMajorExpenses,
     updated_at: new Date().toISOString(),
   });
 
   return { error: result.error, profileId: id };
 }
 
-export async function saveStepAssets(
+export async function saveStepOwnAndOwe(
   userId: string,
   data: {
     totalCash: number;
     totalInvestments: number;
-    totalRetirementAccounts: number;
     totalPropertyValue: number;
     totalBusinessOwnership: number;
-    totalOtherAssets: number;
-    creditCardDebt: number;
-    personalLoanDebt: number;
-    studentLoanDebt: number;
-    mortgageDebt: number;
-    carLoanDebt: number;
-    otherDebts: number;
+    totalDebt: number;
   },
   profileId?: string | null
 ): Promise<{ error?: unknown; profileId?: string }> {
@@ -199,53 +218,38 @@ export async function saveStepAssets(
   const existingId = await getExistingProfileId(supabase, userId);
   const id = resolveProfileId(existingId, profileId);
 
-  const totalLiab =
-    (data.creditCardDebt ?? 0) +
-    (data.personalLoanDebt ?? 0) +
-    (data.studentLoanDebt ?? 0) +
-    (data.mortgageDebt ?? 0) +
-    (data.carLoanDebt ?? 0) +
-    (data.otherDebts ?? 0);
-
+  // total_savings keeps the same meaning it always had: the running total of the
+  // asset columns above. The sync trigger still reads it, and dropping the write
+  // would make its net worth figure collapse for people with no linked accounts.
   const totalSavings =
-    (data.totalCash ?? 0) +
-    (data.totalInvestments ?? 0) +
-    (data.totalRetirementAccounts ?? 0) +
-    (data.totalPropertyValue ?? 0) +
-    (data.totalBusinessOwnership ?? 0) +
-    (data.totalOtherAssets ?? 0);
+    data.totalCash +
+    data.totalInvestments +
+    data.totalPropertyValue +
+    data.totalBusinessOwnership;
 
   const result = await supabase.from("financial_profiles").upsert({
     id,
     user_id: userId,
     total_cash: data.totalCash,
     total_investments: data.totalInvestments,
-    total_retirement_accounts: data.totalRetirementAccounts,
     total_property_value: data.totalPropertyValue,
     total_business_ownership: data.totalBusinessOwnership,
-    total_other_assets: data.totalOtherAssets,
-    credit_card_debt: data.creditCardDebt,
-    personal_loan_debt: data.personalLoanDebt,
-    student_loan_debt: data.studentLoanDebt,
-    mortgage_debt: data.mortgageDebt,
-    car_loan_debt: data.carLoanDebt,
-    other_debts: data.otherDebts,
+    total_debt: data.totalDebt,
     total_savings: totalSavings,
-    total_debt: totalLiab,
     updated_at: new Date().toISOString(),
   });
 
   return { error: result.error, profileId: id };
 }
 
-export async function saveStepGoals(
+export async function saveStepGoalsAndRisk(
   userId: string,
   data: {
-    goals: { title: string; targetAmount: number }[];
-    retirementAgeTarget: number | null;
-    emergencyFundTargetMonths: number;
-    investmentHorizonYears: number;
-    majorPurchasesPlanned: string[];
+    goalTitle: string;
+    goalAmount: number;
+    goalTargetDate: string;
+    riskAnswers: { questionKey: string; answer: string; score: number }[];
+    investmentExperience?: string;
   },
   profileId?: string | null
 ): Promise<{ error?: unknown; profileId?: string }> {
@@ -253,13 +257,17 @@ export async function saveStepGoals(
   const existingId = await getExistingProfileId(supabase, userId);
   const id = resolveProfileId(existingId, profileId);
 
+  const { score, profile } = calculateRiskProfile(data.riskAnswers);
+  const horizonYears = calculateInvestmentHorizonYears(data.goalTargetDate);
+
   const profileResult = await supabase.from("financial_profiles").upsert({
     id,
     user_id: userId,
-    retirement_age_target: data.retirementAgeTarget,
-    emergency_fund_target_months: data.emergencyFundTargetMonths,
-    investment_horizon_years: data.investmentHorizonYears,
-    major_purchases_planned: data.majorPurchasesPlanned,
+    investment_horizon_years: horizonYears,
+    investment_experience: data.investmentExperience || null,
+    risk_answers: data.riskAnswers,
+    risk_score: score,
+    risk_profile: profile,
     updated_at: new Date().toISOString(),
   });
 
@@ -275,50 +283,22 @@ export async function saveStepGoals(
       .eq("user_id", userId);
   }
 
-  const goalInserts = data.goals.map((g, i) => ({
+  const { error: goalError } = await supabase.from("financial_goals").insert({
     user_id: userId,
-    title: g.title,
-    target_amount: g.targetAmount,
+    title: data.goalTitle,
+    target_amount: data.goalAmount,
+    target_date: data.goalTargetDate,
     current_amount: 0,
-    priority: String(i + 1),
+    priority: "1",
     status: "active",
-  }));
-
-  if (goalInserts.length > 0) {
-    await supabase.from("financial_goals").insert(goalInserts);
-  }
-
-  return { error: profileResult.error, profileId: id };
-}
-
-export async function saveStepRisk(
-  userId: string,
-  data: {
-    answers: { questionKey: string; answer: string; score: number }[];
-  },
-  profileId?: string | null
-): Promise<{ error?: unknown; profileId?: string }> {
-  const supabase = await getServerClient();
-  const existingId = await getExistingProfileId(supabase, userId);
-  const id = resolveProfileId(existingId, profileId);
-
-  const { score, profile } = calculateRiskProfile(data.answers);
-
-  const profileResult = await supabase.from("financial_profiles").upsert({
-    id,
-    user_id: userId,
-    risk_answers: data.answers,
-    risk_score: score,
-    risk_profile: profile,
-    updated_at: new Date().toISOString(),
   });
 
-  const existing = await supabase
+  const existingAssessment = await supabase
     .from("risk_assessments")
     .select("id")
     .eq("user_id", userId);
 
-  if (existing.data && existing.data.length > 0) {
+  if (existingAssessment.data && existingAssessment.data.length > 0) {
     await supabase
       .from("risk_assessments")
       .update({ score, category: profile })
@@ -331,15 +311,13 @@ export async function saveStepRisk(
     });
   }
 
-  return { error: profileResult.error, profileId: id };
+  return { error: profileResult.error ?? goalError, profileId: id };
 }
 
 export async function completeOnboarding(userId: string, profileId?: string) {
   const supabase = await getServerClient();
 
-  const query = supabase
-    .from("financial_profiles")
-    .select("*");
+  const query = supabase.from("financial_profiles").select("*");
 
   if (profileId) {
     query.eq("id", profileId);
@@ -350,7 +328,10 @@ export async function completeOnboarding(userId: string, profileId?: string) {
   const { data: profile } = await query.maybeSingle();
 
   if (!profile) {
-    return { error: "Financial profile not found. The financial_profiles table may not exist in your Supabase project — run the setup migration first." };
+    return {
+      error:
+        "Financial profile not found. The financial_profiles table may not exist in your Supabase project, run the setup migration first.",
+    };
   }
 
   const me = profile as Partial<FinancialProfile>;

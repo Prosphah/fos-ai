@@ -11,6 +11,12 @@ interface CurrencyInputProps {
   placeholder?: string;
   disabled?: boolean;
   style?: React.CSSProperties;
+  /** Lets the field point a <label for> at this input. */
+  id?: string;
+  "aria-describedby"?: string;
+  "aria-invalid"?: boolean | "true" | "false";
+  "aria-label"?: string;
+  autoFocus?: boolean;
 }
 
 export function CurrencyInput({
@@ -22,6 +28,11 @@ export function CurrencyInput({
   placeholder,
   disabled,
   style,
+  id,
+  "aria-describedby": ariaDescribedBy,
+  "aria-invalid": ariaInvalid,
+  "aria-label": ariaLabel,
+  autoFocus,
 }: CurrencyInputProps) {
   const displayValue = value != null ? Number(value).toLocaleString() : "";
 
@@ -39,6 +50,7 @@ export function CurrencyInput({
 
   return (
     <input
+      id={id}
       name={name}
       type="text"
       inputMode="numeric"
@@ -48,6 +60,10 @@ export function CurrencyInput({
       onBlur={onBlur}
       placeholder={placeholder}
       disabled={disabled}
+      autoFocus={autoFocus}
+      aria-label={ariaLabel}
+      aria-describedby={ariaDescribedBy}
+      aria-invalid={ariaInvalid}
       className={className}
       style={style}
     />

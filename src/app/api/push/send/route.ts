@@ -97,7 +97,9 @@ export async function POST(request: Request) {
   let failed = 0;
   const expiredIds: string[] = [];
 
-  const results = await Promise.allSettled(
+  // `sent` and `failed` are counted inside the callbacks, so the settled results
+  // themselves carry nothing we need.
+  await Promise.allSettled(
     subscriptions.map(async (sub) => {
       try {
         await webPush.sendNotification(
@@ -108,10 +110,20 @@ export async function POST(request: Request) {
           payload
         );
         sent++;
-      } catch (err: any) {
+      } catch (err) {
         failed++;
-        console.error(`Push failed for sub ${sub.id}:`, err.statusCode, err.body || err.message);
-        if (err.statusCode === 404 || err.statusCode === 410) {
+        // web-push rejection shape: a status code, an optional body, a message.
+        const pushError = err as {
+          statusCode?: number;
+          body?: string;
+          message?: string;
+        };
+        console.error(
+          `Push failed for sub ${sub.id}:`,
+          pushError.statusCode,
+          pushError.body || pushError.message
+        );
+        if (pushError.statusCode === 404 || pushError.statusCode === 410) {
           expiredIds.push(sub.id);
         }
       }

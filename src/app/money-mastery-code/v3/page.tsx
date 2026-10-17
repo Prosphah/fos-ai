@@ -518,23 +518,22 @@ export default function MoneyMasteryCodeVariantC() {
               You earn, and it doesn’t accumulate.
             </Reveal>
             <Reveal as="p" className="lead">
-              You get paid. Bills come out. Something always remains, and
-              something always gets eaten. By the time you look up, there
-              isn’t enough left to have built anything.
+              You get paid. Bills appear. Something else always remains to sort out. 
+              By the time you look up, there
+              isn’t enough left to do anything with.
             </Reveal>
             <Reveal as="p">
               The gap between what you earn and what you keep usually isn’t
               discipline. It’s information. And financial education in Nigeria
-              has an access problem, not a quality problem. The people who
+              has an access problem. It is the most gate-kept resource in Nigeria. The people who
               teach it well mostly teach it to people who already have money,
-              and the people who teach everyone else usually have something to
-              sell at the end of the lesson.
+              and the people who teach everyone else usually teach only a small, almost insignificant part of it.
             </Reveal>
             <Reveal as="p">
               So here’s what most people learn, one fragment at a time:
               someone says cut your spending. Someone else says invest more.
               Nobody shows you how those two decisions are connected, or which
-              one has been quietly undoing the other.
+              one has been quietly fighting the other.
             </Reveal>
 
             <ul className="trio">
@@ -935,11 +934,10 @@ export default function MoneyMasteryCodeVariantC() {
                   <dd>₦52,122.08</dd>
                 </div>
               </dl>
-              <p>That gap looks trivial. Run it at ₦1,000,000 instead.</p>
+              <p>You pay ₦2,122 for owing 50k. and ₦2,096 for owing 100k. That gap looks small. Run it at ₦1,000,000 instead.</p>
               <DebtBars />
               <p className="verdict">
-                The expensive debt costs ₦21,480 more, even though it’s the
-                smaller one.
+                Do you see that the expensive debt costs ₦21,480 more? Even though the amount is smaller.
               </p>
             </Reveal>
 
@@ -949,12 +947,12 @@ export default function MoneyMasteryCodeVariantC() {
               <blockquote className="quote-d">
                 <p>
                   You’ve imagined what you’d buy with a fortune. Aliko Dangote
-                  has that fortune, and he isn’t buying all of it. That’s the
-                  whole point.
+                  has that fortune, and he isn’t buying all of it.
                 </p>
                 <p>
-                  On one rough estimate, if he held ₦500,000 in liquid cash,
-                  his daily spending would be about ₦250.
+                  On one rough estimate, we calculated how much Dangote would spend daily if he held ₦500,000 in liquid cash.
+                  The analysis showed that his daily spending would be about ₦250. Seems confusing? You&apos;d understand when you go through the workshop. 
+                  The point is, even with a fortune, he doesn&apos;t spend it all at once.
                 </p>
                 <p>
                   So the most effective thing you can do about an impulse is{" "}
@@ -1089,15 +1087,15 @@ export default function MoneyMasteryCodeVariantC() {
               <Reveal className="step">
                 <span className="step__n">1</span>
                 <p>
-                  You’ll get a confirmation link within minutes, sent to the
-                  email you provide.
+                  You’ll get a confirmation link immediately, sent to the
+                  email you provide during checkout.
                 </p>
               </Reveal>
 
               <Reveal className="step">
                 <span className="step__n">2</span>
                 <p>
-                  You’ll also be directed to WhatsApp, where I’ll welcome you
+                  You’ll also be directed to message me on WhatsApp, where I’ll welcome you
                   and add you to the support community.
                 </p>
               </Reveal>
@@ -1115,7 +1113,7 @@ export default function MoneyMasteryCodeVariantC() {
                     using exactly this tactic during recent public share offers.
                   </p>
                   <p>
-                    Our official account and payment processor is{" "}
+                    Our official account name and payment processor is{" "}
                     <strong>The Pixeltique</strong> powered by Paystack.
                   </p>
                 </div>

@@ -138,7 +138,7 @@ const codes = [
     close:
       "You'll also see practical demonstrations involving stock valuation, investing in gold, and navigating the Bamboo investment app.",
     note:
-      "The course is educational. It does not promise investment returns or tell every learner to buy the same assets. Investment decisions should reflect your own circumstances, goals, and risk tolerance.",
+      "The workshop is educational. It does not promise investment returns or tell every learner to buy the same assets. Investment decisions should reflect your own circumstances, goals, and risk tolerance.",
   },
 ];
 
@@ -268,17 +268,17 @@ const notForYou = [
 const received = [
   {
     icon: Video,
-    title: "The complete recorded course",
+    title: "The complete recorded workshop",
     body: "Eight recorded lectures, averaging approximately one hour each. Watch at your own pace and revisit lessons when you need to refresh your understanding.",
   },
   {
     icon: FileText,
-    title: "Course slides for reference",
+    title: "Workshop slides for reference",
     body: "Keep the teaching material available as a quick reference while reviewing the lessons or revisiting a concept.",
   },
   {
     icon: Infinity,
-    title: "Lifetime access to the course",
+    title: "Lifetime access to the workshop",
     body: "Return to the recorded lessons and slides whenever you need to revisit the material.",
   },
   {
@@ -288,8 +288,8 @@ const received = [
   },
   {
     icon: Gift,
-    title: "Your choice of course access or course plus FOS·AI",
-    body: "Choose the course on its own, or select the package that includes permanent access to FOS·AI, a financial operating system designed to help you put some of the principles into practice.",
+    title: "Your choice of workshop access or workshop plus FOS·AI",
+    body: "Choose the workshop on its own, or select the package that includes permanent access to FOS·AI, a financial operating system designed to help you put some of the principles into practice.",
   },
 ];
 
@@ -341,8 +341,8 @@ const calculators = [
 
 const courseIncludes = [
   "All 8 recorded lectures",
-  "Course slides for reference",
-  "Lifetime access to the course",
+  "Workshop slides for reference",
+  "Lifetime access to the workshop",
   "Access to the WhatsApp support community",
 ];
 
@@ -358,14 +358,14 @@ const bundleIncludes = [
 const faqs = [
   {
     q: "Is Money Mastery Code suitable for beginners?",
-    a: "Yes. The course is designed to introduce financial concepts in an accessible way. You do not need to be an experienced investor to begin.",
+    a: "Yes. The workshop is designed to introduce financial concepts in an accessible way. You do not need to be an experienced investor to begin.",
   },
   {
-    q: "Is this a get-rich-quick course?",
+    q: "Is this a get-rich-quick program?",
     a: "No. Money Mastery Code focuses on financial literacy and repeatable principles. It does not promise overnight wealth or guaranteed returns.",
   },
   {
-    q: "How is the course delivered?",
+    q: "How is the workshop delivered?",
     a: "It is delivered as recorded video lessons. The teaching sessions have been recorded so you can learn at your own pace.",
   },
   {
@@ -374,15 +374,15 @@ const faqs = [
   },
   {
     q: "Do I get lifetime access?",
-    a: "Yes. You get lifetime access to the Money Mastery Code recordings and course slides. On the ₦23,000 package, FOS·AI access is permanent too — there is no subscription and no renewal.",
+    a: "Yes. You get lifetime access to the Money Mastery Code videos and workshop slides. On the ₦23,000 package, FOS·AI access is permanent too — there is no subscription and no renewal.",
   },
   {
     q: "Do I need to know how to invest already?",
-    a: "No. The course introduces investment concepts and different asset classes, and includes practical demonstrations to help you understand how some processes work.",
+    a: "No. The workshop introduces investment concepts and different asset classes, and includes practical demonstrations to help you understand how some processes work.",
   },
   {
     q: "Will you tell me exactly which stocks to buy?",
-    a: "The course teaches concepts and methods for evaluating investments. It is not a promise of stock picks, individualized investment recommendations, or guaranteed performance.",
+    a: "The workshop teaches concepts and methods for evaluating investments. It is not a promise of stock picks, individualized investment recommendations, or guaranteed performance.",
   },
   {
     q: "What is FOS·AI?",
@@ -390,7 +390,7 @@ const faqs = [
   },
   {
     q: "Does the ₦23,000 package include FOS·AI forever?",
-    a: "Yes. FOS·AI access on the ₦23,000 package is permanent. It is a one-off payment with no subscription, no renewal and no expiry, and it includes every capability FOS·AI releases from here on. The course recordings and slides are lifetime access in exactly the same way.",
+    a: "Yes. FOS·AI access on the ₦23,000 package is permanent. It is a one-off payment with no subscription, no renewal and no expiry, and it includes every capability FOS·AI releases from here on. The workshop recordings and slides are lifetime access in exactly the same way.",
   },
   {
     q: "Do I get support after buying?",
@@ -401,8 +401,8 @@ const faqs = [
     a: "You have 180 days from the date of purchase. Go through the lessons, study the material, and if it has not delivered the value you expected, email refunds@betiangli.xyz and we will sort out the refund. No argument, no forms.",
   },
   {
-    q: "Will this course make me rich?",
-    a: "No course can responsibly guarantee that. Money Mastery Code is designed to help you understand financial principles and make more informed decisions. Your outcomes will depend on your circumstances, decisions, consistency, and other factors outside the course.",
+    q: "Will this workshop make me rich?",
+    a: "No workshop can responsibly guarantee that. Money Mastery Code is designed to help you understand financial principles and make more informed decisions. Your outcomes will depend on your circumstances, decisions, consistency, and other factors outside the workshop.",
   },
 ];
 
@@ -473,7 +473,7 @@ function Pill({
  *
  * A hairline ring and nothing else. The badge does not need to restate what
  * the section around it already says — the eyebrow reads "The guarantee", the
- * heading says "Give the course a fair chance", the copy names the 180-day
+ * heading says "Give the workshop a fair chance", the copy names the 180-day
  * window — so the mark carries one number and stops. No star, no rotation, no
  * wax-seal texture; those all compete with the lime CTA sitting directly
  * beneath it.
@@ -597,7 +597,7 @@ export default function MoneyMasteryCodePage() {
               The framework
             </a>
             <a href="#course" className="sales-focus transition hover:text-[#f4f3eb]">
-              The course
+              The workshop
             </a>
             <a href="#fos" className="sales-focus transition hover:text-[#f4f3eb]">
               FOS·AI
@@ -649,7 +649,7 @@ export default function MoneyMasteryCodePage() {
                 </Pill>
               </div>
               <p className="mt-6 text-[12.5px] leading-6" style={{ color: "#92988a" }}>
-                Eight recorded lectures. Lifetime access to the course. Learn at your own pace.
+                Eight recorded lectures. Lifetime access to the workshop. Learn at your own pace.
               </p>
             </div>
 
@@ -787,7 +787,7 @@ export default function MoneyMasteryCodePage() {
                 <div className="space-y-5">
                   <p className="text-[15px] font-semibold leading-8">
                     <strong className="font-black">Money Mastery Code</strong> is a
-                    practical, beginner-friendly course that teaches you how to make money,
+                    practical, beginner-friendly workshop that teaches you how to make money,
                     manage what you earn, and understand how to put money to work.
                   </p>
                   <p className="text-[15px] leading-8" style={{ color: "var(--mm-light-muted)" }}>
@@ -855,7 +855,7 @@ export default function MoneyMasteryCodePage() {
                   Inside the three codes
                 </h2>
                 <p className="mt-4 text-[16px]" style={{ color: muted }}>
-                  Explore the topics covered across the course.
+                  Explore the topics covered across the workshop.
                 </p>
               </header>
 
@@ -997,7 +997,7 @@ export default function MoneyMasteryCodePage() {
               <Display>Some things make more sense when you see how they work.</Display>
               <p className="mt-5 text-[17px] leading-8" style={{ color: muted }}>
                 Money Mastery Code goes beyond explaining financial terminology. The
-                course includes practical demonstrations that connect the concepts to
+                workshop includes practical demonstrations that connect the concepts to
                 real decisions and tools.
               </p>
             </header>
@@ -1100,11 +1100,11 @@ export default function MoneyMasteryCodePage() {
               </p>
               <p className="mt-4 text-[16px] leading-8" style={{ color: "#363d28" }}>
                 Since then, I’ve taught and spoken about financial literacy in different
-                settings, including the Interswitch student community, Thrive financial
-                conference, a church engagement, and events I’ve organized myself.
+                settings, from corporate to religious, including the Interswitch Community, Thrive Financial
+                Conference, United Evangelical Church, and various events I’ve organized myself.
               </p>
               <div className="mt-6 flex flex-wrap gap-2">
-                {["Interswitch student community", "Thrive financial conference"].map((setting) => (
+                {["Interswitch community", "Thrive financial conference", "United Evangelical Church"].map((setting) => (
                   <span
                     key={setting}
                     className="rounded-full border px-3.5 py-2 text-[11px] font-black"
@@ -1153,7 +1153,7 @@ export default function MoneyMasteryCodePage() {
                 style={{ background: "#24201c", borderColor: "#674e3b" }}
               >
                 <h3 className="text-[24px] font-black leading-tight tracking-[-0.04em]" style={{ color: "var(--mm-orange)" }}>
-                  This course is not for you if&hellip;
+                  This workshop is not for you if&hellip;
                 </h3>
                 <ul className="mt-6 space-y-3.5">
                   {notForYou.map((item) => (
@@ -1181,7 +1181,7 @@ export default function MoneyMasteryCodePage() {
           <div className={`${container} py-20 lg:py-[100px]`}>
             <header className="max-w-[760px]">
               <Eyebrow>What you receive</Eyebrow>
-              <Display>More than eight hours of lessons sitting in a folder.</Display>
+              <Display>More than eight hours of lessons sitting in one place.</Display>
               <p className="mt-5 text-[17px] leading-8" style={{ color: muted }}>
                 Learn at your own pace, revisit the lessons, and keep the reference
                 materials close.
@@ -1346,19 +1346,13 @@ export default function MoneyMasteryCodePage() {
               </div>
             </div>
 
-            <p className="mt-10 max-w-[74ch] text-[12px] leading-6" style={{ color: "#92988a" }}>
-              FOS·AI access on the ₦23,000 package is permanent, on the same terms as the
-              course itself. One payment, no subscription, no renewal date. The product
-              keeps developing, and your access keeps up with it.
-            </p>
-
             {/* Phone showcase. Stacks on phones so every screen is readable
                 without a hidden swipe; fits all four on a desktop and swipes
                 on a tablet. */}
             <div className="mt-16">
               <p className="text-[14px] font-black">The screens you get</p>
               <p className="mt-2 max-w-[52ch] text-[13.5px] leading-7" style={{ color: "#a9a3bc" }}>
-                Shown at phone size, because that is where you will use it. Every figure
+                Whether you use a laptop, tablet or mobile phone, the screens you see are designed for your device. Every figure
                 here is sample data.
               </p>
 
@@ -1372,7 +1366,7 @@ export default function MoneyMasteryCodePage() {
                 <PhoneFigure sub="Numbers and plain-language reasoning on a stock you are weighing up." caption="Stock analysis">
                   <StockAnalyzerPhone />
                 </PhoneFigure>
-                <PhoneFigure sub="Nine calculators covering the numbers the course teaches." caption="Tools">
+                <PhoneFigure sub="Nine calculators covering the numbers the workshop teaches." caption="Tools">
                   <ToolsPhone />
                 </PhoneFigure>
               </div>
@@ -1387,7 +1381,7 @@ export default function MoneyMasteryCodePage() {
               <Eyebrow color="var(--mm-lime-deep)">Choose your package</Eyebrow>
               <Display>Start with the knowledge. Add the tools if you want them.</Display>
               <p className="mt-5 text-[17px] leading-8" style={{ color: "#53574e" }}>
-                Both packages give you the full Money Mastery Code course. The
+                Both packages give you the full Money Mastery Code workshop. The
                 difference is whether you also want permanent access to FOS·AI.
               </p>
             </header>
@@ -1402,7 +1396,7 @@ export default function MoneyMasteryCodePage() {
                   {course.displayPrice}
                 </div>
                 <p className="mt-3 text-[12px]" style={{ color: "#64685d" }}>
-                  For people who want the course and its reference materials.
+                  For people who want the workshop and its reference materials.
                 </p>
 
                 <ul className="mt-7 space-y-2.5 border-t pt-6 text-[13px]" style={{ borderColor: "#c6cabe", color: "#555a4e" }}>
@@ -1416,7 +1410,7 @@ export default function MoneyMasteryCodePage() {
 
                 <CheckoutForm
                   tier={course}
-                  label="Get the course for ₦15,000"
+                  label="Get the workshop for ₦15,000"
                   tone="light"
                   variant={VARIANT}
                 />
@@ -1448,7 +1442,7 @@ export default function MoneyMasteryCodePage() {
                   {bundle.displayPrice}
                 </div>
                 <p className="mt-3 text-[12px]" style={{ color: "#92988a" }}>
-                  For people who want the course plus permanent tools to help apply what
+                  For people who want the workshop plus permanent tools to help apply what
                   they learn.
                 </p>
 
@@ -1463,7 +1457,7 @@ export default function MoneyMasteryCodePage() {
 
                 <CheckoutForm
                   tier={bundle}
-                  label="Get the course + FOS·AI for ₦23,000"
+                  label="Get the workshop + FOS·AI for ₦23,000"
                   variant={VARIANT}
                 />
               </article>
@@ -1472,15 +1466,15 @@ export default function MoneyMasteryCodePage() {
             <div className="mt-6 rounded-[16px] p-6" style={{ background: "#d8dcd0" }}>
               <p className="text-[13px] leading-7" style={{ color: "#3d4335" }}>
                 <strong className="font-black">Which should you choose?</strong> If you
-                want to learn the principles first, the course-only package is a solid
+                want to learn the principles first, the workshop-only package is a solid
                 place to begin. If you also want a digital environment for managing
                 financial information, exploring calculations, and researching stocks,
-                consider the course plus FOS·AI package.
+                consider the workshop plus FOS·AI package.
               </p>
             </div>
             <p className="mt-5 text-[14px] leading-7 text-[#3d4335]">
               <strong className="font-black">Both packages give you the full Money
-                Mastery Code course.</strong>{" "}
+                Mastery Code workshop.</strong>{" "}
               The difference is whether you also want permanent access to FOS·AI.
             </p>
           </div>
@@ -1500,16 +1494,16 @@ export default function MoneyMasteryCodePage() {
               <div>
                 <Eyebrow>The guarantee</Eyebrow>
                 <h2 className="mt-3 text-[34px] font-black leading-[1.05] tracking-[-0.05em]">
-                  Give the course a fair chance.
+                  Give the workshop a fair chance.
                 </h2>
                 <div className="mt-5 space-y-3">
                   <p className="text-[14px] leading-8" style={{ color: muted }}>
                     I believe in the value of useful financial education, and I want you
-                    to feel comfortable giving this course a serious try.
+                    to feel comfortable giving this workshop a serious try.
                   </p>
                   <p className="text-[14px] leading-8" style={{ color: muted }}>
                     Go through the lessons. Study the material. Give yourself time to
-                    understand the principles and decide whether the course has delivered
+                    understand the principles and decide whether the workshop has delivered
                     useful, actionable financial knowledge.
                   </p>
                   <p className="text-[14px] leading-8" style={{ color: muted }}>
@@ -1596,7 +1590,7 @@ export default function MoneyMasteryCodePage() {
             </div>
 
             <p className="mt-5 text-[12px]" style={{ color: "#3b432b" }}>
-              Course only: ₦15,000 | Course + FOS·AI: ₦23,000
+              Workshop only: ₦15,000 | Workshop + FOS·AI: ₦23,000
             </p>
           </div>
         </section>
@@ -1639,7 +1633,7 @@ export default function MoneyMasteryCodePage() {
 
           <div className="mt-10 space-y-4">
             <p className="max-w-[104ch] text-[11.5px] leading-6" style={{ color: "#92988a" }}>
-              Money Mastery Code is an educational course. It does not provide a
+              Money Mastery Code is an educational workshop. It does not provide a
               guarantee of financial results or investment returns and should not be
               treated as individualized financial, investment, tax, or legal advice.
               Investments involve risk, including possible loss of capital. Conduct your

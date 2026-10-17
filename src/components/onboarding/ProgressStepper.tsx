@@ -4,11 +4,10 @@ import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 
 const STEPS = [
-  { num: 1, label: "Personal" },
-  { num: 2, label: "Cash Flow" },
-  { num: 3, label: "Assets" },
-  { num: 4, label: "Goals" },
-  { num: 5, label: "Risk" },
+  { num: 1, label: "About you" },
+  { num: 2, label: "Month to month" },
+  { num: 3, label: "Own and owe" },
+  { num: 4, label: "Goals and risk" },
 ];
 
 interface Props {

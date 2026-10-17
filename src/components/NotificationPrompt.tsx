@@ -1,23 +1,70 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { usePathname } from "next/navigation";
 import { usePushSubscription } from "@/hooks/use-push-subscription";
 
 const DISMISSED_KEY = "fos-ai-notif-dismissed";
 const DELAY_MS = 60_000;
 
+/**
+ * Routes that belong to the signed-in product. This component is mounted in the
+ * root layout, so it renders on every URL in the app — but the prompt asks
+ * people to log cash movements, which only makes sense once they are inside
+ * the product. Marketing and storefront pages (`/money-mastery-code`,
+ * `/fos-ai`), auth screens, and privacy pages are deliberately absent.
+ *
+ * An allowlist rather than a blocklist of marketing routes on purpose: a page
+ * added later is opted in deliberately instead of silently inheriting a prompt
+ * about transaction reminders.
+ */
+const APP_PATH_PREFIXES = [
+  "/assistant",
+  "/briefing",
+  "/feedback",
+  "/goals",
+  "/money-manager",
+  "/onboarding",
+  "/set-password",
+  "/settings",
+  "/tools",
+] as const;
+
+function isAppRoute(pathname: string | null): boolean {
+  if (!pathname) return false;
+  return APP_PATH_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
+}
+
 export function NotificationPrompt() {
+  const pathname = usePathname();
   const { isSupported, permission, isSubscribed, loading, subscribe } = usePushSubscription();
   const [visible, setVisible] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+
+  const eligible = isAppRoute(pathname);
 
   const checkPwaPromptVisible = useCallback((): boolean => {
     if (typeof document === "undefined") return false;
     return !!document.querySelector("[data-pwa-install-prompt]");
   }, []);
 
+  // Leaving the product (client-side nav from a dashboard page to the
+  // storefront) must retract a prompt that was already on screen, and coming
+  // back must re-arm the delay rather than show it immediately. Resetting the
+  // flag here, during render, keeps that behaviour without a setState call
+  // inside the effect below, which the hooks lint rule rejects because it can
+  // cascade extra renders.
+  const [wasEligible, setWasEligible] = useState(eligible);
+  if (wasEligible !== eligible) {
+    setWasEligible(eligible);
+    if (!eligible) setVisible(false);
+  }
+
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (!eligible) return;
     if (!isSupported || permission === "denied" || isSubscribed) return;
 
     const dismissed = localStorage.getItem(DISMISSED_KEY);
@@ -39,9 +86,9 @@ export function NotificationPrompt() {
     timeout = setTimeout(tryShow, DELAY_MS);
 
     return () => clearTimeout(timeout);
-  }, [isSupported, permission, isSubscribed, checkPwaPromptVisible]);
+  }, [eligible, isSupported, permission, isSubscribed, checkPwaPromptVisible]);
 
-  if (!visible || showSuccess) return null;
+  if (!visible || !eligible || showSuccess) return null;
 
   const handleEnable = async () => {
     const success = await subscribe();

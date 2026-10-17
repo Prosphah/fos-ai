@@ -6,10 +6,16 @@ import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LogoIcon } from "@/components/brand/LogoIcon";
+import { getOnboardingScore } from "../actions";
 
 export default function SuccessPage() {
   const router = useRouter();
   const [countdown, setCountdown] = useState(3);
+  const [score, setScore] = useState<number | null>(null);
+
+  useEffect(() => {
+    getOnboardingScore().then((result) => setScore(result.score));
+  }, []);
 
   useEffect(() => {
     if (countdown > 0) {
@@ -109,6 +115,79 @@ export default function SuccessPage() {
         >
           Your financial profile is complete. We&apos;re building your personalized dashboard now.
         </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          style={{
+            marginTop: "28px",
+            padding: "20px",
+            borderRadius: "var(--radius-sm)",
+            background: "var(--glass-bg)",
+            border: "1px solid var(--glass-border)",
+          }}
+        >
+          {score !== null ? (
+            <>
+              <p
+                style={{
+                  fontFamily: "var(--font-mono-family)",
+                  fontSize: "0.625rem",
+                  fontWeight: 600,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  color: "var(--text-3)",
+                }}
+              >
+                Your financial health score
+              </p>
+              <p
+                style={{
+                  fontFamily: "var(--font-display-family)",
+                  fontSize: "2.5rem",
+                  fontWeight: 700,
+                  lineHeight: 1.1,
+                  marginTop: "4px",
+                  color: "var(--text-1)",
+                }}
+              >
+                {score}
+                <span
+                  style={{
+                    fontSize: "1rem",
+                    fontWeight: 500,
+                    color: "var(--text-3)",
+                  }}
+                >
+                  {" "}
+                  / 100
+                </span>
+              </p>
+              <p
+                style={{
+                  fontSize: "0.8125rem",
+                  color: "var(--text-2)",
+                  marginTop: "8px",
+                  lineHeight: 1.6,
+                }}
+              >
+                This is a starting point, not a verdict. It moves as your money
+                does, and your dashboard explains how it is worked out.
+              </p>
+            </>
+          ) : (
+            <p
+              style={{
+                fontSize: "0.8125rem",
+                color: "var(--text-2)",
+                lineHeight: 1.6,
+              }}
+            >
+              Working out your financial health score…
+            </p>
+          )}
+        </motion.div>
 
         <motion.p
           initial={{ opacity: 0 }}

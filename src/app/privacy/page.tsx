@@ -113,12 +113,12 @@ export default function PrivacyPage() {
             <Bullets
               items={[
                 { label: "Account information.", text: "Email address and password. Your password is hashed by our authentication provider and is never stored or transmitted by us in readable form. Your name is collected during onboarding if you choose to provide it." },
-                { label: "Financial profile.", text: "Age, country, currency, employment status, income and income frequency, monthly living expenses, debt repayments, savings, and other income." },
-                { label: "Balance sheet.", text: "Total cash, investments, retirement accounts, property value, business ownership, other assets, and each category of debt (credit card, personal loan, student loan, mortgage, car loan, other)." },
-                { label: "Risk assessment.", text: "Your answers to the risk questionnaire, the resulting risk score, and your risk profile." },
+                { label: "Financial profile.", text: "Your first and last name, date of birth, currency, monthly take home income, monthly living expenses, monthly debt repayments, and what you manage to save." },
+                { label: "Balance sheet.", text: "Cash you can reach today, investments and retirement accounts combined, property and valuables, a business or other assets you own, and one total for everything you owe." },
+                { label: "Risk assessment.", text: "Your answers to the risk questionnaire, the resulting risk score and risk profile, and how much investing experience you have told us you have." },
                 { label: "Transactions.", text: "Amounts, descriptions, dates, categories, notes, and tags for every transaction you log." },
                 { label: "Accounts and institutions.", text: "Account names, types, balances, currencies, and the financial institution each account belongs to. Institution names are typed by you; we have no connection to any financial institution." },
-                { label: "Budgets and goals.", text: "Monthly budget amounts per category, savings goal targets and progress, retirement age target, emergency fund target, investment horizon, and planned major purchases." },
+                { label: "Budgets and goals.", text: "Monthly budget amounts per category, savings goal targets and progress, the target amount and date of the goal you set during onboarding, and the investment horizon we work out from that date." },
                 { label: "Payments.", text: "Email address, amount, currency, and a payment reference, if you buy something from us. See section 5." },
                 { label: "Feedback and waitlist.", text: "The area, type, and message you submit through the feedback form, and your email address and requested feature if you join a waitlist." },
                 { label: "Preferences.", text: "Reminder schedule, timezone, currency, and notification settings." },
@@ -418,8 +418,9 @@ export default function PrivacyPage() {
 
           <Section title="11. Children's privacy" id="children">
             <P>
-              FOS&middot;AI is not intended for anyone under 18. Onboarding asks for your age,
-              and we do not provide accounts to children. We do not knowingly collect personal
+              FOS&middot;AI is not intended for anyone under 18. Onboarding asks for your date of
+              birth so we can confirm you are at least 18, and we do not provide accounts to
+              children. We do not knowingly collect personal
               information from children. If you believe a child has created an account or
               provided us with personal data, email us and we will delete it.
             </P>

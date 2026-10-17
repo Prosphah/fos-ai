@@ -12,6 +12,12 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Build output. The Serwist service worker is generated from src/app/sw.ts
+    // on every build and is gitignored, so linting it reports on code nobody
+    // edits and that the next build overwrites. The source is linted instead.
+    "public/sw.js",
+    "public/sw.js.map",
+    "public/swe-worker-*.js",
   ]),
 ]);
 
