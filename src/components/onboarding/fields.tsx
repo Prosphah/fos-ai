@@ -124,7 +124,7 @@ function FieldShell({
           <div
             id={panelId}
             role="note"
-            className="absolute top-full left-0 right-0 z-30 mt-1.5 rounded-md border border-border bg-card p-3 text-xs leading-relaxed text-text-secondary shadow-lg sm:left-auto sm:right-0 sm:w-80"
+            className="absolute top-full left-0 right-0 z-30 mt-1.5 rounded-md border border-border bg-bg-app p-3 text-xs leading-relaxed text-text-primary shadow-lg sm:left-auto sm:right-0 sm:w-80"
           >
             {whyWeAsk}
           </div>
