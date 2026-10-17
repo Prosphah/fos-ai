@@ -18,7 +18,24 @@ import { isValidTikTokPixelId } from "@/lib/tiktok";
  *
  * Reads a secret. Server only — never import this from a client component.
  */
-const TRACK_URL = "https://api.tiktokbiz.com/open_api/v1.3/event/track/";
+/**
+ * business-api.tiktok.com, not api.tiktokbiz.com.
+ *
+ * Both appear in circulating examples. The latter does not resolve at all —
+ * every request to it fails at the connection, before any response — so an
+ * Events API integration pointed at it never receives so much as an error code
+ * from TikTok and looks like a silent no-op. Verified by request, not by docs:
+ * `api.tiktokbiz.com` threw "fetch failed" on v1.3, v1.2 and v1.1 alike,
+ * while this host answers.
+ */
+const TRACK_HOST = "https://business-api.tiktok.com";
+
+/**
+ * Only v1.3 is the Events API. v1.2 is a 404 and v1.1 answers with a different,
+ * older schema ("no schema found"), so a wrong version here is another way to
+ * get a response that looks like an unrelated error.
+ */
+const TRACK_PATH = "/open_api/v1.3/event/track/";
 
 /**
  * Long enough for a normal call, short enough that TikTok being slow cannot
@@ -73,45 +90,60 @@ export async function sendTikTokPurchase(
     // optimisation. Only ever set it while testing: test events left on in
     // production pollute the numbers they are meant to check.
     ...(testCode ? { test_event_code: testCode } : {}),
-    data: {
-      event: "Purchase",
-      event_id: purchase.eventId,
-      // Seconds, not milliseconds. TikTok rejects a payload whose timestamp is
-      // implausibly far from now, so this is not a field to leave out.
-      event_time: Math.floor(Date.now() / 1000),
-      // Which storefront page the sale is attributed to. Omitted when there is
-      // no sales host configured, because TikTok wants an absolute URL and a
-      // route path is not one.
-      ...(landingUrl.startsWith("http") ? { page: { url: landingUrl } } : {}),
-      /*
-       * `user` is deliberately absent.
-       *
-       * Advanced Matching wants the buyer's email address, SHA-256'd, shipped
-       * to an advertising platform — and there is no consent banner on these
-       * pages for that to rest on. Matching still works without it: the
-       * browser pixel has already tied this visitor to the ad they clicked
-       * through its own first-party cookie, so a conversion reported from that
-       * same browser is recognisable. What is given up is cross-device reach.
-       *
-       * Adding it later means adding `user: { email: sha256(email) }` here, and
-       * saying so in section 15 of the privacy policy first.
-       */
-      properties: {
-        currency: "NGN",
-        value: majorUnits(purchase.amountInKobo),
-        content_type: "product",
-        content_ids: [purchase.contentId],
-        content_name: purchase.contentName,
-        content_category: purchase.contentCategory ?? "education",
-        quantity: 1,
-        source: "web",
-        ...(purchase.sourceVariant ? { variant: purchase.sourceVariant } : {}),
+    /*
+     * `data` is an ARRAY, even though this sends exactly one event.
+     *
+     * This is the single most expensive mistake available in this file, and it
+     * is invisible: TikTok answers `400 {"code":40002,"message":"Data: Invalid
+     * type."}` to the object form that its own documentation examples are
+     * written in. The message names no field and points at nothing wrong with
+     * the event, so it reads as a malformed purchase rather than a container
+     * shaped wrong. Confirmed against the live API — the identical payload
+     * wrapped as an object is rejected, and as an array returns `{"code":0}`.
+     *
+     * Keep the array, and send the whole event inside it.
+     */
+    data: [
+      {
+        event: "Purchase",
+        event_id: purchase.eventId,
+        // Seconds, not milliseconds. TikTok rejects a payload whose timestamp is
+        // implausibly far from now, so this is not a field to leave out.
+        event_time: Math.floor(Date.now() / 1000),
+        // Which storefront page the sale is attributed to. Omitted when there is
+        // no sales host configured, because TikTok wants an absolute URL and a
+        // route path is not one.
+        ...(landingUrl.startsWith("http") ? { page: { url: landingUrl } } : {}),
+        /*
+         * `user` is deliberately absent.
+         *
+         * Advanced Matching wants the buyer's email address, SHA-256'd, shipped
+         * to an advertising platform — and there is no consent banner on these
+         * pages for that to rest on. Matching still works without it: the
+         * browser pixel has already tied this visitor to the ad they clicked
+         * through its own first-party cookie, so a conversion reported from that
+         * same browser is recognisable. What is given up is cross-device reach.
+         *
+         * Adding it later means adding `user: { email: sha256(email) }` here, and
+         * saying so in section 15 of the privacy policy first.
+         */
+        properties: {
+          currency: "NGN",
+          value: majorUnits(purchase.amountInKobo),
+          content_type: "product",
+          content_ids: [purchase.contentId],
+          content_name: purchase.contentName,
+          content_category: purchase.contentCategory ?? "education",
+          quantity: 1,
+          source: "web",
+          ...(purchase.sourceVariant ? { variant: purchase.sourceVariant } : {}),
+        },
       },
-    },
+    ],
   };
 
   try {
-    const response = await fetch(TRACK_URL, {
+    const response = await fetch(`${TRACK_HOST}${TRACK_PATH}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
