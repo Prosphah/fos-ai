@@ -1,5 +1,10 @@
 import { getStorefrontVariantUrl, majorUnits } from "@/lib/money-mastery";
 import { isValidTikTokPixelId } from "@/lib/tiktok";
+import {
+  hashEmailForTikTok,
+  hashForTikTok,
+  normalisePhoneForTikTok,
+} from "@/lib/tiktok-user-data";
 
 /**
  * The server half of TikTok measurement: the Events API.
@@ -53,6 +58,17 @@ export type TikTokPurchase = {
   contentCategory?: string;
   /** Which storefront page it was bought on, when that was recorded. */
   sourceVariant?: string | null;
+  /**
+   * The buyer's email, sent unhashed and hashed here rather than by the caller,
+   * so the normalisation lives in one place.
+   */
+  email?: string | null;
+  /**
+   * E.164, e.g. "+2348031234567". Optional because no part of this codebase
+   * collects a phone number yet — see normalisePhoneForTikTok for what adding
+   * one would have to guarantee.
+   */
+  phone?: string | null;
 };
 
 export type TikTokSendResult = {
@@ -81,6 +97,41 @@ export async function sendTikTokPurchase(
 
   const landingUrl = getStorefrontVariantUrl(purchase.sourceVariant ?? undefined);
   const testCode = testEventCode();
+
+  /*
+   * Advanced Matching: who this purchase belongs to.
+   *
+   * Without a `user` block TikTok can only match this sale by IP and browser,
+   * which is roughly a coin flip on shared networks and mobile carriers — a
+   * large share of the traffic this storefront gets. TikTok reports a 13% lower
+   * CPA for advertisers sending complete match keys, which is most of the
+   * reason this block exists.
+   *
+   * The email is hashed, never sent as typed. SHA-256 is one-way, so TikTok
+   * cannot read the address back or use it to email anyone; it can only check
+   * whether the same digest has been seen against a TikTok account. That is the
+   * entire privacy argument for doing this at all, and it is why the hashing
+   * cannot be skipped or swapped for plaintext.
+   *
+   * `phone` is absent on purpose. No part of this codebase asks a buyer for a
+   * phone number — the checkout form collects a name and an email and nothing
+   * else — so there is nothing to send. Adding a required phone field to
+   * checkout to satisfy a diagnostic is a conversion cost paid for a matching
+   * improvement, and that is a decision about the product rather than about the
+   * pixel.
+   */
+  const email = purchase.email?.trim();
+  const phone = purchase.phone?.trim();
+  const user = {
+    ...(email ? { email: hashEmailForTikTok(email) } : {}),
+    ...(phone
+      ? {
+          phone_number: hashForTikTok(phone, (value) =>
+            `+${normalisePhoneForTikTok(value)}`,
+          ),
+        }
+      : {}),
+  };
 
   const payload = {
     event_source: "web",
@@ -115,18 +166,18 @@ export async function sendTikTokPurchase(
         // route path is not one.
         ...(landingUrl.startsWith("http") ? { page: { url: landingUrl } } : {}),
         /*
-         * `user` is deliberately absent.
+         * Advanced Matching, hashed. See the `user` block built above — the
+         * email is SHA-256'd and unsalted so that the same person matches across
+         * every device and browser they buy from, and the address itself never
+         * leaves this process.
          *
-         * Advanced Matching wants the buyer's email address, SHA-256'd, shipped
-         * to an advertising platform — and there is no consent banner on these
-         * pages for that to rest on. Matching still works without it: the
-         * browser pixel has already tied this visitor to the ad they clicked
-         * through its own first-party cookie, so a conversion reported from that
-         * same browser is recognisable. What is given up is cross-device reach.
-         *
-         * Adding it later means adding `user: { email: sha256(email) }` here, and
-         * saying so in section 15 of the privacy policy first.
+         * Note what is *not* here: no `external_id`. TikTok accepts one, and it
+         * would be the strongest key available, but this codebase has no stable
+         * per-customer identifier to put in it. The Paystack reference is unique
+         * per purchase, not per person, so hashing it would match exactly one
+         * sale and help nobody.
          */
+        ...(Object.keys(user).length > 0 ? { user } : {}),
         properties: {
           currency: "NGN",
           value: majorUnits(purchase.amountInKobo),

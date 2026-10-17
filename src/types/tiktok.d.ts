@@ -14,6 +14,16 @@ type TikTokQueue = Array<unknown> & {
   /** A page view. The base code fires one on load; see tiktok-pixel.tsx. */
   page: () => void;
   track: (event: string, params?: Record<string, unknown>) => void;
+  /**
+   * Advanced Matching. Declared, and used with hashed values only — see
+   * identifyTikTokUser in tiktok-events.tsx for why the hashing happens before
+   * it reaches the browser.
+   */
+  identify: (user: {
+    email?: string;
+    phone_number?: string;
+    external_id?: string;
+  }) => void;
   load: (pixelId: string, options?: Record<string, unknown>) => void;
   /**
    * Cookie-consent control. Deliberately unused today: there is no consent

@@ -18,6 +18,7 @@ import {
   getWhatsAppUrl,
 } from "@/lib/money-mastery";
 import { verifyTransaction } from "@/lib/paystack";
+import { hashEmailForTikTok } from "@/lib/tiktok-user-data";
 import { parseFullName } from "@/lib/validation/checkout";
 
 export const metadata: Metadata = {
@@ -218,6 +219,7 @@ export default async function SuccessPage({ searchParams }: PageProps) {
           contentId={tier?.id ?? "course"}
           contentName={tier?.name ?? "Money Mastery Code"}
           variant={sourceVariant}
+          hashedEmail={hashEmailForTikTok(transaction.email)}
         />
 
         <div className="text-center">

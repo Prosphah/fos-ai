@@ -111,6 +111,10 @@ export async function POST(request: Request) {
     contentId: tier.id,
     contentName: tier.name,
     sourceVariant: variant,
+    // Advanced Matching. The email is the only identifier this codebase holds
+    // that identifies a person rather than a purchase, and it is hashed inside
+    // the sender — no plaintext address crosses this boundary.
+    email,
   });
 
   if (!tiktokResult.sent) {

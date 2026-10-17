@@ -14,6 +14,31 @@ import {
 } from "@/lib/tiktok";
 
 /**
+ * Tell the pixel who this browser belongs to, so events sent from here carry
+ * the same Advanced Matching key as the webhook's copy of the purchase.
+ *
+ * Values must already be hashed. ttq.identify does not hash for us, and an
+ * unhashed address here would be the one place plaintext personal data reached
+ * TikTok — the server hashes precisely so that it never does.
+ */
+export function identifyTikTokUser(user: {
+  email?: string;
+  phone_number?: string;
+  external_id?: string;
+}): void {
+  if (typeof window === "undefined") return;
+
+  const ttq = window.ttq;
+  if (!ttq || typeof ttq.identify !== "function") return;
+
+  try {
+    ttq.identify(user);
+  } catch (error) {
+    console.error("[tiktok] Could not identify user", error);
+  }
+}
+
+/**
  * The course as TikTok sees it.
  *
  * One id for the course rather than one per tier, because the tiers are two
@@ -99,6 +124,7 @@ export function PurchaseTracker({
   contentId,
   contentName,
   variant,
+  hashedEmail,
 }: {
   /** The Paystack reference. The join key with the server-side event. */
   eventId: string;
@@ -106,7 +132,30 @@ export function PurchaseTracker({
   contentId: string;
   contentName: string;
   variant: StorefrontVariant | null;
+  /**
+   * The buyer's email, already SHA-256'd on the server.
+   *
+   * Hashed before it reaches the browser on purpose. The digest is safe to put
+   * in the page — it is one-way, and this page already displays the buyer's
+   * name and email address to that same buyer — but hashing it in the browser
+   * would mean shipping the plaintext there first and hashing with Web Crypto,
+   * which is async and would let the Purchase event leave before the digest
+   * existed. One hash, computed once, in the only place that has the address.
+   */
+  hashedEmail: string | null;
 }) {
+  const identified = useRef(false);
+
+  // ttq.identify must run before the Purchase track, or the event is sent
+  // without the user block and the identification arrives too late to be
+  // attached to it. Queued like everything else, so this is still safe if the
+  // pixel has not finished loading.
+  useEffect(() => {
+    if (identified.current || !hashedEmail) return;
+    identified.current = true;
+    identifyTikTokUser({ email: hashedEmail });
+  }, [hashedEmail]);
+
   useOnceEvent("Purchase", {
     event_id: eventId,
     currency: "NGN",

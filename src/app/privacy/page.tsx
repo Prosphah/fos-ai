@@ -512,6 +512,16 @@ export default function PrivacyPage() {
               show you next. TikTok&rsquo;s own handling of this data is governed by its privacy
               policy, a copy of which we will supply on request.
             </P>
+            <P>
+              On a completed purchase we also send your email address to TikTok in a hashed form.
+              This is called advanced matching, and it is what lets a sale be attributed to the
+              advert that led to it when the sale happens on a different device or browser from
+              the advert itself. Your address is converted to a one-way fingerprint before it
+              leaves our server, using a standard irreversible method, so TikTok is unable to
+              read your address back from it or use it to contact you. It can only recognise that
+              the same fingerprint has appeared before. We do not send your name or your phone
+              number, and we do not collect a phone number on these pages.
+            </P>
 
             <Subheading>Cookies they set</Subheading>
             <Table
@@ -525,7 +535,9 @@ export default function PrivacyPage() {
             />
             <P>
               The three TikTok cookies are advertising cookies, set on our own domain, and they
-              are the only advertising cookies on these pages.
+              are the only advertising cookies on these pages. The hashed email address described
+              above is not stored by us and is not a cookie: it is sent once, in the purchase
+              record, and hashed before it leaves our server.
             </P>
             <P>
               We show no consent banner, and this is a deliberate decision rather than an
@@ -545,7 +557,7 @@ export default function PrivacyPage() {
                 ["Supabase", "Our database", "Your name, email address, and what you bought"],
                 ["Zoho Mail", "Sending your confirmation email", "Your name, email address, and order details"],
                 ["Make.com", "Passing a completed purchase to that email system", "Your name, email address, and order details"],
-                ["TikTok", "Measuring which of its adverts lead to a sale, and showing you relevant adverts", "Your IP address, your browser, the TikTok advert ID, and what you did on the sales pages"],
+                ["TikTok", "Measuring which of its adverts lead to a sale, and showing you relevant adverts", "Your IP address, your browser, the TikTok advert ID, what you did on the sales pages, and — on a purchase only — an irreversible hash of your email address"],
               ]}
             />
 
