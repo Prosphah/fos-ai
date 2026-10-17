@@ -1,20 +1,10 @@
 import { NextResponse } from "next/server";
 import { recordCheckoutIntent, markCheckoutFailed } from "@/lib/checkout-intents";
-import { getTier } from "@/lib/money-mastery";
+import { asStorefrontVariant, getTier } from "@/lib/money-mastery";
 import { generateReference, initializeTransaction } from "@/lib/paystack";
 import { parseFullName } from "@/lib/validation/checkout";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-/**
- * Which storefront page the buyer started from. Whitelisted rather than
- * passed through: this value lands in Paystack metadata and then in our own
- * database, so it must never be an arbitrary client-controlled string.
- * Unrecognised values are stored as null, not guessed at.
- */
-function parseVariant(value: unknown): "a" | "b" | "c" | null {
-  return value === "a" || value === "b" || value === "c" ? value : null;
-}
 
 export async function POST(request: Request) {
   let body: { tier?: string; email?: string; fullName?: string; variant?: string };
@@ -27,7 +17,11 @@ export async function POST(request: Request) {
 
   const tier = getTier(body.tier);
   const email = body.email?.trim().toLowerCase() ?? "";
-  const variant = parseVariant(body.variant);
+  // Which storefront page this purchase came from. Whitelisted rather than
+  // passed through: the value lands in Paystack metadata and then in
+  // enrollments.source_variant, so it must never be an arbitrary
+  // client-controlled string. Unrecognised values become null, not a guess.
+  const variant = asStorefrontVariant(body.variant);
 
   // Required, not optional. It is the buyer's name on a course enrolment and
   // the name their FOS*AI account is created under, so a purchase made without

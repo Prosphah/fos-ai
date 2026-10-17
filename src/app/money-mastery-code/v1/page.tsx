@@ -43,6 +43,7 @@ import {
 import { SalesProgressBar } from "@/components/sales/sales-progress";
 import { StickyEnrolBar } from "@/components/sales/sticky-enrol-bar";
 import { Testimonials } from "@/components/sales/testimonials";
+import { ViewContentTracker } from "@/components/sales/tiktok-events";
 import { COURSE_TIERS } from "@/lib/money-mastery";
 import { SITE_ORIGIN, storefrontMetadata } from "@/lib/seo";
 
@@ -549,6 +550,8 @@ export default function MoneyMasteryCodePage() {
 
   return (
     <div className="font-sans text-[#f4f3eb]">
+      <ViewContentTracker variant="a" />
+
       <a
         href="#main"
         className="sales-focus sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:px-4 focus:py-2 focus:text-sm focus:font-semibold"

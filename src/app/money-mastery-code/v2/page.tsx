@@ -9,6 +9,7 @@ import {
   ToolsPhone,
 } from "@/components/sales/phone-mockups";
 import { TestimonialsMmb } from "@/components/sales/testimonials-mmb";
+import { ViewContentTracker } from "@/components/sales/tiktok-events";
 import { COURSE_TIERS } from "@/lib/money-mastery";
 
 /**
@@ -301,6 +302,8 @@ export default function MoneyMasteryCodeVariantB() {
 
   return (
     <div className="mmb-root">
+      <ViewContentTracker variant="b" />
+
       {/* Scroll reveals render their elements at opacity 0 in the server HTML
           and let JavaScript bring them in. If that script never arrives, the
           sales argument would be invisible, so pin it open as a floor. */}

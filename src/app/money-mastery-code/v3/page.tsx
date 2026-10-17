@@ -40,6 +40,7 @@ import {
   StockAnalyzerPhone,
   ToolsPhone,
 } from "@/components/sales/phone-mockups";
+import { ViewContentTracker } from "@/components/sales/tiktok-events";
 import { COURSE_TIERS } from "@/lib/money-mastery";
 import { SITE_ORIGIN, storefrontMetadata } from "@/lib/seo";
 import { SALES_TESTIMONIALS } from "@/lib/sales-testimonials";
@@ -409,6 +410,8 @@ export default function MoneyMasteryCodeVariantC() {
 
   return (
     <div className="v3-root">
+      <ViewContentTracker variant="c" />
+
       {/* Every reveal renders its element at opacity 0 and lets JavaScript
           bring it in. If that script never arrives, the sales argument
           would be invisible, so pin it open as a floor. */}

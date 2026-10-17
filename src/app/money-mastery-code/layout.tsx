@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
+import { TikTokPixel } from "@/components/sales/tiktok-pixel";
 import { SALES_ORIGIN } from "@/lib/seo";
 
 /**
@@ -15,6 +16,13 @@ export const metadata: Metadata = {
 
 export default function MoneyMasteryLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="sales-root min-h-screen font-sans">{children}</div>
+    <div className="sales-root min-h-screen font-sans">
+      {/* Mounted here rather than in the root layout, so the storefront and
+          the FOS·AI app stay separate properties. The privacy policy promises
+          the app carries no analytics, and the cheapest way to keep that true
+          is for the tag to have no route into the app at all. */}
+      <TikTokPixel />
+      {children}
+    </div>
   );
 }

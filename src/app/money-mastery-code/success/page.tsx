@@ -10,7 +10,9 @@ import {
   TriangleAlert,
 } from "lucide-react";
 
+import { PurchaseTracker } from "@/components/sales/tiktok-events";
 import {
+  asStorefrontVariant,
   getStorefrontUrl,
   getTier,
   getWhatsAppUrl,
@@ -164,6 +166,11 @@ export default async function SuccessPage({ searchParams }: PageProps) {
 
   const tier = getTier(String(transaction.metadata?.tier ?? ""));
 
+  // Read once, used twice: to attribute the purchase for TikTok and to decide
+  // where "back to the sales page" goes. It comes out of Paystack metadata,
+  // which the checkout route whitelisted, so it is a variant or it is nothing.
+  const sourceVariant = asStorefrontVariant(transaction.metadata?.source_variant);
+
   // Read back out of Paystack rather than from anything the browser sent, so
   // the greeting matches the name recorded against the payment rather than
   // anything that could have been edited into the URL.
@@ -197,6 +204,22 @@ export default async function SuccessPage({ searchParams }: PageProps) {
   return (
     <Shell>
       <div className="sales-card rounded-3xl p-8 sm:p-11">
+        {/*
+          The browser's half of the Purchase event, and the only reason this
+          component is here: the amount and the reference come from Paystack's
+          own record of the payment, so this can only be reached by someone
+          whose charge actually settled. The Paystack webhook reports the same
+          sale through the Events API, and the shared event_id is what stops
+          that counting twice.
+        */}
+        <PurchaseTracker
+          eventId={transaction.reference}
+          amountInKobo={transaction.amount}
+          contentId={tier?.id ?? "course"}
+          contentName={tier?.name ?? "Money Mastery Code"}
+          variant={sourceVariant}
+        />
+
         <div className="text-center">
           <CheckCircle2
             size={38}
@@ -292,11 +315,7 @@ export default async function SuccessPage({ searchParams }: PageProps) {
         </p>
 
         <div className="mt-9 text-center">
-          <BackToPricing
-            href={getStorefrontUrl(
-              String(transaction.metadata?.source_variant ?? "")
-            )}
-          />
+          <BackToPricing href={getStorefrontUrl(sourceVariant ?? undefined)} />
         </div>
       </div>
     </Shell>

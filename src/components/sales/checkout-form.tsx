@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { ArrowRight, Loader2 } from "lucide-react";
-import type { TierConfig } from "@/lib/money-mastery";
+import { majorUnits, type TierConfig } from "@/lib/money-mastery";
+import { trackTikTokEvent } from "@/lib/tiktok";
 
 type Status = "idle" | "loading" | "error";
 
@@ -35,6 +36,26 @@ export function CheckoutForm({
     event.preventDefault();
     setStatus("loading");
     setError("");
+
+    /*
+     * InitiateCheckout, fired here rather than just before the redirect below.
+     *
+     * `onSubmit` only runs once the browser is satisfied both required fields,
+     * so this counts real attempts and not button taps, and the API round trip
+     * that follows leaves the pixel time to send before `window.location.href`
+     * tears the page down. Firing it after the response instead would put the
+     * event in the same moment as the navigation, and the navigation wins.
+     */
+    trackTikTokEvent("InitiateCheckout", {
+      currency: "NGN",
+      value: majorUnits(tier.amount),
+      content_type: "product",
+      content_ids: [tier.id],
+      content_name: tier.name,
+      content_category: "education",
+      quantity: 1,
+      ...(variant ? { variant } : {}),
+    });
 
     try {
       const response = await fetch("/api/checkout", {

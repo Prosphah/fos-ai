@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { fulfilEnrollment } from "@/lib/fulfilment";
-import { getTier, type CourseTier } from "@/lib/money-mastery";
+import { asStorefrontVariant, getTier, type CourseTier } from "@/lib/money-mastery";
 import { verifyWebhookSignature } from "@/lib/paystack";
 import { triggerPurchaseEmail } from "@/lib/purchase-email";
+import { sendTikTokPurchase } from "@/lib/tiktok-events-api";
 import { parseFullName } from "@/lib/validation/checkout";
 
 type PaystackEvent = {
@@ -19,15 +20,6 @@ type PaystackEvent = {
     metadata?: { tier?: string; source_variant?: string; full_name?: string };
   };
 };
-
-/**
- * Same whitelist as the checkout route. The webhook payload is signed by
- * Paystack but still arrives over the network, so the value is validated
- * rather than trusted.
- */
-function parseSourceVariant(value: unknown): "a" | "b" | "c" | null {
-  return value === "a" || value === "b" || value === "c" ? value : null;
-}
 
 export async function POST(request: Request) {
   const rawBody = await request.text();
@@ -65,7 +57,9 @@ export async function POST(request: Request) {
   // so this is the last point at which a bad value can be caught before it
   // becomes a row, and both fulfilment and the email need the same value.
   const fullName = parseFullName(data?.metadata?.full_name);
-  const variant = parseSourceVariant(data?.metadata?.source_variant);
+  // Same whitelist as the checkout route, for the same reason: the payload is
+  // signed by Paystack but still arrives over the network.
+  const variant = asStorefrontVariant(data?.metadata?.source_variant);
 
   const result = await fulfilEnrollment({
     email,
@@ -98,9 +92,37 @@ export async function POST(request: Request) {
     );
   }
 
+  /*
+   * The sale, reported to TikTok. This is the only place a completed purchase is
+   * guaranteed to be observed: the browser may never come back to the success
+   * page, and the pixel may have been blocked. Awaited rather than fired and
+   * forgotten, because a serverless function freezes the moment the response is
+   * sent and an in-flight request would not survive that. It cannot throw and
+   * carries its own timeout, so it cannot cost the replay that duplicates
+   * enrolments.
+   *
+   * The success page sends a second copy of this same event, joined on the
+   * reference below as event_id. If the Diagnostics tab reports one sale twice,
+   * drop the browser half rather than this one.
+   */
+  const tiktokResult = await sendTikTokPurchase({
+    eventId: reference,
+    amountInKobo: data?.amount ?? tier.amount,
+    contentId: tier.id,
+    contentName: tier.name,
+    sourceVariant: variant,
+  });
+
+  if (!tiktokResult.sent) {
+    console.error(
+      `[tiktok] Purchase not reported for ${reference}: ${tiktokResult.reason}`,
+    );
+  }
+
   return NextResponse.json({
     received: true,
     fosaiInvited: result.fosaiInvited,
     purchaseEmailTriggered: emailResult.triggered,
+    tiktokPurchaseSent: tiktokResult.sent,
   });
 }

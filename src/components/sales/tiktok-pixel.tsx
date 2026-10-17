@@ -1,0 +1,113 @@
+"use client";
+
+import Script from "next/script";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
+
+import {
+  TIKTOK_PIXEL_ID,
+  isValidTikTokPixelId,
+  trackTikTokPageView,
+} from "@/lib/tiktok";
+
+const ENABLED = isValidTikTokPixelId(TIKTOK_PIXEL_ID);
+
+/**
+ * TikTok's base code, as TikTok ships it, with the pixel id interpolated.
+ *
+ * Kept verbatim rather than rewritten into a loader of our own. This snippet is
+ * what TikTok's Pixel Helper, their diagnostics and their support all expect to
+ * find, so any clever rewrite of it becomes something that has to be
+ * re-explained every time it misbehaves. The only edit is the id.
+ *
+ * If a consent banner is ever added — the reasoning for not having one is in the
+ * privacy policy, section 15 — `ttq.holdConsent()` goes immediately before
+ * `ttq.load()`, and `ttq.grantConsent()` fires from the banner's accept button.
+ * Nothing else about this component needs to change, and no event call site
+ * needs to change, which is why the pixel is loaded in one place and events are
+ * queued through ttq rather than sent directly.
+ */
+const BASE_CODE = `!function (w, d, t) {
+  w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(
+var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement("script")
+;n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};
+
+
+  ttq.load('${TIKTOK_PIXEL_ID}');
+  ttq.page();
+}(window, document, 'ttq');`;
+
+/**
+ * The TikTok Pixel, for the storefront only.
+ *
+ * Mounted in src/app/money-mastery-code/layout.tsx, which is what keeps it off
+ * the FOS·AI app, login and marketing pages. That separation is a promise made
+ * in the privacy policy, and the cheapest way to keep it is for the tag to have
+ * no route into the app at all.
+ *
+ * Loaded with next/script's afterInteractive, which is worth justifying, because
+ * two other options look better and are not:
+ *
+ *   - A plain inline <script> in the component tree. The first thing to try, and
+ *     it does not work: React does not emit inline scripts into the
+ *     server-rendered HTML, so the tag only ever came into existence after
+ *     hydration. Verified against the build output, not assumed.
+ *   - beforeInteractive, which does write itself into the response — but Next.js
+ *     only honours it from the root layout, and the root layout is shared with
+ *     the FOS·AI app. Moving it there would mean the pixel is one path check
+ *     away from firing on the app, which is precisely the boundary the privacy
+ *     policy draws. Not worth it, for the reason in the next paragraph.
+ *
+ * So the tag arrives at hydration rather than at first byte. That is normally
+ * the argument against it, and for a landing page it usually is — a visit that
+ * ends before the page hydrates is a visit nobody counts. Here it costs
+ * nothing that matters, because the only event that depends on the browser is
+ * the one nothing depends on:
+ *
+ *   - Purchase is reported from the Paystack webhook, which never touches the
+ *     browser at all. It is unaffected by when, or whether, this tag loads.
+ *   - InitiateCheckout needs a person to fill in a name and an email, which
+ *     takes far longer than hydration takes.
+ *   - ViewContent fires from the page itself, so it is measured from whenever
+ *     the page mounts.
+ *
+ * What a late tag does cost is the occasional uncounted bounce, and an uncounted
+ * bounce is a non-conversion. It nudges the conversion rate up slightly and does
+ * nothing to the number the campaign is judged on.
+ *
+ * Renders nothing at all unless a valid pixel id is configured, so a deployment
+ * without one is genuinely untracked rather than half-tracked.
+ */
+export function TikTokPixel() {
+  const pathname = usePathname();
+  const seenPath = useRef(pathname);
+
+  useEffect(() => {
+    /*
+     * The base code calls ttq.page() once, when it is parsed. Every route change
+     * after that is a client-side navigation, and this layout survives those: the
+     * buyer comes back from Paystack to /success, and the "back to the sales
+     * page" link goes on to the storefront, neither of which loads a fresh
+     * document. Without this effect both are invisible, and they are two of the
+     * four most valuable views in the funnel.
+     *
+     * Compared against the previous path rather than fired on mount, because the
+     * base code has already reported the mount — whether it is the first one or
+     * a remount after the buyer stepped out to /login and back. Firing here too
+     * would count that single visit twice.
+     */
+    if (seenPath.current === pathname) return;
+    seenPath.current = pathname;
+    trackTikTokPageView();
+  }, [pathname]);
+
+  if (!ENABLED) return null;
+
+  return (
+    <Script
+      id="tiktok-pixel"
+      strategy="afterInteractive"
+      dangerouslySetInnerHTML={{ __html: BASE_CODE }}
+    />
+  );
+}

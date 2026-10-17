@@ -4,9 +4,9 @@ export type CourseTier = "course" | "course_fosai";
  * Storefront variant -> the route that renders it. Mirrors VARIANT_ROUTES in
  * src/proxy.ts, which is what makes the sales hostname serve these paths.
  */
-type Variant = "a" | "b" | "c";
+export type StorefrontVariant = "a" | "b" | "c";
 
-const VARIANT_ROUTES: Record<Variant, string> = {
+const VARIANT_ROUTES: Record<StorefrontVariant, string> = {
   a: "/money-mastery-code/v1",
   b: "/money-mastery-code/v2",
   c: "/money-mastery-code/v3",
@@ -75,6 +75,34 @@ export function formatNaira(amountInKobo: number): string {
 }
 
 /**
+ * An amount in kobo as the number a platform expects to read.
+ *
+ * Prices are held in kobo because that is what Paystack is denominated in,
+ * but every advertising and analytics API is denominated in major units: a
+ * tier stored as 1_500_000 is 15000 to them. Getting this wrong reports
+ * revenue a hundred times too large, which is a mistake no dashboard flags
+ * for you.
+ */
+export function majorUnits(amountInKobo: number): number {
+  return amountInKobo / 100;
+}
+
+/**
+ * A client-supplied variant, whitelisted rather than passed through.
+ *
+ * The value lands in Paystack metadata and then in enrollments.source_variant,
+ * so it must never be an arbitrary string off the wire. Unrecognised values
+ * become null rather than being guessed at, which is also what "control" — the
+ * value the checkout route records when the client sent nothing usable —
+ * resolves to.
+ */
+export function asStorefrontVariant(
+  value: unknown,
+): StorefrontVariant | null {
+  return value === "a" || value === "b" || value === "c" ? value : null;
+}
+
+/**
  * Where buyers are sent to watch the lectures.
  *
  * The recordings live on Google Drive. Set COURSE_ACCESS_URL once the folder is
@@ -133,11 +161,31 @@ export function getStorefrontUrl(sourceVariant?: string): string {
 
   if (host) return `https://${host}/`;
 
-  const route = isVariant(sourceVariant) ? VARIANT_ROUTES[sourceVariant] : null;
+  const variant = asStorefrontVariant(sourceVariant);
 
-  return route ?? VARIANT_ROUTES.c;
+  return variant ? VARIANT_ROUTES[variant] : VARIANT_ROUTES.c;
 }
 
-function isVariant(value: string | undefined): value is Variant {
-  return value === "a" || value === "b" || value === "c";
+/**
+ * The storefront address a specific variant lives at, for platforms that want
+ * a landing page recorded against a conversion.
+ *
+ * This exists because a completed purchase is reported to TikTok from the
+ * server, where there is no browser to read a URL off. Without it the
+ * conversion arrives with no page attached and TikTok has nowhere to file it
+ * in the landing page breakdown.
+ *
+ * Falls back to the storefront root when the variant is unknown, which is what
+ * "control" means here: a sale made from a page we could not name.
+ */
+export function getStorefrontVariantUrl(sourceVariant?: string): string {
+  const host = process.env.NEXT_PUBLIC_SALES_HOST?.trim();
+  const variant = asStorefrontVariant(sourceVariant);
+
+  if (!host) return variant ? VARIANT_ROUTES[variant] : VARIANT_ROUTES.c;
+
+  // src/proxy.ts reads a bare single-letter path as a forced variant, so this
+  // is a real, shareable address. Pointing at the root instead would be
+  // re-rolling the dice on whoever clicks it.
+  return variant ? `https://${host}/${variant}` : `https://${host}/`;
 }

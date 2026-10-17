@@ -501,17 +501,39 @@ export default function PrivacyPage() {
               we keep your name, email address, and the package you were looking at, and use it
               only to send you follow-up emails about that purchase.
             </P>
+            <P>
+              We run a TikTok Pixel, which is the piece of code that tells TikTok which of its
+              adverts someone acted on. It records that you looked at a page, which package you
+              started buying, and whether you completed a purchase, together with your IP address,
+              your browser, and the TikTok advertising ID from the advert you arrived on. It does
+              not read the pages you visit anywhere else, and it is not installed on the
+              FOS&middot;AI app &mdash; the app itself carries no analytics at all. We use it only
+              to measure and improve the advertising you may have seen, and to decide what to
+              show you next. TikTok&rsquo;s own handling of this data is governed by its privacy
+              policy, a copy of which we will supply on request.
+            </P>
 
             <Subheading>Cookies they set</Subheading>
             <Table
               head={["Cookie", "Purpose", "Duration"]}
               rows={[
                 ["mmc_variant", "Keeps you on the same version of the page between visits, so the A/B test compares like with like. First-party, never shared, never used to identify you.", "90 days"],
+                ["_ttp", "Set by TikTok. Ties your visit to the TikTok advert you arrived from so the advert can be measured, and so the same person is not shown it twice.", "13 months"],
+                ["ttclid", "Set by TikTok. The ID of the advert you arrived on. It is also placed in the address bar as a query parameter when you land from an advert.", "13 months"],
+                ["ttcsid_[pixel id]", "Set by TikTok. Distinguishes separate visits from the same browser for measurement purposes.", "13 months"],
               ]}
             />
             <P>
-              There are no advertising cookies on the sales pages at present, and no consent
-              banner is shown because none is required for what they do today.
+              The three TikTok cookies are advertising cookies, set on our own domain, and they
+              are the only advertising cookies on these pages.
+            </P>
+            <P>
+              We show no consent banner, and this is a deliberate decision rather than an
+              oversight. The pages sell only in Nigeria, we run no advertising inside the
+              FOS&middot;AI app, and the Nigeria Data Protection Act does not require consent
+              before this kind of measurement. If you are in the European Economic Area or the
+              United Kingdom and you would rather we did not do it, email the address in section
+              14 and we will switch the pixel off for you and note it.
             </P>
 
             <Subheading>Who processes what</Subheading>
@@ -523,6 +545,7 @@ export default function PrivacyPage() {
                 ["Supabase", "Our database", "Your name, email address, and what you bought"],
                 ["Zoho Mail", "Sending your confirmation email", "Your name, email address, and order details"],
                 ["Make.com", "Passing a completed purchase to that email system", "Your name, email address, and order details"],
+                ["TikTok", "Measuring which of its adverts lead to a sale, and showing you relevant adverts", "Your IP address, your browser, the TikTok advert ID, and what you did on the sales pages"],
               ]}
             />
 

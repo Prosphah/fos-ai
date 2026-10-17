@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { ArrowRight, Loader2 } from "lucide-react";
-import type { TierConfig } from "@/lib/money-mastery";
+import { majorUnits, type TierConfig } from "@/lib/money-mastery";
+import { trackTikTokEvent } from "@/lib/tiktok";
 
 type Status = "idle" | "loading" | "error";
 
@@ -43,6 +44,20 @@ export function CheckoutForm({
     event.preventDefault();
     setStatus("loading");
     setError("");
+
+    // Fires here for the reason given in ../checkout-form.tsx: onSubmit only
+    // runs on a valid submission, and the API round trip buys the pixel time to
+    // send before the redirect tears the page down.
+    trackTikTokEvent("InitiateCheckout", {
+      currency: "NGN",
+      value: majorUnits(tier.amount),
+      content_type: "product",
+      content_ids: [tier.id],
+      content_name: tier.name,
+      content_category: "education",
+      quantity: 1,
+      variant,
+    });
 
     try {
       const response = await fetch("/api/checkout", {
