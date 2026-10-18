@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>FOS&middot;AI — Onboarding redesign mock</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<style>
+/* ─────────────────────────────────────────────────────────────
+   Tokens lifted from src/app/globals.css so the mock is honest
+   about the real design system rather than a new aesthetic.
+   ───────────────────────────────────────────────────────────── */
+:root[data-theme="dark"] {
+  --bg: #08080F;
+  --mesh-1: rgba(105, 90, 255, 0.09);
+  --mesh-2: rgba(99, 102, 241, 0.05);
+  --surface: #0E0E17;
+  --surface-2: #14141F;
+  --surface-3: #1A1A27;
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.17);
+  --text-1: #F1F0F5;
+  --text-2: rgba(241, 240, 245, 0.62);
+  --text-3: rgba(241, 240, 245, 0.38);
+  --accent: #695AFF;
+  --accent-soft: rgba(105, 90, 255, 0.14);
+  --mint: #34D399;
+  --rose: #F87171;
+}
+:root[data-theme="light"] {
+  --bg: #F0EEFF;
+  --mesh-1: rgba(105, 90, 255, 0.10);
+  --mesh-2: rgba(99, 102, 241, 0.06);
+  --surface: #FFFFFF;
+  --surface-2: #FAF9FF;
+  --surface-3: #F2F0FF;
+  --border: rgba(26, 22, 37, 0.10);
+  --border-strong: rgba(26, 22, 37, 0.20);
+  --text-1: #1A1625;
+  --text-2: rgba(26, 22, 37, 0.62);
+  --text-3: rgba(26, 22, 37, 0.42);
+  --accent: #695AFF;
+  --accent-soft: rgba(105, 90, 255, 0.10);
+  --mint: #059669;
+  --rose: #E11D48;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text-1);
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(60rem 40rem at 15% -10%, var(--mesh-1), transparent 60%),
+    radial-gradient(50rem 35rem at 90% 0%, var(--mesh-2), transparent 55%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Review chrome (not part of the product) ── */
+.review-bar {
+  position: relative; z-index: 5;
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  padding: 10px 16px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px; color: var(--text-3);
+}
+.review-bar strong { color: var(--text-2); font-weight: 600; }
+.review-bar .spacer { flex: 1; }
+.chip {
+  appearance: none; cursor: pointer;
+  padding: 6px 12px; border-radius: 999px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text-2); font: inherit; font-size: 12px; font-weight: 600;
+}
+.chip[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+
+/* ── Stage / device frame ──
+   The frame is the layout container, so every breakpoint inside it is a
+   CONTAINER query. Viewport media queries made the phone preview lie: a
+   narrow card inside a wide browser window still matched min-width: 520px
+   and got the two column layout it had no room for. */
+.stage { position: relative; z-index: 1; padding: 28px 16px 64px; }
+.frame {
+  margin: 0 auto;
+  max-width: 560px;
+  container-type: inline-size;
+  container-name: card;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+.stage[data-frame="phone"] .frame { max-width: 390px; border-radius: 36px; }
+@media (min-width: 700px) { .stage { padding-top: 44px; } }
+
+/* ── Card padding: the single biggest fix. Was 20px flat. ── */
+.card { padding: 26px 20px 26px; }
+@container (min-width: 520px) { .card { padding: 42px 42px 34px; } }
+
+.brand { display: flex; align-items: center; gap: 9px; margin: 0 0 26px; }
+.brand-mark {
+  width: 28px; height: 28px; border-radius: 9px;
+  background: linear-gradient(135deg, var(--accent), #4F3DC9);
+  display: grid; place-items: center;
+  color: #fff; font-family: Sora, sans-serif; font-weight: 800; font-size: 14px;
+}
+.brand-name { font-family: Sora, sans-serif; font-weight: 700; font-size: 14px; letter-spacing: -0.01em; }
+
+/* ── Progress ── */
+.progress { margin-bottom: 28px; }
+.progress-top {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  margin-bottom: 10px;
+}
+.progress-count {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-3);
+}
+.progress-count b { color: var(--text-1); font-weight: 700; }
+.progress-time { font-size: 12px; color: var(--text-3); }
+.progress-track { height: 4px; border-radius: 999px; background: var(--surface-3); overflow: hidden; }
+.progress-fill {
+  height: 100%; border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), #9185FF);
+  transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.steps { display: flex; gap: 6px; margin-top: 14px; }
+.step-tab {
+  flex: 1 1 0; min-width: 0; cursor: pointer;
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px; border: 1px solid transparent; border-radius: 12px;
+  background: transparent; color: var(--text-3);
+  font: inherit; font-size: 12.5px; font-weight: 600; text-align: left;
+}
+.step-tab:hover:not([disabled]) { background: var(--surface-2); }
+.step-tab[disabled] { cursor: not-allowed; opacity: 0.45; }
+.step-dot {
+  flex: none; width: 20px; height: 20px; border-radius: 999px;
+  display: grid; place-items: center;
+  border: 1.5px solid var(--border-strong);
+  font-size: 10px; font-weight: 700; font-family: "JetBrains Mono", monospace;
+}
+.step-tab[data-state="done"] .step-dot { background: var(--accent); border-color: var(--accent); color: #fff; }
+.step-tab[data-state="current"] { color: var(--text-1); background: var(--surface-2); border-color: var(--border); }
+.step-tab[data-state="current"] .step-dot { border-color: var(--accent); color: var(--accent); }
+.step-tab span.label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@container (max-width: 479px) {
+  .step-tab span.label { display: none; }
+  .step-tab[data-state="current"] span.label { display: block; }
+  .steps { justify-content: center; }
+  .step-tab[data-state="current"] { flex: 0 1 auto; }
+}
+
+/* ── Header ── */
+.eyebrow {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--accent); margin: 0 0 10px;
+}
+h1.title {
+  font-family: Sora, sans-serif; font-weight: 700;
+  font-size: 26px; line-height: 1.18; letter-spacing: -0.025em;
+  margin: 0 0 10px; color: var(--text-1);
+}
+@container (min-width: 520px) { h1.title { font-size: 31px; } }
+.lede { margin: 0; font-size: 15px; line-height: 1.6; color: var(--text-2); max-width: 46ch; }
+
+/* ── Sections ── */
+.section + .section { margin-top: 34px; }
+.section-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-3); margin: 0 0 16px;
+  padding-bottom: 12px; border-bottom: 1px solid var(--border);
+}
+.fields { display: grid; gap: 24px; }
+.row { display: grid; gap: 24px; }
+@container (min-width: 520px) { .row.two { grid-template-columns: 1fr 1fr; } }
+
+.field { display: flex; flex-direction: column; gap: 9px; }
+
+/* ── Label row
+   No wrapping and a reserved two line height. Two fields side by side therefore
+   put their controls on the same baseline even when one label wraps to two
+   lines and the other does not, which is what misaligned the money boxes. */
+.field-head {
+  display: flex; align-items: baseline; gap: 10px;
+  flex-wrap: nowrap;
+}
+.lbl {
+  font-size: 15px; font-weight: 600; color: var(--text-1);
+  letter-spacing: -0.005em; line-height: 1.4;
+  flex: 1 1 auto; min-width: 0;
+}
+@container (min-width: 520px) {
+  /* Fallback for engines without subgrid: reserve three lines so a wrapped
+     label never pushes its control out of line with its neighbour. Slightly
+     loose, but never wrong. */
+  .row.two .field-head { min-height: 4.2em; }
+}
+
+/* The real fix. Sibling fields share the parent's row tracks, so the control in
+   each one sits on the same baseline regardless of how many lines its label
+   wraps to. A reserved height can only ever approximate this, and it broke the
+   moment a label needed a third line. */
+@supports (grid-template-rows: subgrid) {
+  @container (min-width: 520px) {
+    .row.two { grid-template-rows: auto auto; row-gap: 9px; }
+    .row.two .field-head { min-height: 0; }
+    .row.two > .field {
+      grid-row: span 2;
+      display: grid;
+      grid-template-rows: subgrid;
+      row-gap: 9px;
+    }
+  }
+}
+.optional {
+  flex: none; white-space: nowrap;
+  font-family: "JetBrains Mono", monospace; font-size: 10px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3);
+  padding: 3px 8px; border: 1px solid var(--border); border-radius: 999px;
+}
+.why-btn {
+  appearance: none; cursor: pointer; flex: none; margin-left: auto;
+  border: 0; background: transparent; padding: 2px 0;
+  color: var(--accent); font: inherit; font-size: 13px; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
+  text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px;
+  text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.why-btn:hover { text-decoration-color: var(--accent); }
+.why-btn .caret { transition: transform 0.2s ease; font-size: 10px; }
+.why-btn[aria-expanded="true"] .caret { transform: rotate(180deg); }
+
+.why-note {
+  margin: 0; padding: 14px 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--accent);
+  border-radius: 14px;
+  font-size: 13.5px; line-height: 1.6; color: var(--text-2);
+}
+.why-note[hidden] { display: none; }
+
+/* ── Controls: 52px, 16px type so iOS does not zoom ── */
+.control {
+  width: 100%; height: 52px;
+  padding: 0 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  color: var(--text-1);
+  font-family: Inter, sans-serif; font-size: 16px;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.control::placeholder { color: var(--text-3); }
+.control:hover { border-color: var(--border-strong); }
+.control:focus {
+  outline: none; border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+select.control {
+  appearance: none; cursor: pointer; padding-right: 42px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238C8C9E' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 15px center;
+}
+input[type="date"].control { cursor: pointer; }
+/* The native date control paints its own text and icon, so it needs the font
+   and a readable picker icon forced in, or it renders smaller and darker than
+   every other field on the step. */
+input[type="date"].control::-webkit-datetime-edit { font: inherit; color: var(--text-1); }
+input[type="date"].control::-webkit-date-and-time-value { text-align: left; }
+input[type="date"].control::-webkit-calendar-picker-indicator {
+  opacity: 0.5; cursor: pointer; border-radius: 6px; padding: 3px;
+}
+input[type="date"].control::-webkit-calendar-picker-indicator:hover { opacity: 0.9; background: var(--surface-3); }
+input[type="date"].control::-webkit-calendar-picker-indicator:active { opacity: 1; }
+.money { position: relative; }
+.money .code {
+  position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+  font-family: "JetBrains Mono", monospace; font-size: 12px; font-weight: 700;
+  letter-spacing: 0.06em; color: var(--text-3); pointer-events: none;
+}
+.money input { padding-left: 58px; font-variant-numeric: tabular-nums; }
+.dates { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.dates .year { grid-column: 1 / -1; }
+.helper { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--text-3); }
+
+/* ── Risk options ── */
+.opts { display: grid; gap: 10px; }
+.opt {
+  cursor: pointer; display: flex; align-items: flex-start; gap: 13px;
+  min-height: 54px; padding: 15px 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  font-size: 14.5px; line-height: 1.45; color: var(--text-2);
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.opt:hover { border-color: var(--border-strong); color: var(--text-1); }
+.opt input { position: absolute; opacity: 0; pointer-events: none; }
+.opt .radio {
+  flex: none; width: 20px; height: 20px; margin-top: 1px;
+  border-radius: 999px; border: 1.5px solid var(--border-strong);
+  display: grid; place-items: center; transition: border-color 0.15s;
+}
+.opt .radio::after {
+  content: ""; width: 10px; height: 10px; border-radius: 999px;
+  background: var(--accent); transform: scale(0); transition: transform 0.15s;
+}
+.opt:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); color: var(--text-1); }
+.opt:has(input:checked) .radio { border-color: var(--accent); }
+.opt:has(input:checked) .radio::after { transform: scale(1); }
+.opt:has(input:focus-visible) { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
+
+/* ── Live insight ── */
+.insight {
+  display: flex; gap: 11px; align-items: flex-start;
+  padding: 15px 17px; margin-top: 6px;
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: 14px;
+  font-size: 14px; line-height: 1.55; color: var(--text-2);
+}
+.insight .icon { flex: none; color: var(--mint); font-size: 15px; line-height: 1.35; }
+.insight b { color: var(--text-1); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* ── Balance sheet summary
+   One alignment rule everywhere: label and value sit on a shared baseline
+   inside their own block, and the blocks are laid out in a row on a wide card
+   or a column on a narrow one. The hero number never shares a line with the
+   two smaller ones, which is what made it look unbalanced. */
+.summary {
+  margin-top: 28px; padding: 22px;
+  border: 1px solid var(--border); border-radius: 16px; background: var(--surface-2);
+  display: flex; flex-direction: column; gap: 18px;
+}
+.summary .k { font-size: 13px; color: var(--text-3); line-height: 1.4; }
+.summary .net .v {
+  font-family: Sora, sans-serif; font-size: 30px; font-weight: 700;
+  letter-spacing: -0.02em; color: var(--accent); font-variant-numeric: tabular-nums;
+  line-height: 1.15; margin-top: 4px;
+}
+.summary .net.neg .v { color: var(--rose); }
+.parts {
+  display: grid; gap: 10px;
+  padding-top: 18px; border-top: 1px solid var(--border);
+}
+.part {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+}
+.part .v {
+  font-family: Sora, sans-serif; font-size: 15px; font-weight: 600;
+  color: var(--text-1); font-variant-numeric: tabular-nums;
+}
+@container (min-width: 520px) {
+  .summary { flex-direction: row; align-items: flex-start; gap: 36px; }
+  .parts {
+    display: flex; gap: 32px; padding-top: 0; border-top: 0; margin-left: auto;
+  }
+  .part { flex-direction: column; align-items: flex-end; gap: 2px; }
+}
+
+/* ── Footer: Back on the left, Next on the right ── */
+.actions {
+  margin-top: 36px;
+  display: flex; flex-direction: row; align-items: center;
+  justify-content: space-between; gap: 14px;
+}
+.btn {
+  appearance: none; cursor: pointer;
+  height: 52px; padding: 0 24px;
+  border-radius: 14px; border: 1px solid transparent;
+  font-family: Sora, sans-serif; font-size: 15.5px; font-weight: 600; letter-spacing: -0.01em;
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  white-space: nowrap;
+  transition: transform 0.12s, filter 0.15s, border-color 0.15s, background 0.15s, color 0.15s;
+}
+.btn-primary { background: var(--accent); color: #fff; flex: 1 1 auto; }
+.btn-primary:hover { filter: brightness(1.08); }
+.btn-primary:active { transform: translateY(1px); }
+.btn-ghost { background: transparent; border-color: var(--border); color: var(--text-2); flex: 0 0 auto; }
+.btn-ghost:hover { border-color: var(--border-strong); color: var(--text-1); }
+.btn-ghost[hidden] { display: none; }
+@container (min-width: 520px) {
+  .btn { padding: 0 30px; }
+  .btn-primary { flex: 0 0 auto; min-width: 190px; }
+}
+
+.reassure {
+  display: flex; align-items: center; gap: 8px; justify-content: center;
+  margin: 22px 0 0; font-size: 12.5px; color: var(--text-3); text-align: center;
+  padding: 0 8px;
+}
+.reassure svg { flex: none; }
+
+.step-panel { display: none; }
+.step-panel.active { display: block; animation: rise 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+
+<!-- Review chrome. Delete this block when wiring into the app. -->
+<div class="review-bar">
+  <strong>Review mock</strong>
+  <span>click through all 4 steps</span>
+  <span class="spacer"></span>
+  <button class="chip" id="themeBtn" aria-pressed="false">Light theme</button>
+  <button class="chip" id="frameBtn" aria-pressed="false">Phone width</button>
+</div>
+
+<div class="stage" id="stage" data-frame="desktop">
+  <div class="frame">
+    <div class="card">
+
+      <div class="brand">
+        <div class="brand-mark">F</div>
+        <div class="brand-name">FOS&middot;AI</div>
+      </div>
+
+      <div class="progress">
+        <div class="progress-top">
+          <div class="progress-count">Step <b id="stepNum">1</b> of 4</div>
+          <div class="progress-time" id="stepTime">About 3 minutes left</div>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="fill" style="width:25%"></div></div>
+        <div class="steps" id="tabs"></div>
+      </div>
+
+      <!-- ── STEP 1 ── -->
+      <section class="step-panel active" data-step="1">
+        <p class="eyebrow">Getting started</p>
+        <h1 class="title">First, the basics</h1>
+        <p class="lede">Four short steps. We only ask for things that change the numbers we show you.</p>
+
+        <div class="section">
+          <p class="section-label">Your details</p>
+          <div class="fields">
+            <div class="row two">
+              <div class="field">
+                <div class="field-head"><label class="lbl" for="fn">First name</label></div>
+                <input class="control" id="fn" placeholder="e.g. Michael" />
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="lbl" for="ln">Last name</label></div>
+                <input class="control" id="ln" placeholder="e.g. Johnson" />
+              </div>
+            </div>
+
+            <!-- role=group plus aria-labelledby, because these three selects have
+                 no single label to point at. The old <label for="dob"> pointed at
+                 an id that does not exist, so it labelled nothing. -->
+            <div class="field" role="group" aria-labelledby="dob-lbl">
+              <div class="field-head"><span class="lbl" id="dob-lbl">Date of birth</span></div>
+              <div class="dates">
+                <select class="control" aria-label="Day"><option value="">Day</option></select>
+                <select class="control" aria-label="Month"><option value="">Month</option></select>
+                <select class="control year" aria-label="Year"><option value="">Year</option></select>
+              </div>
+              <p class="helper">You must be 18 or older to use FOS&middot;AI.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <p class="section-label">Your money</p>
+          <div class="fields">
+            <div class="field">
+              <div class="field-head"><label class="lbl" for="cur">Currency you use</label></div>
+              <select class="control" id="cur">
+                <option value="">Select a currency</option>
+                <option>NGN — Nigerian Naira</option>
+                <option>USD — US Dollar</option>
+                <option>GBP — British Pound</option>
+                <option>EUR — Euro</option>
+                <option>GHS — Ghanaian Cedi</option>
+                <option>ZAR — South African Rand</option>
+                <option>KES — Kenyan Shilling</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <div class="field-head">
+                <label class="lbl" for="inc">Monthly income</label>
+                <button class="why-btn" type="button" aria-expanded="false" aria-controls="w-inc">Why we ask <span class="caret">▼</span></button>
+              </div>
+              <div class="money">
+                <span class="code" id="curCode">NGN</span>
+                <input class="control" id="inc" inputmode="numeric" placeholder="0" />
+              </div>
+              <p class="helper">Take home, after tax, averaged over a year. A rough figure is fine.</p>
+              <p class="why-note" id="w-inc" hidden>
+                Your income is one of four things that build your financial health score. It is the
+                number everything else is measured against. We only use what you type here, and you
+                can change it in Settings at any time.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── STEP 2 ── -->
+      <section class="step-panel" data-step="2">
+        <p class="eyebrow">Month to month</p>
+        <h1 class="title">What comes in, what goes out</h1>
+        <p class="lede">Rough numbers are genuinely fine. This is the biggest part of your score, so an honest average beats a precise guess.</p>
+
+        <div class="section">
+          <div class="fields">
+            <div class="field">
+              <div class="field-head">
+                <label class="lbl" for="spend">Monthly spending</label>
+                <button class="why-btn" type="button" aria-expanded="false" aria-controls="w-spend">Why we ask <span class="caret">▼</span></button>
+              </div>
+              <div class="money"><span class="code">NGN</span><input class="control" id="spend" inputmode="numeric" placeholder="0" /></div>
+              <p class="helper">Rent, food, transport, bills, everything.</p>
+              <p class="why-note" id="w-spend" hidden>
+                We compare what comes in against what goes out. That gap is the single largest part
+                of your financial health score, which is why an honest average helps you more than a
+                precise one.
+              </p>
+            </div>
+
+            <div class="field">
+              <div class="field-head">
+                <label class="lbl" for="debt">Monthly debt payments</label>
+                <button class="why-btn" type="button" aria-expanded="false" aria-controls="w-debt">Why we ask <span class="caret">▼</span></button>
+              </div>
+              <div class="money"><span class="code">NGN</span><input class="control" id="debt" inputmode="numeric" placeholder="0" /></div>
+              <p class="helper">Credit cards, loans, a mortgage, a car loan. Zero is a normal answer.</p>
+              <p class="why-note" id="w-debt" hidden>
+                This tells us how much of your budget is already promised, and it feeds the debt side
+                of your score.
+              </p>
+            </div>
+
+            <div class="field">
+              <div class="field-head">
+                <label class="lbl" for="save">What you save</label>
+                <span class="optional">Optional</span>
+              </div>
+              <div class="money"><span class="code">NGN</span><input class="control" id="save" inputmode="numeric" placeholder="0" /></div>
+              <p class="helper">We can work this out from your income and spending, so you never need this.</p>
+            </div>
+          </div>
+
+          <div class="insight" id="leftOver" hidden>
+            <span class="icon">◆</span>
+            <span id="leftOverText"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── STEP 3 ── -->
+      <section class="step-panel" data-step="3">
+        <p class="eyebrow">Balance sheet</p>
+        <h1 class="title">What you have and what you owe</h1>
+        <p class="lede">Round everything to the nearest thousand if that is easier. Imprecision costs you nothing here.</p>
+
+        <div class="section">
+          <p class="section-label">What you own</p>
+          <div class="fields">
+            <div class="field">
+              <div class="field-head">
+                <label class="lbl" for="cash">Cash you could reach today</label>
+                <button class="why-btn" type="button" aria-expanded="false" aria-controls="w-cash">Why we ask <span class="caret">▼</span></button>
+              </div>
+              <div class="money"><span class="code">NGN</span><input class="control" id="cash" inputmode="numeric" placeholder="0" /></div>
+              <p class="why-note" id="w-cash" hidden>
+                This is the only asset we count towards your emergency fund, which is a quarter of your
+                score. Money locked in a pension or a land purchase does not count here.
+              </p>
+            </div>
+            <div class="field">
+              <div class="field-head"><label class="lbl" for="inv">Investments and retirement</label></div>
+              <div class="money"><span class="code">NGN</span><input class="control" id="inv" inputmode="numeric" placeholder="0" /></div>
+              <p class="helper">Stocks, bonds, crypto, a 401k, an ISA, a pension. Add them together.</p>
+            </div>
+            <div class="row two">
+              <div class="field">
+                <div class="field-head"><label class="lbl" for="prop">Property and valuables</label></div>
+                <div class="money"><span class="code">NGN</span><input class="control" id="prop" inputmode="numeric" placeholder="0" /></div>
+              </div>
+              <div class="field">
+                <div class="field-head">
+                  <label class="lbl" for="biz">Business or other assets</label>
+                  <span class="optional">Optional</span>
+                </div>
+                <div class="money"><span class="code">NGN</span><input class="control" id="biz" inputmode="numeric" placeholder="0" /></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <p class="section-label">What you owe</p>
+          <div class="fields">
+            <div class="field">
+              <div class="field-head">
+                <label class="lbl" for="owed">Everything you owe, added up</label>
+                <button class="why-btn" type="button" aria-expanded="false" aria-controls="w-owed">Why we ask <span class="caret">▼</span></button>
+              </div>
+              <div class="money"><span class="code">NGN</span><input class="control" id="owed" inputmode="numeric" placeholder="0" /></div>
+              <p class="helper">Credit cards, personal loans, student loans, mortgage, car loan. One total is fine.</p>
+              <p class="why-note" id="w-owed" hidden>
+                This is the debt side of your score. Being accurate here genuinely works in your
+                favour, because otherwise we would assume you owe nothing.
+              </p>
+            </div>
+          </div>
+
+          <div class="summary">
+            <div class="net" id="netWrap">
+              <div class="k">Net worth</div>
+              <div class="v" id="net">0</div>
+            </div>
+            <div class="parts">
+              <div class="part"><span class="k">Assets</span><span class="v" id="assets">0</span></div>
+              <div class="part"><span class="k">Owed</span><span class="v" id="owedOut">0</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── STEP 4 ── -->
+      <section class="step-panel" data-step="4">
+        <p class="eyebrow">Almost there</p>
+        <h1 class="title">One goal, and how you handle risk</h1>
+        <p class="lede">Your goal becomes the first thing on your dashboard. The four scenarios just tell us how to pitch advice at you.</p>
+
+        <div class="section">
+          <p class="section-label">Your main goal</p>
+          <div class="fields">
+            <div class="field">
+              <div class="field-head"><label class="lbl" for="gtitle">What are you working towards?</label></div>
+              <input class="control" id="gtitle" placeholder="e.g. Build an emergency fund" />
+            </div>
+            <div class="row two">
+              <div class="field">
+                <div class="field-head"><label class="lbl" for="gamt">Target amount</label></div>
+                <div class="money"><span class="code">NGN</span><input class="control" id="gamt" inputmode="numeric" placeholder="0" /></div>
+                <p class="helper">Roughly how much you would need.</p>
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="lbl" for="gwhen">Target date</label></div>
+                <input class="control" id="gwhen" type="date" />
+                <p class="helper">When you would like to reach it.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <p class="section-label">Your risk style</p>
+          <div class="fields" id="riskWrap"></div>
+          <p class="helper" style="margin-top:14px">There are no wrong answers here. This only changes how we explain things.</p>
+        </div>
+      </section>
+
+      <div class="actions">
+        <button class="btn btn-ghost" id="backBtn" type="button">Back</button>
+        <button class="btn btn-primary" id="nextBtn" type="button">Next step <span aria-hidden="true">→</span></button>
+      </div>
+
+      <p class="reassure">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        We never sell your data. You can change anything later in Settings.
+      </p>
+
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var STEP_LABELS = ["About you", "Month to month", "Own and owe", "Goals and risk"];
+  var STEP_TIME = ["About 3 minutes left", "About 2 minutes left", "About 1 minute left", "Last step"];
+  var reached = 1;
+  var current = 1;
+
+  var tabs = document.getElementById("tabs");
+  STEP_LABELS.forEach(function (label, i) {
+    var n = i + 1;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "step-tab";
+    b.innerHTML = '<span class="step-dot">' + n + '</span><span class="label">' + label + "</span>";
+    /* Any reached step is fair game, forward or back. Unreached steps are
+       disabled below, so the guard here is just a belt and braces. */
+    b.addEventListener("click", function () { if (n !== current && n <= reached) go(n); });
+    tabs.appendChild(b);
+  });
+
+  function go(n) {
+    current = n;
+    document.querySelectorAll(".step-panel").forEach(function (p) {
+      p.classList.toggle("active", Number(p.dataset.step) === n);
+    });
+    document.querySelectorAll(".step-tab").forEach(function (t, i) {
+      var num = i + 1;
+      t.dataset.state = num === n ? "current" : num < n ? "done" : "todo";
+      t.disabled = num > reached;
+      t.setAttribute("aria-current", num === n ? "step" : "false");
+    });
+    document.getElementById("stepNum").textContent = n;
+    document.getElementById("stepTime").textContent = STEP_TIME[n - 1];
+    document.getElementById("fill").style.width = (n / 4) * 100 + "%";
+    document.getElementById("backBtn").hidden = n === 1;
+    document.getElementById("nextBtn").innerHTML =
+      n === 4 ? "Finish <span aria-hidden='true'>\u2192</span>" : "Next step <span aria-hidden='true'>\u2192</span>";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  document.getElementById("nextBtn").addEventListener("click", function () {
+    if (current < 4) { reached = Math.max(reached, current + 1); go(current + 1); }
+    else { alert("In the real app this lands on the success page showing the score."); }
+  });
+  document.getElementById("backBtn").addEventListener("click", function () { if (current > 1) go(current - 1); });
+
+  document.querySelectorAll(".why-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var note = document.getElementById(btn.getAttribute("aria-controls"));
+      var open = btn.getAttribute("aria-expanded") === "true";
+      btn.setAttribute("aria-expanded", String(!open));
+      note.hidden = open;
+    });
+  });
+
+  var cur = document.getElementById("cur");
+  function paintCode() {
+    var c = (cur.value.split(" ")[0] || "NGN");
+    document.getElementById("curCode").textContent = c;
+    document.querySelectorAll(".money .code").forEach(function (el) { el.textContent = c; });
+  }
+  cur.addEventListener("change", paintCode);
+
+  function num(v) { var n = Number(String(v).replace(/[^0-9]/g, "")); return isNaN(n) ? 0 : n; }
+  document.querySelectorAll('input[inputmode="numeric"]').forEach(function (el) {
+    el.addEventListener("input", function () {
+      var digits = el.value.replace(/[^0-9]/g, "");
+      el.value = digits === "" ? "" : Number(digits).toLocaleString();
+    });
+  });
+
+  var fmt = function (n) { return Number(n || 0).toLocaleString(); };
+
+  function paintLeftOver() {
+    var inc = num(document.getElementById("inc").value);
+    var out = num(document.getElementById("spend").value) + num(document.getElementById("debt").value);
+    var box = document.getElementById("leftOver");
+    if (!inc || !out) { box.hidden = true; return; }
+    var left = inc - out;
+    box.hidden = false;
+    document.getElementById("leftOverText").innerHTML = left >= 0
+      ? "That leaves you <b>" + fmt(left) + "</b> a month, which is a <b>" + Math.round((left / inc) * 100) + "%</b> savings rate."
+      : "That is <b>" + fmt(Math.abs(left)) + "</b> a month more going out than coming in. That is common, and it is fixable. The score will show it honestly.";
+  }
+  ["inc", "spend", "debt"].forEach(function (id) {
+    document.getElementById(id).addEventListener("input", paintLeftOver);
+  });
+
+  function paintNet() {
+    var a = num(document.getElementById("cash").value) + num(document.getElementById("inv").value) +
+            num(document.getElementById("prop").value) + num(document.getElementById("biz").value);
+    var o = num(document.getElementById("owed").value);
+    document.getElementById("assets").textContent = fmt(a);
+    document.getElementById("owedOut").textContent = fmt(o);
+    document.getElementById("net").textContent = (a - o < 0 ? "\u2212" : "") + fmt(Math.abs(a - o));
+    document.getElementById("netWrap").classList.toggle("neg", a - o < 0);
+  }
+  ["cash", "inv", "prop", "biz", "owed"].forEach(function (id) {
+    document.getElementById(id).addEventListener("input", paintNet);
+  });
+
+  var QUESTIONS = [
+    { key: "drop_25", q: "Your portfolio drops 25% in one month. What do you do?",
+      o: ["Sell everything to prevent further losses", "Sell some to reduce risk", "Hold, markets go up and down", "Buy more, great opportunities in downturns"] },
+    { key: "hot_tip", q: "A friend recommends a stock that could double, but could also lose half its value.",
+      o: ["Skip it, too risky", "Invest a small amount I can afford to lose", "Go big, high risk high reward"] },
+    { key: "three_years", q: "You need access to your money in 3 years. Which approach feels right?",
+      o: ["Keep it in cash or a savings account", "Mostly bonds with some cash", "A balanced mix of stocks and bonds", "Mostly stocks for growth"] },
+    { key: "market_down", q: "Markets have been down 20% over the last 6 months. What do you do?",
+      o: ["Move everything to cash", "Wait and see before making changes", "Stay the course, stick to my plan", "Increase my investments while prices are low"] }
+  ];
+  var wrap = document.getElementById("riskWrap");
+  QUESTIONS.forEach(function (item) {
+    var group = document.createElement("div");
+    group.className = "field";
+    var head = document.createElement("div");
+    head.className = "field-head";
+    head.innerHTML = '<span class="lbl">' + item.q + "</span>";
+    group.appendChild(head);
+    var opts = document.createElement("div");
+    opts.className = "opts";
+    item.o.forEach(function (label, i) {
+      var id = item.key + "-" + i;
+      var lab = document.createElement("label");
+      lab.className = "opt";
+      lab.setAttribute("for", id);
+      lab.innerHTML = '<input type="radio" id="' + id + '" name="' + item.key + '"><span class="radio"></span><span>' + label + "</span>";
+      opts.appendChild(lab);
+    });
+    group.appendChild(opts);
+    wrap.appendChild(group);
+  });
+
+  (function () {
+    var now = new Date();
+    var maxY = now.getFullYear() - 18;
+    var days = document.querySelector('[aria-label="Day"]');
+    var months = document.querySelector('[aria-label="Month"]');
+    var years = document.querySelector('[aria-label="Year"]');
+    for (var d = 1; d <= 31; d++) { var o = document.createElement("option"); o.value = d; o.textContent = d; days.appendChild(o); }
+    ["January","February","March","April","May","June","July","August","September","October","November","December"]
+      .forEach(function (m, i) { var o = document.createElement("option"); o.value = i + 1; o.textContent = m; months.appendChild(o); });
+    for (var y = maxY; y >= maxY - 80; y--) { var o = document.createElement("option"); o.value = y; o.textContent = y; years.appendChild(o); }
+  })();
+
+  var themeBtn = document.getElementById("themeBtn");
+  themeBtn.addEventListener("click", function () {
+    var light = document.documentElement.dataset.theme === "light";
+    document.documentElement.dataset.theme = light ? "dark" : "light";
+    themeBtn.setAttribute("aria-pressed", String(!light));
+    themeBtn.textContent = light ? "Light theme" : "Dark theme";
+  });
+  var frameBtn = document.getElementById("frameBtn");
+  frameBtn.addEventListener("click", function () {
+    var stage = document.getElementById("stage");
+    var phone = stage.dataset.frame === "phone";
+    stage.dataset.frame = phone ? "desktop" : "phone";
+    frameBtn.setAttribute("aria-pressed", String(!phone));
+    frameBtn.textContent = phone ? "Phone width" : "Desktop width";
+  });
+
+  go(1);
+})();
+</script>
+</body>
+</html>

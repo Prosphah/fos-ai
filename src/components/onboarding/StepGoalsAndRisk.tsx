@@ -11,9 +11,11 @@ import {
   type StepGoalsAndRiskForm,
 } from "@/lib/validation/onboarding";
 import {
-  DateSelects,
+  FieldRow,
+  GoalDateField,
   MoneyField,
   RadioCards,
+  Section,
   SelectField,
   StepShell,
   TextField,
@@ -68,13 +70,27 @@ type RiskAnswers = Record<string, { answer: string; score: number }>;
 
 interface Props {
   currency: string;
+  /** Last saved answers, so stepping back does not wipe the form. */
+  defaultValues?: Partial<StepGoalsAndRiskForm>;
   onNext: (data: StepGoalsAndRiskForm) => void;
   onBack: () => void;
 }
 
-export function StepGoalsAndRisk({ currency, onNext, onBack }: Props) {
-  const now = new Date();
-  const [answers, setAnswers] = useState<RiskAnswers>({});
+export function StepGoalsAndRisk({
+  currency,
+  defaultValues,
+  onNext,
+  onBack,
+}: Props) {
+  // Seeded from the saved answers, otherwise every risk question snaps back to
+  // unselected the moment this step is revisited.
+  const [answers, setAnswers] = useState<RiskAnswers>(() => {
+    const seed: RiskAnswers = {};
+    for (const saved of defaultValues?.riskAnswers ?? []) {
+      seed[saved.questionKey] = { answer: saved.answer, score: saved.score };
+    }
+    return seed;
+  });
 
   const {
     control,
@@ -90,13 +106,14 @@ export function StepGoalsAndRisk({ currency, onNext, onBack }: Props) {
       goalTargetDate: "",
       riskAnswers: [],
       investmentExperience: "",
+      ...defaultValues,
     },
   });
 
-  // The risk options live outside a Controller, so their answers have to be
-  // written into the form explicitly. Without this the resolver still sees the
-  // empty `riskAnswers` default, fails the length check, and handleSubmit never
-  // reaches the submit callback at all.
+  // The risk options live outside a Controller, so their answers must be written
+  // into the form explicitly. Without this the resolver keeps seeing the empty
+  // riskAnswers default, fails the length check, and handleSubmit never reaches
+  // its submit callback at all.
   const commitAnswers = (next: RiskAnswers) => {
     setAnswers(next);
     setValue(
@@ -110,72 +127,69 @@ export function StepGoalsAndRisk({ currency, onNext, onBack }: Props) {
     );
   };
 
-  const submit = handleSubmit((data) => onNext(data));
-
   return (
     <StepShell
-      title="Your goal and your risk style"
-      description="One thing you are working towards, then a few short scenarios. There are no wrong answers."
-      onSubmit={submit}
+      eyebrow="Almost there"
+      title="One goal, and how you handle risk"
+      description="Your goal becomes the first thing on your dashboard. The four scenarios just tell us how to pitch advice at you."
+      onSubmit={handleSubmit((data) => onNext(data))}
       submitLabel="Finish"
       submitting={isSubmitting}
       onBack={onBack}
     >
-      <Controller
-        control={control}
-        name="goalTitle"
-        render={({ field }) => (
-          <TextField
-            id="goalTitle"
-            label="What is your main financial goal?"
-            value={field.value}
-            onChange={field.onChange}
-            onBlur={field.onBlur}
-            placeholder="e.g. Build an emergency fund"
-            error={errors.goalTitle?.message}
+      <Section label="Your main goal">
+        <Controller
+          control={control}
+          name="goalTitle"
+          render={({ field }) => (
+            <TextField
+              id="goalTitle"
+              label="What are you working towards?"
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              placeholder="e.g. Build an emergency fund"
+              error={errors.goalTitle?.message}
+            />
+          )}
+        />
+
+        <FieldRow>
+          <Controller
+            control={control}
+            name="goalAmount"
+            render={({ field }) => (
+              <MoneyField
+                id="goalAmount"
+                label="Target amount"
+                value={field.value}
+                onChange={field.onChange}
+                currency={currency}
+                helper="Roughly how much you would need."
+                error={errors.goalAmount?.message}
+                inRow
+              />
+            )}
           />
-        )}
-      />
-
-      <Controller
-        control={control}
-        name="goalAmount"
-        render={({ field }) => (
-          <MoneyField
-            id="goalAmount"
-            label="How much would you need to reach it?"
-            value={field.value}
-            onChange={field.onChange}
-            currency={currency}
-            helper="A rounded figure is fine."
-            whyWeAsk="Your goal becomes the first thing we put on your dashboard, with a progress bar you can watch move."
-            error={errors.goalAmount?.message}
+          <Controller
+            control={control}
+            name="goalTargetDate"
+            render={({ field }) => (
+              <GoalDateField
+                id="goalTargetDate"
+                label="Target date"
+                value={field.value}
+                onChange={field.onChange}
+                helper="When you would like to reach it."
+                error={errors.goalTargetDate?.message}
+                inRow
+              />
+            )}
           />
-        )}
-      />
+        </FieldRow>
+      </Section>
 
-      <Controller
-        control={control}
-        name="goalTargetDate"
-        render={({ field }) => (
-          <DateSelects
-            idPrefix="goalTargetDate"
-            label="When would you like to reach it?"
-            value={field.value}
-            onChange={field.onChange}
-            minYear={now.getFullYear()}
-            maxYear={now.getFullYear() + 50}
-            whyWeAsk="How long your money needs to stay invested is one of the things that shapes the advice we give you later, so we work it out from this date."
-            error={errors.goalTargetDate?.message}
-          />
-        )}
-      />
-
-      <div className="mt-2 flex flex-col gap-5">
-        <h3 className="font-display text-base font-semibold text-text-primary">
-          How do you handle risk?
-        </h3>
-
+      <Section label="Your risk style">
         {RISK_QUESTIONS.map((q) => (
           <RadioCards
             key={q.key}
@@ -183,37 +197,37 @@ export function StepGoalsAndRisk({ currency, onNext, onBack }: Props) {
             question={q.question}
             options={[...q.options]}
             value={answers[q.key]?.answer ?? ""}
-            onChange={(label, score) => {
-              commitAnswers({ ...answers, [q.key]: { answer: label, score } });
-            }}
+            onChange={(label, score) =>
+              commitAnswers({ ...answers, [q.key]: { answer: label, score } })
+            }
           />
         ))}
 
         {errors.riskAnswers?.message && (
-          <p className="text-xs text-rose">{errors.riskAnswers.message}</p>
+          <p className="text-[13px] text-rose">{errors.riskAnswers.message}</p>
         )}
-      </div>
 
-      <Controller
-        control={control}
-        name="investmentExperience"
-        render={({ field }) => (
-          <SelectField
-            id="investmentExperience"
-            label="How much investing have you done before?"
-            value={field.value ?? ""}
-            onChange={field.onChange}
-            placeholder="Select one"
-            optional
-            helper="This only changes how much we explain things to you."
-            error={errors.investmentExperience?.message}
-            options={INVESTMENT_EXPERIENCE_OPTIONS.map((label) => ({
-              value: label,
-              label,
-            }))}
-          />
-        )}
-      />
+        <Controller
+          control={control}
+          name="investmentExperience"
+          render={({ field }) => (
+            <SelectField
+              id="investmentExperience"
+              label="How much investing have you done before?"
+              value={field.value ?? ""}
+              onChange={field.onChange}
+              placeholder="Select one"
+              options={INVESTMENT_EXPERIENCE_OPTIONS.map((label) => ({
+                value: label,
+                label,
+              }))}
+              optional
+              helper="This only changes how much we explain things to you."
+              error={errors.investmentExperience?.message}
+            />
+          )}
+        />
+      </Section>
     </StepShell>
   );
 }

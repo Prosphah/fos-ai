@@ -1,48 +1,53 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
-import { Info } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { handleEnterToNext } from "@/lib/enter-to-next";
-import { isRealIsoDate } from "@/lib/validation/onboarding";
+import { isRealIsoDate, todayIso } from "@/lib/validation/onboarding";
 
 /**
  * The single field layer every onboarding step renders through.
  *
- * These replace the labelStyle and inputStyle objects that were copy pasted into
- * each of the five old step components, and they are built on the same primitives
- * the rest of the app uses, so the colours come from the theme rather than from
- * hard coded values.
+ * Built on the same primitives as the rest of the app, and sized for a phone:
+ * 52px controls and 16px input text, because iOS Safari zooms the whole page
+ * when an input under 16px takes focus and never zooms back out.
+ *
+ * Breakpoints are CONTAINER queries, not viewport ones. The card is capped at
+ * a max width, so at some viewport sizes the card is narrow enough to need the
+ * single column layout even though the viewport is wide. Viewport queries got
+ * that wrong and squeezed two column rows into a phone width card.
  */
 
-const CONTROL_CLASSES =
-  "h-11 w-full rounded-md border border-border bg-card px-3.5 text-sm text-text-primary outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20";
+const CONTROL =
+  "h-[52px] w-full rounded-[14px] border border-outline bg-surface-2 px-4 text-base text-text-primary outline-none transition-colors placeholder:text-muted-foreground hover:border-outline-strong focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/25 aria-invalid:border-destructive";
 
-const MONTH_NAMES = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
+const SELECT_CONTROL = cn(
+  CONTROL,
+  "cursor-pointer appearance-none bg-[length:12px] bg-[right_15px_center] bg-no-repeat pr-10"
+);
 
-function daysInMonth(month: string, year: string): number {
-  if (!month) return 31;
-  const m = Number(month);
-  const y = year ? Number(year) : 2024; // a leap year, so 29 is offered for February
-  return new Date(y, m, 0).getDate();
-}
+const HEAD = "flex flex-nowrap items-baseline gap-2.5";
+const LABEL = "min-w-0 flex-1 text-[15px] font-semibold leading-[1.4] tracking-[-0.005em] text-text-primary";
+const OPTIONAL =
+  "shrink-0 whitespace-nowrap rounded-full border border-outline px-2 py-[3px] font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground";
+const HELPER = "m-0 text-[13.5px] leading-[1.5] text-text-secondary";
+const WHY_NOTE =
+  "m-0 rounded-[14px] border border-outline border-l-2 border-l-accent bg-surface-2 px-4 py-3.5 text-[13.5px] leading-[1.6] text-text-secondary";
+
+/**
+ * Applied to a field that sits inside a two column row so its label, control
+ * and helper share the row tracks with its neighbour. Without this a label
+ * that wraps to an extra line pushes its control below the control beside it.
+ * Three tracks, because the helper or error line is a sibling of the label
+ * and the control, not a decoration under them.
+ */
+const SUBGRID =
+  "@min-[520px]:row-span-3 @min-[520px]:grid @min-[520px]:[grid-template-rows:subgrid] @min-[520px]:gap-y-2.5";
 
 function WhyWeAskTrigger({
   panelId,
@@ -59,10 +64,13 @@ function WhyWeAskTrigger({
       onClick={onToggle}
       aria-expanded={open}
       aria-controls={panelId}
-      aria-label="Why we ask for this"
-      className="inline-flex size-4 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors outline-none hover:text-accent focus-visible:ring-3 focus-visible:ring-ring/50"
+      className="ml-auto inline-flex shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap border-0 bg-transparent p-0 text-[13px] font-semibold text-accent underline decoration-accent/40 decoration-1 underline-offset-[3px] transition-colors hover:decoration-accent"
     >
-      <Info className="size-3.5" aria-hidden="true" />
+      Why we ask
+      <ChevronDown
+        className={cn("h-2.5 w-2.5 transition-transform", open && "rotate-180")}
+        aria-hidden="true"
+      />
     </button>
   );
 }
@@ -74,6 +82,7 @@ interface FieldShellProps {
   helper?: string;
   error?: string;
   whyWeAsk?: string;
+  inRow?: boolean;
   children: (describedBy: string | undefined) => ReactNode;
 }
 
@@ -84,66 +93,75 @@ function FieldShell({
   helper,
   error,
   whyWeAsk,
+  inRow,
   children,
 }: FieldShellProps) {
   const hintId = `${id}-hint`;
   const errorId = `${id}-error`;
-  const describedBy = error ? errorId : helper ? hintId : undefined;
-  const panelId = `${id}-why`;
+  const noteId = `${id}-why`;
+  const describedBy =
+    [error ? errorId : null, helper ? hintId : null].filter(Boolean).join(" ") ||
+    undefined;
+
   const [whyOpen, setWhyOpen] = useState(false);
 
   return (
-    <div className="flex flex-col gap-1.5">
-      {/*
-        The panel is anchored to this full width wrapper rather than to the icon
-        button. Anchoring it to the button made it start near the right edge of a
-        long label, so a fixed width card ran past the viewport on a phone and
-        dragged the whole page sideways. left-0 right-0 clamps it to the field,
-        which is already inside the form's padding, so it cannot overflow.
-      */}
-      <div className="relative">
-        <div className="flex items-center gap-1.5">
-          <label htmlFor={id} className="text-sm font-medium text-text-primary">
-            {label}
-          </label>
-          {optional && (
-            <span className="text-xs font-normal text-muted-foreground">
-              Optional
-            </span>
-          )}
-          {whyWeAsk && (
-            <WhyWeAskTrigger
-              panelId={panelId}
-              open={whyOpen}
-              onToggle={() => setWhyOpen((v) => !v)}
-            />
-          )}
-        </div>
-
-        {whyWeAsk && whyOpen && (
-          <div
-            id={panelId}
-            role="note"
-            className="absolute top-full left-0 right-0 z-30 mt-1.5 rounded-md border border-border bg-bg-app p-3 text-xs leading-relaxed text-text-primary shadow-lg sm:left-auto sm:right-0 sm:w-80"
-          >
-            {whyWeAsk}
-          </div>
+    <div className={cn("flex flex-col gap-2.5", inRow && SUBGRID)}>
+      <div className={HEAD}>
+        <label htmlFor={id} className={LABEL}>
+          {label}
+        </label>
+        {optional && <span className={OPTIONAL}>Optional</span>}
+        {whyWeAsk && (
+          <WhyWeAskTrigger
+            panelId={noteId}
+            open={whyOpen}
+            onToggle={() => setWhyOpen((v) => !v)}
+          />
         )}
       </div>
 
       {children(describedBy)}
 
       {error ? (
-        <p id={errorId} className="text-xs text-rose">
+        <p id={errorId} className="text-[13px] text-rose">
           {error}
         </p>
       ) : (
         helper && (
-          <p id={hintId} className="text-xs text-text-secondary">
+          <p id={hintId} className={HELPER}>
             {helper}
           </p>
         )
       )}
+
+      {/* Sits below the control, not inside the label row, which is a flex
+          container and would have squeezed it beside the button. */}
+      {whyWeAsk && whyOpen && (
+        <p id={noteId} className={WHY_NOTE}>
+          {whyWeAsk}
+        </p>
+      )}
+    </div>
+  );
+}
+
+export function Section({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div>
+      <p className="mb-4 border-b border-outline pb-3 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+        {label}
+      </p>
+      <div className="grid gap-6">{children}</div>
+    </div>
+  );
+}
+
+/** Two fields side by side on a wide card, stacked on a narrow one. */
+export function FieldRow({ children }: { children: ReactNode }) {
+  return (
+    <div className="grid gap-6 @min-[520px]:grid-cols-2 @min-[520px]:grid-rows-[auto_auto_auto] @min-[520px]:gap-y-2.5">
+      {children}
     </div>
   );
 }
@@ -159,6 +177,7 @@ interface TextFieldProps {
   helper?: string;
   error?: string;
   whyWeAsk?: string;
+  inRow?: boolean;
   onBlur?: () => void;
 }
 
@@ -173,6 +192,7 @@ export function TextField({
   helper,
   error,
   whyWeAsk,
+  inRow,
   onBlur,
 }: TextFieldProps) {
   return (
@@ -183,6 +203,7 @@ export function TextField({
       helper={helper}
       error={error}
       whyWeAsk={whyWeAsk}
+      inRow={inRow}
     >
       {(describedBy) => (
         <Input
@@ -194,7 +215,7 @@ export function TextField({
           autoComplete={autoComplete}
           aria-describedby={describedBy}
           aria-invalid={error ? true : undefined}
-          className={CONTROL_CLASSES}
+          className={CONTROL}
         />
       )}
     </FieldShell>
@@ -211,6 +232,7 @@ interface MoneyFieldProps {
   helper?: string;
   error?: string;
   whyWeAsk?: string;
+  inRow?: boolean;
 }
 
 export function MoneyField({
@@ -223,6 +245,7 @@ export function MoneyField({
   helper,
   error,
   whyWeAsk,
+  inRow,
 }: MoneyFieldProps) {
   return (
     <FieldShell
@@ -232,22 +255,27 @@ export function MoneyField({
       helper={helper}
       error={error}
       whyWeAsk={whyWeAsk}
+      inRow={inRow}
     >
       {(describedBy) => (
         <div className="relative">
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 font-mono text-xs font-semibold tracking-wider text-muted-foreground"
-          >
-            {currency}
-          </span>
+          {/* No invented currency. Before step 1 is answered there is no
+              currency to show, and guessing NGN mislabels the number. */}
+          {currency && (
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 font-mono text-xs font-bold tracking-[0.06em] text-muted-foreground"
+            >
+              {currency}
+            </span>
+          )}
           <CurrencyInput
             id={id}
             value={value}
             onChange={onChange}
             aria-describedby={describedBy}
             aria-invalid={error ? true : undefined}
-            className={cn(CONTROL_CLASSES, "pl-14")}
+            className={cn(CONTROL, "tabular-nums", currency && "pl-[58px]")}
           />
         </div>
       )}
@@ -270,6 +298,8 @@ interface SelectFieldProps {
   optional?: boolean;
   helper?: string;
   error?: string;
+  whyWeAsk?: string;
+  inRow?: boolean;
 }
 
 export function SelectField({
@@ -282,6 +312,8 @@ export function SelectField({
   optional,
   helper,
   error,
+  whyWeAsk,
+  inRow,
 }: SelectFieldProps) {
   return (
     <FieldShell
@@ -290,6 +322,8 @@ export function SelectField({
       optional={optional}
       helper={helper}
       error={error}
+      whyWeAsk={whyWeAsk}
+      inRow={inRow}
     >
       {(describedBy) => (
         <select
@@ -298,7 +332,11 @@ export function SelectField({
           onChange={(e) => onChange(e.target.value)}
           aria-describedby={describedBy}
           aria-invalid={error ? true : undefined}
-          className={cn(CONTROL_CLASSES, "select-chevron")}
+          className={SELECT_CONTROL}
+          style={{
+            backgroundImage:
+              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238C8C9E' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")",
+          }}
         >
           <option value="">{placeholder}</option>
           {options.map((option) => (
@@ -312,6 +350,17 @@ export function SelectField({
   );
 }
 
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+function daysInMonth(month: string, year: string): number {
+  if (!month) return 31;
+  // 2024 is a leap year, so 29 is offered for February before a year is chosen.
+  return new Date(year ? Number(year) : 2024, Number(month), 0).getDate();
+}
+
 interface DateSelectsProps {
   idPrefix: string;
   label: string;
@@ -320,14 +369,12 @@ interface DateSelectsProps {
   onChange: (iso: string) => void;
   minYear: number;
   maxYear: number;
-  /**
-   * Latest selectable date as yyyy-mm-dd. Options past it are hidden rather than
-   * left selectable, so the dropdowns cannot produce a date the server rejects.
-   */
+  /** Latest selectable date as yyyy-mm-dd. Months and days past it are hidden. */
   maxDate?: string;
   helper?: string;
   error?: string;
   whyWeAsk?: string;
+  inRow?: boolean;
 }
 
 export function DateSelects({
@@ -341,14 +388,15 @@ export function DateSelects({
   helper,
   error,
   whyWeAsk,
+  inRow,
 }: DateSelectsProps) {
   const hintId = `${idPrefix}-hint`;
   const errorId = `${idPrefix}-error`;
   const describedBy = error ? errorId : helper ? hintId : undefined;
 
   // This component is the only writer of its own value in both places it is
-  // used, so the three dropdowns are seeded from the value once and every later
-  // change goes through the handlers below.
+  // used, so the three dropdowns are seeded once and every later change goes
+  // through the handlers below.
   const [day, setDay] = useState(() => value.slice(8, 10));
   const [month, setMonth] = useState(() => value.slice(5, 7));
   const [year, setYear] = useState(() => value.slice(0, 4));
@@ -366,11 +414,6 @@ export function DateSelects({
   const maxMonthOfMaxDate = maxDate ? maxDate.slice(5, 7) : null;
   const maxDayOfMaxDate = maxDate ? maxDate.slice(8, 10) : null;
 
-  /**
-   * Clamps a chosen month to the maxDate cutoff when the selected year is the
-   * cutoff year, so a month past the cutoff cannot be kept in state even though
-   * its option is hidden from the dropdown.
-   */
   const clampMonth = (currentMonth: string, nextYear: string): string => {
     if (
       maxDate &&
@@ -382,19 +425,19 @@ export function DateSelects({
     return currentMonth;
   };
 
-  /** Keeps a chosen day valid for its month and for the maxDate cutoff. */
   const clampDay = (
     currentDay: string,
     nextMonth: string,
     nextYear: string
   ): string => {
     if (!currentDay) return currentDay;
-    const monthMax = daysInMonth(nextMonth, nextYear);
     const cutoffApplies =
       maxDate &&
       nextYear === maxYearOfMaxDate &&
       nextMonth === maxMonthOfMaxDate;
-    const max = cutoffApplies ? Number(maxDayOfMaxDate) : monthMax;
+    const max = cutoffApplies
+      ? Number(maxDayOfMaxDate)
+      : daysInMonth(nextMonth, nextYear);
     return Number(currentDay) > max ? String(max) : currentDay;
   };
 
@@ -439,8 +482,6 @@ export function DateSelects({
     return list;
   }, [minYear, maxYear]);
 
-  const selectClasses = cn(CONTROL_CLASSES, "select-chevron px-3");
-
   return (
     <FieldShell
       id={`${idPrefix}-day`}
@@ -448,18 +489,10 @@ export function DateSelects({
       helper={helper}
       error={error}
       whyWeAsk={whyWeAsk}
+      inRow={inRow}
     >
       {() => (
-        // Two columns on a phone, because .select-chevron reserves 36px on the
-        // right of every select for the arrow and three of them in one flex row
-        // left almost no room for the text. Day and month share the first row and
-        // the year takes the full width underneath, which also suits a 4 digit
-        // year. From sm up it is a single row again.
-        <div
-          className="grid grid-cols-2 gap-2 sm:grid-cols-[1fr_2fr_1.4fr]"
-          role="group"
-          aria-label={label}
-        >
+        <div className="grid grid-cols-2 gap-3 @min-[400px]:grid-cols-[1fr_2fr_1.4fr]">
           <select
             id={`${idPrefix}-day`}
             value={day}
@@ -467,7 +500,7 @@ export function DateSelects({
             aria-label="Day"
             aria-describedby={describedBy}
             aria-invalid={error ? true : undefined}
-            className={cn(selectClasses, "min-w-0")}
+            className={cn(SELECT_CONTROL, "min-w-0")}
           >
             <option value="">Day</option>
             {days.map((d) => (
@@ -482,15 +515,15 @@ export function DateSelects({
             value={month}
             onChange={(e) => handleMonth(e.target.value)}
             aria-label="Month"
-            className={cn(selectClasses, "min-w-0")}
+            className={cn(SELECT_CONTROL, "min-w-0")}
           >
             <option value="">Month</option>
             {MONTH_NAMES.map((name, index) => {
               const v = String(index + 1).padStart(2, "0");
               // In the final allowed year, months after the cutoff are hidden.
-              const pastLimit =
-                maxDate && year === maxYearOfMaxDate && v > maxMonthOfMaxDate!;
-              if (pastLimit) return null;
+              if (maxDate && year === maxYearOfMaxDate && v > maxMonthOfMaxDate!) {
+                return null;
+              }
               return (
                 <option key={name} value={v}>
                   {name}
@@ -504,7 +537,7 @@ export function DateSelects({
             value={year}
             onChange={(e) => handleYear(e.target.value)}
             aria-label="Year"
-            className={cn(selectClasses, "col-span-2 min-w-0 sm:col-span-1")}
+            className={cn(SELECT_CONTROL, "col-span-2 min-w-0 @min-[400px]:col-span-1")}
           >
             <option value="">Year</option>
             {years.map((y) => (
@@ -514,6 +547,54 @@ export function DateSelects({
             ))}
           </select>
         </div>
+      )}
+    </FieldShell>
+  );
+}
+
+interface GoalDateFieldProps {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (iso: string) => void;
+  helper?: string;
+  error?: string;
+  inRow?: boolean;
+}
+
+/** A native date input for the goal target date, floored at today. */
+export function GoalDateField({
+  id,
+  label,
+  value,
+  onChange,
+  helper,
+  error,
+  inRow,
+}: GoalDateFieldProps) {
+  const hintId = `${id}-hint`;
+  const errorId = `${id}-error`;
+  const describedBy = error ? errorId : helper ? hintId : undefined;
+
+  return (
+    <FieldShell
+      id={id}
+      label={label}
+      helper={helper}
+      error={error}
+      inRow={inRow}
+    >
+      {(ids) => (
+        <input
+          id={id}
+          type="date"
+          value={value}
+          min={todayIso()}
+          onChange={(e) => onChange(e.target.value)}
+          aria-describedby={ids ?? describedBy}
+          aria-invalid={error ? true : undefined}
+          className={cn(CONTROL, "cursor-pointer scheme-light dark:scheme-dark")}
+        />
       )}
     </FieldShell>
   );
@@ -536,24 +617,22 @@ export function RadioCards({
 }: RadioCardsProps) {
   return (
     <fieldset className="border-0 p-0">
-      <legend className="mb-2.5 text-sm font-medium text-text-primary">
+      <legend className="mb-2.5 text-[15px] font-semibold leading-[1.4] text-text-primary">
         {question}
       </legend>
-      <div className="flex flex-col gap-2">
-        {options.map((option) => {
-          const id = `${name}-${option.score}-${option.label
-            .replace(/[^a-z0-9]+/gi, "-")
-            .toLowerCase()}`;
+      <div className="grid gap-2.5">
+        {options.map((option, index) => {
+          const id = `${name}-${index}`;
           const selected = value === option.label;
           return (
             <label
               key={option.label}
               htmlFor={id}
               className={cn(
-                "flex min-h-11 cursor-pointer items-center gap-3 rounded-md border px-3.5 py-2.5 text-sm transition-colors",
+                "flex min-h-[54px] cursor-pointer items-start gap-3.5 rounded-[14px] border px-4 py-4 text-[14.5px] leading-[1.45] transition-colors",
                 selected
                   ? "border-accent bg-accent/10 text-text-primary"
-                  : "border-border bg-card text-text-secondary hover:bg-muted"
+                  : "border-outline bg-surface-2 text-text-secondary hover:border-outline-strong hover:text-text-primary"
               )}
             >
               <input
@@ -562,20 +641,18 @@ export function RadioCards({
                 name={name}
                 checked={selected}
                 onChange={() => onChange(option.label, option.score)}
-                className="sr-only"
+                className="peer sr-only"
               />
               <span
                 aria-hidden="true"
                 className={cn(
-                  "flex size-4 shrink-0 items-center justify-center rounded-full border transition-colors",
-                  selected ? "border-accent" : "border-border"
+                  "mt-px grid h-5 w-5 shrink-0 place-items-center rounded-full border-[1.5px] transition-colors",
+                  selected ? "border-accent" : "border-outline-strong"
                 )}
               >
-                {selected && <span className="size-2 rounded-full bg-accent" />}
+                {selected && <span className="h-2.5 w-2.5 rounded-full bg-accent" />}
               </span>
-              <span className="flex-1 focus-within:text-text-primary">
-                {option.label}
-              </span>
+              <span>{option.label}</span>
             </label>
           );
         })}
@@ -585,6 +662,7 @@ export function RadioCards({
 }
 
 interface StepShellProps {
+  eyebrow: string;
   title: string;
   description: string;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
@@ -595,6 +673,7 @@ interface StepShellProps {
 }
 
 export function StepShell({
+  eyebrow,
   title,
   description,
   onSubmit,
@@ -608,32 +687,46 @@ export function StepShell({
       onSubmit={onSubmit}
       onKeyDown={handleEnterToNext}
       noValidate
-      className="flex flex-col gap-5"
+      className="flex flex-col gap-8"
     >
       <div>
-        <h2 className="font-display text-xl font-bold text-text-primary">
+        <p className="mb-2.5 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-accent">
+          {eyebrow}
+        </p>
+        <h1 className="mb-2.5 font-display text-[26px] font-bold leading-[1.18] tracking-[-0.025em] text-text-primary @min-[520px]:text-[31px]">
           {title}
-        </h2>
-        <p className="mt-1 text-sm text-text-secondary">{description}</p>
+        </h1>
+        <p className="m-0 max-w-[46ch] text-[15px] leading-[1.6] text-text-secondary">
+          {description}
+        </p>
       </div>
 
       {children}
 
-      <div className="flex items-center justify-between gap-3 pt-2">
+      {/* Back on the left, Next on the right. The outline variant of the shared
+          Button falls back to an 8% white film and a transparent dark fill,
+          which is the faint stroke this design does not want, so Back pins
+          every state to the opaque tokens. */}
+      <div className="mt-2 flex items-center justify-between gap-3.5">
         {onBack ? (
           <Button
             type="button"
             variant="outline"
             size="lg"
             onClick={onBack}
-            className="min-h-11"
+            className="h-[52px] shrink-0 rounded-full border-outline bg-surface-2 px-7 hover:bg-surface-3 hover:text-text-primary dark:border-outline dark:bg-surface-2 dark:hover:bg-surface-3"
           >
             Back
           </Button>
         ) : (
-          <span />
+          <span aria-hidden="true" />
         )}
-        <Button type="submit" size="lg" disabled={submitting} className="min-h-11">
+        <Button
+          type="submit"
+          size="lg"
+          disabled={submitting}
+          className="h-[52px] flex-1 rounded-full px-7 @min-[520px]:min-w-[190px] @min-[520px]:flex-none"
+        >
           {submitting ? "Saving…" : submitLabel}
         </Button>
       </div>

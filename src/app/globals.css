@@ -8,7 +8,18 @@
   --font-mono: var(--font-mono-family);
   --color-bg-app: var(--bg);
   --color-bg-card: var(--glass-bg);
-  --color-border: var(--glass-border);
+  --color-border: var(--outline);
+  /* Opaque surfaces. --glass-bg is a 4% white film in dark and 55% white in
+     light. Neither one can carry a form control, because a control whose edge
+     you cannot see is not a control. Anything with a border AND a value in it
+     uses these. */
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  /* A stroke that reads on BOTH themes. The old --glass-border was white,
+     which on the light theme's near white background vanished entirely. */
+  --color-outline: var(--outline);
+  --color-outline-strong: var(--outline-strong);
   --color-text-primary: var(--text-1);
   --color-text-secondary: var(--text-2);
   --color-accent: var(--accent);
@@ -63,6 +74,11 @@
   --glass-bg-hover: rgba(255, 255, 255, 0.07);
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-border-hover: rgba(255, 255, 255, 0.14);
+  --surface: #0E0E17;
+  --surface-2: #14141F;
+  --surface-3: #1A1A27;
+  --outline: rgba(255, 255, 255, 0.13);
+  --outline-strong: rgba(255, 255, 255, 0.26);
   --text-1: #F1F0F5;
   --text-2: rgba(241, 240, 245, 0.55);
   --text-3: rgba(241, 240, 245, 0.3);
@@ -80,8 +96,13 @@
   --bg-mesh-2: rgba(99, 102, 241, 0.05);
   --glass-bg: rgba(255, 255, 255, 0.55);
   --glass-bg-hover: rgba(255, 255, 255, 0.75);
-  --glass-border: rgba(255, 255, 255, 0.6);
-  --glass-border-hover: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(26, 22, 37, 0.13);
+  --glass-border-hover: rgba(26, 22, 37, 0.22);
+  --surface: #FFFFFF;
+  --surface-2: #FBFAFF;
+  --surface-3: #F2F0FF;
+  --outline: rgba(26, 22, 37, 0.17);
+  --outline-strong: rgba(26, 22, 37, 0.34);
   --text-1: #1A1625;
   --text-2: rgba(26, 22, 37, 0.5);
   --text-3: rgba(26, 22, 37, 0.25);

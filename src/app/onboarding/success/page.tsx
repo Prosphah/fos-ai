@@ -10,7 +10,9 @@ import { getOnboardingScore } from "../actions";
 
 export default function SuccessPage() {
   const router = useRouter();
-  const [countdown, setCountdown] = useState(3);
+  // Long enough to actually read the score and the line explaining it. Three
+  // seconds was not enough to glance at anything.
+  const [countdown, setCountdown] = useState(10);
   const [score, setScore] = useState<number | null>(null);
 
   useEffect(() => {
@@ -21,10 +23,11 @@ export default function SuccessPage() {
     if (countdown > 0) {
       const t = setTimeout(() => setCountdown(countdown - 1), 1000);
       return () => clearTimeout(t);
-    } else {
-      router.replace("/briefing");
     }
+    router.replace("/briefing");
   }, [countdown, router]);
+
+  const goNow = () => router.replace("/briefing");
 
   return (
     <main
@@ -201,7 +204,7 @@ export default function SuccessPage() {
             letterSpacing: "0.02em",
           }}
         >
-          Redirecting to your dashboard in {countdown} seconds…
+          Taking you to your dashboard in {countdown} seconds, or go there now
         </motion.p>
 
         <motion.div
@@ -211,8 +214,8 @@ export default function SuccessPage() {
         >
           <Button
             size="lg"
-            onClick={() => router.replace("/briefing")}
-            style={{ marginTop: "16px" }}
+            onClick={goNow}
+            className="mt-5 h-[52px] w-full rounded-full px-7"
           >
             Go to Dashboard
           </Button>

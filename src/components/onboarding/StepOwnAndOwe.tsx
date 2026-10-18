@@ -8,7 +8,7 @@ import {
   stepOwnAndOweSchema,
   type StepOwnAndOweForm,
 } from "@/lib/validation/onboarding";
-import { MoneyField, StepShell } from "./fields";
+import { FieldRow, MoneyField, Section, StepShell } from "./fields";
 
 function formatMoney(value: number, currency: string): string {
   const amount = Math.round(value || 0);
@@ -26,11 +26,13 @@ function formatMoney(value: number, currency: string): string {
 
 interface Props {
   currency: string;
+  /** Last saved answers, so stepping back does not wipe the form. */
+  defaultValues?: Partial<StepOwnAndOweForm>;
   onNext: (data: StepOwnAndOweForm) => void;
   onBack: () => void;
 }
 
-export function StepOwnAndOwe({ currency, onNext, onBack }: Props) {
+export function StepOwnAndOwe({ currency, defaultValues, onNext, onBack }: Props) {
   const {
     control,
     handleSubmit,
@@ -44,161 +46,150 @@ export function StepOwnAndOwe({ currency, onNext, onBack }: Props) {
       totalPropertyValue: 0,
       totalBusinessOwnership: 0,
       totalDebt: 0,
+      ...defaultValues,
     },
   });
 
-  const values = useWatch({ control });
-  const cash = Number(values.totalCash) || 0;
-  const investments = Number(values.totalInvestments) || 0;
-  const property = Number(values.totalPropertyValue) || 0;
-  const business = Number(values.totalBusinessOwnership) || 0;
-  const owed = Number(values.totalDebt) || 0;
+  const cash = useWatch({ control, name: "totalCash" });
+  const investments = useWatch({ control, name: "totalInvestments" });
+  const property = useWatch({ control, name: "totalPropertyValue" });
+  const business = useWatch({ control, name: "totalBusinessOwnership" });
+  const owed = useWatch({ control, name: "totalDebt" });
 
   const assets = cash + investments + property + business;
   const netWorth = assets - owed;
 
   return (
     <StepShell
-      title="What you own and what you owe"
-      description="This gives us your balance sheet. Round numbers are completely fine."
+      eyebrow="Balance sheet"
+      title="What you have and what you owe"
+      description="Round everything to the nearest thousand if that is easier. Imprecision costs you nothing here."
       onSubmit={handleSubmit((data) => onNext(data))}
       submitLabel="Next step"
       submitting={isSubmitting}
       onBack={onBack}
     >
-      <Controller
-        control={control}
-        name="totalCash"
-        render={({ field }) => (
-          <MoneyField
-            id="totalCash"
-            label="Cash you could reach today"
-            value={field.value}
-            onChange={field.onChange}
-            currency={currency}
-            helper="Checking and savings, minus anything locked away."
-            whyWeAsk="This is the only asset we can count towards your emergency fund, which is a quarter of your financial health score."
-            error={errors.totalCash?.message}
+      <Section label="What you own">
+        <Controller
+          control={control}
+          name="totalCash"
+          render={({ field }) => (
+            <MoneyField
+              id="totalCash"
+              label="Cash you could reach today"
+              value={field.value}
+              onChange={field.onChange}
+              currency={currency}
+              whyWeAsk="This is the only asset we count towards your emergency fund, which is a quarter of your score. Money locked in a pension or a land purchase does not count here."
+              error={errors.totalCash?.message}
+            />
+          )}
+        />
+
+        <Controller
+          control={control}
+          name="totalInvestments"
+          render={({ field }) => (
+            <MoneyField
+              id="totalInvestments"
+              label="Investments and retirement"
+              value={field.value}
+              onChange={field.onChange}
+              currency={currency}
+              helper="Stocks, bonds, crypto, a 401k, an ISA, a pension. Add them together."
+            />
+          )}
+        />
+
+        <FieldRow>
+          <Controller
+            control={control}
+            name="totalPropertyValue"
+            render={({ field }) => (
+              <MoneyField
+                id="totalPropertyValue"
+                label="Property and valuables"
+                value={field.value}
+                onChange={field.onChange}
+                currency={currency}
+                error={errors.totalPropertyValue?.message}
+                inRow
+              />
+            )}
           />
-        )}
-      />
-
-      <Controller
-        control={control}
-        name="totalInvestments"
-        render={({ field }) => (
-          <MoneyField
-            id="totalInvestments"
-            label="Investments and retirement"
-            value={field.value}
-            onChange={field.onChange}
-            currency={currency}
-            helper="Stocks, bonds, crypto, a 401k, an ISA, a pension. Add them all up here."
-            whyWeAsk="What you have invested is the other half of what you own. It feeds the debt ratio, which is a quarter of your financial health score."
-            error={errors.totalInvestments?.message}
+          <Controller
+            control={control}
+            name="totalBusinessOwnership"
+            render={({ field }) => (
+              <MoneyField
+                id="totalBusinessOwnership"
+                label="Business or other assets"
+                value={field.value}
+                onChange={field.onChange}
+                currency={currency}
+                optional
+                error={errors.totalBusinessOwnership?.message}
+                inRow
+              />
+            )}
           />
-        )}
-      />
+        </FieldRow>
+      </Section>
 
-      <Controller
-        control={control}
-        name="totalPropertyValue"
-        render={({ field }) => (
-          <MoneyField
-            id="totalPropertyValue"
-            label="Property and valuables"
-            value={field.value}
-            onChange={field.onChange}
-            currency={currency}
-            helper="Your home, land, a vehicle, anything else worth money."
-            whyWeAsk="We add property and valuables to the assets side of your financial health score, so a rough estimate already helps."
-            error={errors.totalPropertyValue?.message}
-          />
-        )}
-      />
+      <Section label="What you owe">
+        <Controller
+          control={control}
+          name="totalDebt"
+          render={({ field }) => (
+            <MoneyField
+              id="totalDebt"
+              label="Everything you owe, added up"
+              value={field.value}
+              onChange={field.onChange}
+              currency={currency}
+              helper="Credit cards, personal loans, student loans, mortgage, car loan. One total is fine."
+              whyWeAsk="This is the debt side of your score. Being accurate here genuinely works in your favour, because otherwise we would assume you owe nothing."
+              error={errors.totalDebt?.message}
+            />
+          )}
+        />
 
-      <Controller
-        control={control}
-        name="totalBusinessOwnership"
-        render={({ field }) => (
-          <MoneyField
-            id="totalBusinessOwnership"
-            label="A business or anything else you own"
-            value={field.value}
-            onChange={field.onChange}
-            currency={currency}
-            helper="Your share of a company, equipment, anything else. Leave it at 0 if it does not apply."
-            whyWeAsk="Anything you own counts towards the assets side of your financial health score, including a business you are part of."
-            error={errors.totalBusinessOwnership?.message}
-          />
-        )}
-      />
-
-      <Controller
-        control={control}
-        name="totalDebt"
-        render={({ field }) => (
-          <MoneyField
-            id="totalDebt"
-            label="Everything you owe, added together"
-            value={field.value}
-            onChange={field.onChange}
-            currency={currency}
-            helper="Credit cards, personal loans, student loans, a mortgage, a car loan. One total is fine."
-            whyWeAsk="This is the debt side of your financial health score. Being accurate here genuinely works in your favour, because we would otherwise assume you owe nothing."
-            error={errors.totalDebt?.message}
-          />
-        )}
-      />
-
-      {/*
-        Running total for the five boxes above.
-
-        The three figures are not peers: net worth is the answer, assets and owed
-        are the inputs the app just used to reach it. So net worth leads and is
-        the largest. On a phone it sits on its own full width line, and assets and
-        owed become label left, value right rows, which gives each amount the
-        whole width rather than half of it. From sm up it is a single row reading
-        Assets, Owed, then net worth on the right, so the arithmetic still reads
-        left to right on a wide screen.
-
-        There is deliberately no truncate. At 360px the old three column grid gave
-        each column about 90px, which cut a formatted amount short, and silently
-        hiding digits of a balance is the worst thing this block could do: someone
-        has to be able to tell N12,000,000 from N120,000,000 at a glance.
-
-        tabular-nums keeps the digits from shifting sideways as the value updates
-        while you type.
-      */}
-      <div className="rounded-md border border-border bg-card px-4 py-4">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
-          <div className="order-2 flex flex-col gap-1.5 border-t border-border pt-3 sm:order-1 sm:flex-row sm:gap-8 sm:border-t-0 sm:pt-0">
-            <div className="flex items-baseline justify-between gap-4 sm:block">
-              <p className="text-xs text-muted-foreground">Assets</p>
-              <p className="font-display text-base font-semibold tabular-nums text-text-primary sm:mt-0.5">
-                {formatMoney(assets, currency)}
-              </p>
-            </div>
-            <div className="flex items-baseline justify-between gap-4 sm:block">
-              <p className="text-xs text-muted-foreground">Owed</p>
-              <p className="font-display text-base font-semibold tabular-nums text-text-primary sm:mt-0.5">
-                {formatMoney(owed, currency)}
-              </p>
-            </div>
-          </div>
-
-          <div className="order-1 min-w-0 sm:order-2 sm:text-right">
-            <p className="text-xs text-muted-foreground">Net worth</p>
+        {/*
+          Running total. Net worth is the answer and leads; assets and owed are
+          the inputs the app just used, so they sit beneath it as label left,
+          value right rows. No truncate anywhere: hiding digits of a balance is
+          the worst thing this block could do. tabular-nums stops the digits
+          shifting while the value updates.
+        */}
+        <div className="mt-7 flex flex-col gap-[18px] rounded-2xl border border-outline bg-surface-2 px-5 py-[22px] @min-[520px]:flex-row @min-[520px]:items-start @min-[520px]:gap-9">
+          <div>
+            <p className="text-[13px] leading-[1.4] text-muted-foreground">Net worth</p>
             <p
-              className={`mt-0.5 font-display text-2xl font-semibold tabular-nums sm:text-xl ${
+              className={`mt-1 font-display text-[30px] font-bold leading-[1.15] tracking-[-0.02em] tabular-nums ${
                 netWorth < 0 ? "text-rose" : "text-accent"
               }`}
             >
-              {formatMoney(netWorth, currency)}
+              {netWorth < 0 ? "\u2212" : ""}
+              {formatMoney(Math.abs(netWorth), currency)}
             </p>
           </div>
+
+          <div className="grid gap-2.5 border-t border-outline pt-[18px] @min-[520px]:ml-auto @min-[520px]:flex @min-[520px]:gap-8 @min-[520px]:border-t-0 @min-[520px]:pt-0">
+            <div className="flex items-baseline justify-between gap-4 @min-[520px]:flex-col @min-[520px]:items-end @min-[520px]:gap-0.5">
+              <span className="text-[13px] text-muted-foreground">Assets</span>
+              <span className="font-display text-[15px] font-semibold tabular-nums text-text-primary">
+                {formatMoney(assets, currency)}
+              </span>
+            </div>
+            <div className="flex items-baseline justify-between gap-4 @min-[520px]:flex-col @min-[520px]:items-end @min-[520px]:gap-0.5">
+              <span className="text-[13px] text-muted-foreground">Owed</span>
+              <span className="font-display text-[15px] font-semibold tabular-nums text-text-primary">
+                {formatMoney(owed, currency)}
+              </span>
+            </div>
+          </div>
         </div>
-      </div>
+      </Section>
     </StepShell>
   );
 }

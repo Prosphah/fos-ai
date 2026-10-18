@@ -24,6 +24,18 @@ import type {
 const DB_ERROR =
   "Database error saving your data. Please make sure the required tables exist in Supabase.";
 
+/**
+ * Everything already answered, shaped so the client can hand each slice
+ * straight back as that step's form defaults. Without this a resumed session
+ * lands on the right step with an empty form and no currency prefix.
+ */
+export interface OnboardingSavedAnswers {
+  about: StepAboutYouForm;
+  month: StepMonthToMonthForm;
+  own: StepOwnAndOweForm;
+  goals: StepGoalsAndRiskForm;
+}
+
 async function getUserId(): Promise<string> {
   const supabase = await createClient();
   const {
@@ -124,6 +136,7 @@ export async function getOnboardingStatus() {
     onboarded: false,
     currentStep: 1,
     profileId: null as string | null,
+    saved: null as OnboardingSavedAnswers | null,
   };
 
   try {
@@ -136,22 +149,58 @@ export async function getOnboardingStatus() {
     const { data } = await supabase
       .from("financial_profiles")
       .select(
-        "id, onboarding_completed, date_of_birth, monthly_living_expenses, total_cash, risk_score"
+        "id, onboarding_completed, date_of_birth, monthly_living_expenses, total_cash, risk_score, first_name, last_name, currency, monthly_income, debt_repayments_monthly, monthly_savings, total_investments, total_property_value, total_business_ownership, total_debt, investment_experience, risk_answers"
       )
       .eq("user_id", user.id)
       .maybeSingle();
 
     if (!data) return notOnboarded;
 
-    const { count } = await supabase
+    // Fetched instead of counted, because a resumed session also needs the goal
+    // back to prefill step 4 rather than only to know that step 4 exists.
+    const { data: goals } = await supabase
       .from("financial_goals")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", user.id);
+      .select("title, target_amount, target_date")
+      .eq("user_id", user.id)
+      .limit(1);
+
+    const goal = goals?.[0] ?? null;
+    const riskAnswers = Array.isArray(data.risk_answers) ? data.risk_answers : [];
+
+    const saved: OnboardingSavedAnswers = {
+      about: {
+        firstName: data.first_name ?? "",
+        lastName: data.last_name ?? "",
+        dateOfBirth: data.date_of_birth ?? "",
+        currency: data.currency ?? "",
+        monthlyIncome: data.monthly_income ?? 0,
+      },
+      month: {
+        monthlyLivingExpenses: data.monthly_living_expenses ?? 0,
+        debtRepaymentsMonthly: data.debt_repayments_monthly ?? 0,
+        monthlySavings: data.monthly_savings ?? 0,
+      },
+      own: {
+        totalCash: data.total_cash ?? 0,
+        totalInvestments: data.total_investments ?? 0,
+        totalPropertyValue: data.total_property_value ?? 0,
+        totalBusinessOwnership: data.total_business_ownership ?? 0,
+        totalDebt: data.total_debt ?? 0,
+      },
+      goals: {
+        goalTitle: goal?.title ?? "",
+        goalAmount: goal?.target_amount ?? 0,
+        goalTargetDate: goal?.target_date ?? "",
+        riskAnswers,
+        investmentExperience: data.investment_experience ?? "",
+      },
+    };
 
     return {
       onboarded: !!data.onboarding_completed,
-      currentStep: determineCurrentStep(data, (count ?? 0) > 0),
+      currentStep: determineCurrentStep(data, !!goal),
       profileId: data.id as string | null,
+      saved,
     };
   } catch {
     return notOnboarded;

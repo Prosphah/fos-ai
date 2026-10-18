@@ -13,7 +13,9 @@ import {
 } from "@/lib/validation/onboarding";
 import {
   DateSelects,
+  FieldRow,
   MoneyField,
+  Section,
   SelectField,
   StepShell,
   TextField,
@@ -35,10 +37,12 @@ const CURRENCY_LABELS: Record<(typeof CURRENCY_OPTIONS)[number], string> = {
 };
 
 interface Props {
+  /** Last saved answers, so stepping back does not wipe the form. */
+  defaultValues?: Partial<StepAboutYouForm>;
   onNext: (data: StepAboutYouForm) => void;
 }
 
-export function StepAboutYou({ onNext }: Props) {
+export function StepAboutYou({ defaultValues, onNext }: Props) {
   const now = new Date();
 
   const {
@@ -54,117 +58,125 @@ export function StepAboutYou({ onNext }: Props) {
       dateOfBirth: "",
       currency: "",
       monthlyIncome: 0,
+      ...defaultValues,
     },
   });
 
   const currency = useWatch({ control, name: "currency" });
+  const income = useWatch({ control, name: "monthlyIncome" });
 
   return (
     <StepShell
-      title="Let's start with you"
-      description="A few quick details so we can tailor everything to your situation."
+      eyebrow="Getting started"
+      title="First, the basics"
+      description="Four short steps. We only ask for things that change the numbers we show you."
       onSubmit={handleSubmit((data) => onNext(data))}
       submitLabel="Next step"
       submitting={isSubmitting}
     >
-      <div className="grid gap-5 sm:grid-cols-2">
-        <Controller
-          control={control}
-          name="firstName"
-          render={({ field }) => (
-            <TextField
-              id="firstName"
-              label="What's your first name?"
-              value={field.value}
-              onChange={field.onChange}
-              onBlur={field.onBlur}
-              placeholder="e.g. Michael"
-              autoComplete="given-name"
-              error={errors.firstName?.message}
-            />
-          )}
-        />
-
-        <Controller
-          control={control}
-          name="lastName"
-          render={({ field }) => (
-            <TextField
-              id="lastName"
-              label="What's your last name?"
-              value={field.value}
-              onChange={field.onChange}
-              onBlur={field.onBlur}
-              placeholder="e.g. Johnson"
-              autoComplete="family-name"
-              error={errors.lastName?.message}
-            />
-          )}
-        />
-      </div>
-
-      <Controller
-        control={control}
-        name="dateOfBirth"
-        render={({ field }) => (
-          <DateSelects
-            idPrefix="dateOfBirth"
-            label="What's your date of birth?"
-            value={field.value}
-            onChange={field.onChange}
-            minYear={now.getFullYear() - 100}
-            maxYear={now.getFullYear() - MIN_AGE_YEARS}
-            maxDate={earliestDateOfBirth(now)}
-            helper={`You must be at least ${MIN_AGE_YEARS} to use FOS·AI.`}
-            error={errors.dateOfBirth?.message}
-          />
-        )}
-      />
-
-      <Controller
-        control={control}
-        name="currency"
-        render={({ field }) => (
-          <SelectField
-            id="currency"
-            label="What currency do you use?"
-            value={field.value}
-            onChange={field.onChange}
-            placeholder="Select currency"
-            options={CURRENCY_OPTIONS.map((code) => ({
-              value: code,
-              label: `${code} — ${CURRENCY_LABELS[code]}`,
-            }))}
-            error={errors.currency?.message}
-          />
-        )}
-      />
-
-      <Controller
-        control={control}
-        name="monthlyIncome"
-        render={({ field }) => (
-          <div className="flex flex-col gap-2">
-            <MoneyField
-              id="monthlyIncome"
-              label="How much income do you make each month?"
-              value={field.value}
-              onChange={field.onChange}
-              currency={currency || ""}
-              helper="Take home, after tax, averaged over a year. A rough figure is fine."
-              whyWeAsk="Why we ask this? Your income is one of four things that build your financial health score. It is the number everything else is measured against. We only use what you tell us here."
-              error={errors.monthlyIncome?.message}
-            />
-            {touchedFields.monthlyIncome && field.value === 0 && (
-              <p className="text-xs text-text-secondary">
-                Not earning anything right now is okay. Your score will read
-                lower until you have an income, and you can update this in
-                Settings whenever that changes.
-              </p>
+      <Section label="Your details">
+        <FieldRow>
+          <Controller
+            control={control}
+            name="firstName"
+            render={({ field }) => (
+              <TextField
+                id="firstName"
+                label="First name"
+                value={field.value}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                placeholder="e.g. Michael"
+                autoComplete="given-name"
+                error={errors.firstName?.message}
+                inRow
+              />
             )}
-          </div>
-        )}
-      />
+          />
+          <Controller
+            control={control}
+            name="lastName"
+            render={({ field }) => (
+              <TextField
+                id="lastName"
+                label="Last name"
+                value={field.value}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                placeholder="e.g. Johnson"
+                autoComplete="family-name"
+                error={errors.lastName?.message}
+                inRow
+              />
+            )}
+          />
+        </FieldRow>
+
+        <Controller
+          control={control}
+          name="dateOfBirth"
+          render={({ field }) => (
+            <DateSelects
+              idPrefix="dateOfBirth"
+              label="Date of birth"
+              value={field.value}
+              onChange={field.onChange}
+              minYear={now.getFullYear() - 100}
+              maxYear={now.getFullYear() - MIN_AGE_YEARS}
+              maxDate={earliestDateOfBirth(now)}
+              helper={`You must be 18 or older to use FOS·AI.`}
+              error={errors.dateOfBirth?.message}
+            />
+          )}
+        />
+      </Section>
+
+      <Section label="Your money">
+        <Controller
+          control={control}
+          name="currency"
+          render={({ field }) => (
+            <SelectField
+              id="currency"
+              label="Currency you use"
+              value={field.value}
+              onChange={field.onChange}
+              placeholder="Select a currency"
+              options={CURRENCY_OPTIONS.map((code) => ({
+                value: code,
+                label: `${code} — ${CURRENCY_LABELS[code]}`,
+              }))}
+              error={errors.currency?.message}
+            />
+          )}
+        />
+
+        <Controller
+          control={control}
+          name="monthlyIncome"
+          render={({ field }) => (
+            <div className="flex flex-col gap-2.5">
+              <MoneyField
+                id="monthlyIncome"
+                label="Monthly income"
+                value={field.value}
+                onChange={field.onChange}
+                currency={currency || ""}
+                helper="Take home, after tax, averaged over a year. A rough figure is fine."
+                whyWeAsk="Your income is one of four things that build your financial health score. It is the number everything else is measured against. We only use what you type here, and you can change it in Settings at any time."
+                error={errors.monthlyIncome?.message}
+              />
+              {touchedFields.monthlyIncome && income === 0 && (
+                <p className="text-[13.5px] leading-[1.5] text-text-secondary">
+                  Not earning anything right now is okay. Your score will read lower
+                  until you have an income, and you can update this in Settings
+                  whenever that changes.
+                </p>
+              )}
+            </div>
+          )}
+        />
+      </Section>
     </StepShell>
   );
 }
