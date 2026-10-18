@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Lead flyers — Money Mastery Code</title>
+    <style>
+      /* ── type ───────────────────────────────────────────────────────── */
+      @font-face {
+        font-family: "Archivo";
+        src: url("./fonts/archivo-var.woff2") format("woff2-variations");
+        font-weight: 100 900;
+        font-stretch: 62% 125%;
+        font-display: block;
+      }
+      @font-face {
+        font-family: "Plex Mono";
+        src: url("./fonts/plexmono-400.woff2") format("woff2");
+        font-weight: 400;
+        font-display: block;
+      }
+      @font-face {
+        font-family: "Plex Mono";
+        src: url("./fonts/plexmono-500.woff2") format("woff2");
+        font-weight: 500;
+        font-display: block;
+      }
+      @font-face {
+        font-family: "Plex Mono";
+        src: url("./fonts/plexmono-600.woff2") format("woff2");
+        font-weight: 600;
+        font-display: block;
+      }
+      @font-face {
+        font-family: "Instrument Serif";
+        src: url("./fonts/instrument-regular.woff2") format("woff2");
+        font-weight: 400;
+        font-display: block;
+      }
+      @font-face {
+        font-family: "Instrument Serif";
+        src: url("./fonts/instrument-italic.woff2") format("woff2");
+        font-weight: 400;
+        font-style: italic;
+        font-display: block;
+      }
+
+      /* ── tokens ─────────────────────────────────────────────────────── */
+      :root {
+        --ink: #08080f;
+        --fg: #f6f6f7;
+        --fg-dim: rgba(246, 246, 247, 0.66);
+        --line: rgba(255, 255, 255, 0.18);
+        --line-soft: rgba(255, 255, 255, 0.08);
+        --accent: #695aff;
+        --accent-text: #8f83ff;
+
+        --paper: #efe9df;
+        --paper-fg: #14141a;
+        --paper-dim: rgba(20, 20, 26, 0.66);
+        --paper-line: rgba(20, 20, 26, 0.24);
+
+        --pad: 84px;
+      }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      html, body {
+        background: #101014;
+        font-family: "Archivo", Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .mono {
+        font-family: "Plex Mono", monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        font-size: 17px;
+        font-weight: 500;
+      }
+
+      /* Copy is set as explicit, never-wrapping lines. The fit pass below then
+         guarantees every line sits inside the measure, so a copy edit can
+         never push type into the bleed. */
+      .l { display: block; white-space: nowrap; }
+
+      /* ── frame ──────────────────────────────────────────────────────── */
+      .flyer {
+        position: relative;
+        overflow: hidden;
+        display: grid;
+        /* minmax(0,1fr) rather than the default auto column. A grid track sizes
+           to its items' min-content width, and the headlines are set on
+           never-wrapping lines, so an auto track would widen the whole sheet to
+           fit a long line. min-width:0 on the items stops the same thing. */
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto 1fr auto;
+        width: 1080px;
+        height: 1080px;
+        padding: var(--pad);
+        isolation: isolate;
+      }
+      .flyer.portrait { height: 1440px; }
+
+      /* faint structural columns, the way a printed sheet is ruled */
+      .columns { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+      .columns i { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--line-soft); }
+
+      .bar, .stage, .foot { position: relative; z-index: 1; min-width: 0; }
+
+      .bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        padding-bottom: 26px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .foot {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        padding-top: 36px;
+        border-top: 1px solid var(--line);
+      }
+      .sign { text-align: right; line-height: 1.9; }
+      .sign .who { color: var(--fg-dim); font-size: 16px; }
+
+      .cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 20px;
+        padding: 25px 34px;
+        background: var(--accent);
+        color: #fff;
+        font-size: 25px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .cta svg { width: 26px; height: 26px; }
+
+      /* ── 01 · the 30th (ink) ────────────────────────────────────────── */
+      .f01 { background: var(--ink); color: var(--fg); }
+      .f01 .stage { display: flex; flex-direction: column; justify-content: center; gap: 44px; }
+      .f01 h1 {
+        font-size: 124px;
+        font-weight: 800;
+        font-variation-settings: "wdth" 102;
+        line-height: 0.92;
+        letter-spacing: -0.038em;
+      }
+      .f01 h1 span { display: block; white-space: nowrap; }
+      .f01 .rule { width: 260px; height: 12px; background: var(--accent); margin-bottom: 8px; }
+      .f01 p {
+        max-width: 800px;
+        font-size: 34px;
+        line-height: 1.42;
+        color: var(--fg-dim);
+        letter-spacing: -0.006em;
+      }
+      .f01.portrait h1 { font-size: 136px; }
+      .f01.portrait p { font-size: 36px; max-width: 912px; }
+
+      /* ── 02 · show the working (paper) ──────────────────────────────── */
+      .f02 {
+        background: var(--paper);
+        color: var(--paper-fg);
+        --line: var(--paper-line);
+        --line-soft: rgba(20, 20, 26, 0.09);
+        --fg-dim: var(--paper-dim);
+      }
+      .f02 .bar { border-bottom: 4px double var(--paper-line); padding-bottom: 20px; }
+      .f02 .name {
+        font-family: "Instrument Serif", Georgia, serif;
+        text-transform: none;
+        letter-spacing: 0.03em;
+        font-size: 26px;
+      }
+      .f02 .stage { display: flex; flex-direction: column; justify-content: center; gap: 60px; }
+      .f02 h1 {
+        font-size: 112px;
+        font-weight: 800;
+        font-variation-settings: "wdth" 98;
+        line-height: 1.02;
+        letter-spacing: -0.036em;
+      }
+      .f02 h1 span { display: block; white-space: nowrap; }
+      .f02 h1 em {
+        font-family: "Instrument Serif", Georgia, serif;
+        font-style: italic;
+        font-weight: 400;
+        font-size: 1.24em;
+        letter-spacing: -0.012em;
+      }
+      .f02 p {
+        max-width: 912px;
+        padding-top: 46px;
+        border-top: 1px solid var(--paper-line);
+        font-family: "Instrument Serif", Georgia, serif;
+        font-size: 46px;
+        line-height: 1.2;
+        letter-spacing: -0.006em;
+      }
+      .f02 .cta { background: var(--paper-fg); color: var(--paper); }
+      .f02 .kicker { color: var(--paper-fg); }
+      .f02.portrait h1 { font-size: 126px; }
+      .f02.portrait p { font-size: 50px; max-width: 912px; }
+
+      /* ── 03 · four questions (ink) ───────────────────────────────────── */
+      .f03 { background: var(--ink); color: var(--fg); }
+      .f03 .stage { display: flex; flex-direction: column; justify-content: center; gap: 42px; }
+      .f03 h1 {
+        font-size: 96px;
+        font-weight: 800;
+        font-variation-settings: "wdth" 100;
+        line-height: 0.95;
+        letter-spacing: -0.036em;
+      }
+      .f03 h1 span { display: block; white-space: nowrap; }
+      .f03 ol { list-style: none; border-top: 1px solid var(--line); }
+      .f03 li {
+        display: flex;
+        align-items: baseline;
+        gap: 34px;
+        padding: 22px 0;
+        border-bottom: 1px solid var(--line);
+        font-size: 44px;
+        font-weight: 600;
+        font-variation-settings: "wdth" 98;
+        letter-spacing: -0.022em;
+      }
+      .f03 li b {
+        font-family: "Plex Mono", monospace;
+        font-size: 19px;
+        font-weight: 500;
+        letter-spacing: 0.14em;
+        color: var(--accent-text);
+      }
+      .f03 p { max-width: 912px; font-size: 33px; line-height: 1.4; color: var(--fg-dim); }
+      .f03.portrait h1 { font-size: 108px; }
+      .f03.portrait li { font-size: 50px; padding: 28px 0; }
+      .f03.portrait p { font-size: 36px; }
+
+      /* ── export mode: only the requested flyer is painted ───────────── */
+      body.export .flyer { display: none; }
+      body.export .flyer.on { display: grid; }
+    </style>
+  </head>
+  <body>
+    <!-- ══ 01 ══════════════════════════════════════════════════════════ -->
+    <article class="flyer f01" data-c="01">
+      <div class="columns"><i style="left:84px"></i><i style="left:306px"></i><i style="left:528px"></i><i style="left:750px"></i><i style="left:996px"></i></div>
+      <header class="bar">
+        <span class="mono kicker">Personal finance</span>
+        <span class="mono">01 / 03</span>
+      </header>
+      <div class="stage">
+        <h1 class="fit">
+          <span>You earn it.</span>
+          <span>By the 30th,</span>
+          <span>it's gone.</span>
+        </h1>
+        <div class="rule"></div>
+        <p class="fit">
+          <span class="l">Money leaves in small amounts, in the same order,</span>
+          <span class="l">every month. See the order first. Then decide what stays.</span>
+        </p>
+      </div>
+      <footer class="foot">
+        <span class="cta">
+          Learn more
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square">
+            <path d="M4 12h15M13 6l6 6-6 6" />
+          </svg>
+        </span>
+        <span class="sign">
+          <span class="mono">Money Mastery Code</span><br />
+          <span class="mono who">Prosper Betiang</span>
+        </span>
+      </footer>
+    </article>
+
+    <!-- ══ 02 ══════════════════════════════════════════════════════════ -->
+    <article class="flyer f02" data-c="02">
+      <div class="columns"><i style="left:84px"></i><i style="left:306px"></i><i style="left:528px"></i><i style="left:750px"></i><i style="left:996px"></i></div>
+      <header class="bar">
+        <span class="mono kicker">Financial literacy</span>
+        <span class="name">Money Mastery Code</span>
+        <span class="mono">02 / 03</span>
+      </header>
+      <div class="stage">
+        <h1 class="fit">
+          <span>Nobody shows you</span>
+          <span>the <em>working.</em></span>
+        </h1>
+        <p class="fit">
+          <span class="l">Advice about money is free and everywhere.</span>
+          <span class="l">Being able to weigh it is the part you have to build.</span>
+        </p>
+      </div>
+      <footer class="foot">
+        <span class="cta">
+          Learn more
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square">
+            <path d="M4 12h15M13 6l6 6-6 6" />
+          </svg>
+        </span>
+        <span class="sign">
+          <span class="mono who">Prosper Betiang</span>
+        </span>
+      </footer>
+    </article>
+
+    <!-- ══ 03 ══════════════════════════════════════════════════════════ -->
+    <article class="flyer f03" data-c="03">
+      <div class="columns"><i style="left:84px"></i><i style="left:306px"></i><i style="left:528px"></i><i style="left:750px"></i><i style="left:996px"></i></div>
+      <header class="bar">
+        <span class="mono kicker">Where to begin</span>
+        <span class="mono">03 / 03</span>
+      </header>
+      <div class="stage">
+        <h1 class="fit">
+          <span>Start with</span>
+          <span>four questions.</span>
+        </h1>
+        <ol>
+          <li><b>01</b> What you earn</li>
+          <li><b>02</b> What you owe</li>
+          <li><b>03</b> What you keep</li>
+          <li><b>04</b> What you do with the rest</li>
+        </ol>
+        <p class="fit">
+          <span class="l">Answer those four and you can read the advice</span>
+          <span class="l">that comes next, including the parts worth ignoring.</span>
+        </p>
+      </div>
+      <footer class="foot">
+        <span class="cta">
+          Learn more
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square">
+            <path d="M4 12h15M13 6l6 6-6 6" />
+          </svg>
+        </span>
+        <span class="sign">
+          <span class="mono">Money Mastery Code</span><br />
+          <span class="mono who">Prosper Betiang</span>
+        </span>
+      </footer>
+    </article>
+
+    <script>
+      /* Query contract
+         ?c=01&s=square    → one flyer, 1080×1080, for screenshot export
+         ?c=01&s=portrait  → one flyer, 1080×1440
+         ?all              → all six for review
+      */
+      const q = new URLSearchParams(location.search);
+      const c = q.get("c");
+      const s = q.get("s");
+      const single = Boolean(c || s);
+
+      if (single) document.body.classList.add("export");
+
+      document.querySelectorAll(".flyer").forEach((el) => {
+        if (c && el.dataset.c !== c) return;
+        if (s === "portrait") el.classList.add("portrait");
+        el.classList.add("on");
+      });
+
+      /* Headlines are set at a size that reads big, then scaled down until the
+         longest line fits the measure. Copy edits can never push a line past
+         the margin and into the bleed. */
+      function fitToMeasure(el) {
+        for (let i = 0; i < 60; i++) {
+          const over = el.scrollWidth - el.clientWidth;
+          if (over <= 1) return;
+          const size = parseFloat(getComputedStyle(el).fontSize);
+          const ratio = el.clientWidth / (el.clientWidth + over);
+          el.style.fontSize = size * ratio * 0.998 + "px";
+        }
+      }
+
+      document.querySelectorAll(".fit").forEach(fitToMeasure);
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(() =>
+          document.querySelectorAll(".fit").forEach(fitToMeasure)
+        );
+      }
+    </script>
+  </body>
+</html>
