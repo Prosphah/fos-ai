@@ -513,6 +513,15 @@ export default function PrivacyPage() {
               policy, a copy of which we will supply on request.
             </P>
             <P>
+              To tell your visits apart from other people&rsquo;s, we also send TikTok a random
+              number generated for your browser, described in the cookie table below. It is not
+              derived from anything about you and we do not attach your name, email address or
+              any other detail to it. Its purpose is narrow: without some way to recognise the
+              same browser returning, a page view from someone who never buys is indistinguishable
+              from one that does, and TikTok cannot tell which of its adverts are working. Clearing
+              your cookies for this site removes it, and a new one is issued on your next visit.
+            </P>
+            <P>
               On a completed purchase we also send your email address to TikTok in a hashed form.
               This is called advanced matching, and it is what lets a sale be attributed to the
               advert that led to it when the sale happens on a different device or browser from
@@ -528,6 +537,7 @@ export default function PrivacyPage() {
               head={["Cookie", "Purpose", "Duration"]}
               rows={[
                 ["mmc_variant", "Keeps you on the same version of the page between visits, so the A/B test compares like with like. First-party, never shared, never used to identify you.", "90 days"],
+                ["mmc_vid", "A random number this site generates for your browser, so TikTok can tell your visits apart from other people&rsquo;s and tell whether an advert led to a sale. It is generated at random and tells us nothing about you. We never link it to your name or email address.", "13 months"],
                 ["_ttp", "Set by TikTok. Ties your visit to the TikTok advert you arrived from so the advert can be measured, and so the same person is not shown it twice.", "13 months"],
                 ["ttclid", "Set by TikTok. The ID of the advert you arrived on. It is also placed in the address bar as a query parameter when you land from an advert.", "13 months"],
                 ["ttcsid_[pixel id]", "Set by TikTok. Distinguishes separate visits from the same browser for measurement purposes.", "13 months"],
@@ -557,7 +567,7 @@ export default function PrivacyPage() {
                 ["Supabase", "Our database", "Your name, email address, and what you bought"],
                 ["Zoho Mail", "Sending your confirmation email", "Your name, email address, and order details"],
                 ["Make.com", "Passing a completed purchase to that email system", "Your name, email address, and order details"],
-                ["TikTok", "Measuring which of its adverts lead to a sale, and showing you relevant adverts", "Your IP address, your browser, the TikTok advert ID, what you did on the sales pages, and — on a purchase only — an irreversible hash of your email address"],
+                ["TikTok", "Measuring which of its adverts lead to a sale, and showing you relevant adverts", "Your IP address, your browser, the TikTok advert ID, what you did on the sales pages, the random browser number described above, and — on a purchase only — an irreversible hash of your email address"],
               ]}
             />
 

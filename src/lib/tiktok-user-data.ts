@@ -41,6 +41,19 @@ export function hashEmailForTikTok(email: string): string {
 }
 
 /**
+ * The anonymous visitor id, hashed for use as external_id.
+ *
+ * Hashed for the same reason the email is, with the same consequences: the
+ * browser holds the raw id and TikTok only ever sees the digest. That is not
+ * strictly necessary — the id is random and identifies nobody — but keeping one
+ * rule for every field sent to TikTok means there is no case where a raw value
+ * goes out by accident, which is the failure that would actually matter.
+ */
+export function hashVisitorIdForTikTok(visitorId: string): string {
+  return hashForTikTok(visitorId, (value) => value.trim());
+}
+
+/**
  * Phone, in the form TikTok hashes it: digits only, in E.164.
  *
  * Kept for the day a phone number is collected. It is deliberately not wired to

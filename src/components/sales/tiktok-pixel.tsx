@@ -9,6 +9,7 @@ import {
   isValidTikTokPixelId,
   trackTikTokPageView,
 } from "@/lib/tiktok";
+import { identifyTikTokUser } from "@/components/sales/tiktok-events";
 
 const ENABLED = isValidTikTokPixelId(TIKTOK_PIXEL_ID);
 
@@ -18,7 +19,15 @@ const ENABLED = isValidTikTokPixelId(TIKTOK_PIXEL_ID);
  * Kept verbatim rather than rewritten into a loader of our own. This snippet is
  * what TikTok's Pixel Helper, their diagnostics and their support all expect to
  * find, so any clever rewrite of it becomes something that has to be
- * re-explained every time it misbehaves. The only edit is the id.
+ * re-explained every time it misbehaves.
+ *
+ * One edit beyond the id, and it is load-bearing: the trailing `ttq.page()` is
+ * removed. Identification has to happen before the first page view is sent, and
+ * the id is a prop this component receives rather than something the inline
+ * snippet can read. Calling page() here would fire it at parse time, before
+ * React has rendered, and every PageView would go out with no external_id —
+ * the exact coverage gap this work exists to close. This component calls
+ * ttq.page() itself, once, after identifying.
  *
  * If a consent banner is ever added — the reasoning for not having one is in the
  * privacy policy, section 15 — `ttq.holdConsent()` goes immediately before
@@ -34,7 +43,6 @@ var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n
 
 
   ttq.load('${TIKTOK_PIXEL_ID}');
-  ttq.page();
 }(window, document, 'ttq');`;
 
 /**
@@ -78,23 +86,47 @@ var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n
  * Renders nothing at all unless a valid pixel id is configured, so a deployment
  * without one is genuinely untracked rather than half-tracked.
  */
-export function TikTokPixel() {
+export function TikTokPixel({ externalId }: { externalId: string | null }) {
   const pathname = usePathname();
   const seenPath = useRef(pathname);
+  const identified = useRef(false);
 
   useEffect(() => {
     /*
-     * The base code calls ttq.page() once, when it is parsed. Every route change
-     * after that is a client-side navigation, and this layout survives those: the
-     * buyer comes back from Paystack to /success, and the "back to the sales
-     * page" link goes on to the storefront, neither of which loads a fresh
-     * document. Without this effect both are invisible, and they are two of the
-     * four most valuable views in the funnel.
+     * Identify first, then report the view. Order is the whole point: ttq sends
+     * events in the order they are queued, so a page() queued ahead of
+     * identify() leaves without the external_id attached, and no later event can
+     * put it right.
      *
-     * Compared against the previous path rather than fired on mount, because the
-     * base code has already reported the mount — whether it is the first one or
-     * a remount after the buyer stepped out to /login and back. Firing here too
-     * would count that single visit twice.
+     * Skipped when there is no id, which is the expected state on the app
+     * hostname and in local development where the proxy does not run. Sending
+     * an empty string instead would raise the coverage number TikTok displays
+     * while matching nobody — a better-looking score for the same zero results.
+     */
+    if (identified.current) return;
+    identified.current = true;
+
+    if (externalId) {
+      identifyTikTokUser({ external_id: externalId });
+    }
+
+    /*
+     * The base code's own ttq.page() was removed so that it could land here,
+     * after identify rather than before it. This is that replacement.
+     */
+    trackTikTokPageView();
+  }, [externalId]);
+
+  useEffect(() => {
+    /*
+     * Later route changes. This layout survives client-side navigation — the
+     * buyer comes back from Paystack to /success, and the "back to the sales
+     * page" link goes on to the storefront — and neither loads a fresh
+     * document, so nothing else would report them.
+     *
+     * Compared against the previous path rather than fired on mount, because
+     * the effect above has already reported the mount. Firing both would count
+     * one view twice.
      */
     if (seenPath.current === pathname) return;
     seenPath.current = pathname;

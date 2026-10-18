@@ -44,6 +44,29 @@ const TEST_VARIANTS: Variant[] = ["a", "c"];
 const COOKIE = "mmc_variant";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 90;
 
+/**
+ * An anonymous id for the browser, for TikTok's external_id.
+ *
+ * This is the only customer identifier that can reach a PageView. Email cannot:
+ * on a cold ad click nobody knows who the visitor is until they type an address
+ * into the checkout form, which is the last step of the funnel. An id minted
+ * here is the one thing available at the very first event.
+ *
+ * What it is NOT: a person. It is random, it is never derived from anything
+ * about the visitor, and it is not linked to the email in any way TikTok can
+ * see — the two meet only inside TikTok's own matching, and only if that same
+ * person's Purchase event later arrives with an email hash.
+ *
+ * Set here rather than from a client component because this is the only place
+ * in the request lifecycle that can set a cookie before the page renders. Doing
+ * it in the browser would mean the first PageView went out with no id at all,
+ * which is precisely the visit the id exists to cover.
+ */
+const VISITOR_COOKIE = "mmc_vid";
+
+/** Matches TikTok's own cookie lifetime, so the two expire together. */
+const VISITOR_MAX_AGE = 60 * 60 * 24 * 395;
+
 function isVariant(value: unknown): value is Variant {
   return typeof value === "string" && value in VARIANT_ROUTES;
 }
@@ -101,6 +124,18 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  /*
+   * The anonymous visitor id, on every storefront response rather than only the
+   * ones that rewrite.
+   *
+   * It has to be issued before the page is served rather than alongside the
+   * variant cookie, or it would be missing on exactly two responses that matter:
+   * the /success page, which is excluded from rewriting and is where the
+   * Purchase event is sent from, and any explicit /a /b /c link an ad points at.
+   */
+  const visitorId =
+    request.cookies.get(VISITOR_COOKIE)?.value ?? crypto.randomUUID();
+
   // Everything under /money-mastery-code/ is the app's own addressing and must
   // keep resolving on the sales hostname. That covers the Paystack callbackUrl,
   // which is built from the request origin plus /money-mastery-code/success,
@@ -113,7 +148,7 @@ export function proxy(request: NextRequest) {
   // It also keeps these requests out of the test, so a buyer is never
   // re-shuffled onto a different page after they pay.
   if (request.nextUrl.pathname.startsWith("/money-mastery-code/")) {
-    return NextResponse.next();
+    return withVisitorId(NextResponse.next(), request, visitorId);
   }
 
   const { variant, shouldPin } = resolveVariant(request);
@@ -132,6 +167,32 @@ export function proxy(request: NextRequest) {
     response.cookies.set(COOKIE, variant, {
       path: "/",
       maxAge: COOKIE_MAX_AGE,
+      sameSite: "lax",
+      secure: true,
+    });
+  }
+
+  return withVisitorId(response, request, visitorId);
+}
+
+/**
+ * Puts the anonymous visitor id on a response, but only when it is not already
+ * there.
+ *
+ * Rewriting an existing id would renumber a returning visitor on every request,
+ * and TikTok would read that as a brand new person each time — destroying the
+ * very history the id is kept for. Re-setting an unchanged cookie is also
+ * pointless work on the hot path.
+ */
+function withVisitorId(
+  response: NextResponse,
+  request: NextRequest,
+  visitorId: string,
+): NextResponse {
+  if (!request.cookies.get(VISITOR_COOKIE)) {
+    response.cookies.set(VISITOR_COOKIE, visitorId, {
+      path: "/",
+      maxAge: VISITOR_MAX_AGE,
       sameSite: "lax",
       secure: true,
     });

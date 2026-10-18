@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import type { ReactNode } from "react";
 
 import { TikTokPixel } from "@/components/sales/tiktok-pixel";
+import { hashVisitorIdForTikTok } from "@/lib/tiktok-user-data";
 import { SALES_ORIGIN } from "@/lib/seo";
 
 /**
@@ -14,14 +16,37 @@ export const metadata: Metadata = {
   metadataBase: new URL(SALES_ORIGIN),
 };
 
-export default function MoneyMasteryLayout({ children }: { children: ReactNode }) {
+export default async function MoneyMasteryLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  /*
+   * The anonymous visitor id, read from the cookie src/proxy.ts issues and
+   * hashed here rather than in the browser.
+   *
+   * That makes this layout dynamic, which it now has to be: a per-visitor id
+   * cannot be baked into a cached page. On the sales hostname the storefront
+   * root was already forced to `private, no-store` by the proxy precisely so
+   * the A/B test could not collapse, so nothing was being cached here before.
+   * The cost is real but small, and the alternative is a PageView that reaches
+   * TikTok with no identifier at all — the single largest gap in the event
+   * match quality score.
+   *
+   * Null when the cookie is missing, which is the expected state on the app
+   * hostname and in local development, where the proxy does not run.
+   */
+  const visitorId = (await cookies()).get("mmc_vid")?.value ?? null;
+
   return (
     <div className="sales-root min-h-screen font-sans">
       {/* Mounted here rather than in the root layout, so the storefront and
           the FOS·AI app stay separate properties. The privacy policy promises
           the app carries no analytics, and the cheapest way to keep that true
           is for the tag to have no route into the app at all. */}
-      <TikTokPixel />
+      <TikTokPixel
+        externalId={visitorId ? hashVisitorIdForTikTok(visitorId) : null}
+      />
       {children}
     </div>
   );
