@@ -63,6 +63,19 @@ const BATCH_LIMIT = 5;
 const VERIFY_TIMEOUT_MS = 4_000;
 
 /**
+ * The sweep stops starting new buyers once this much of the run has elapsed.
+ *
+ * The batch is a time budget, not a quota. Worst case per buyer is two
+ * four-second verifies plus a three-second Make post plus Supabase writes,
+ * so five buyers can outrun a limits-free loop — and a run that overruns
+ * maxDuration is killed mid-flight, losing the later buyers, the 90-day
+ * cleanup, and the HTTP status the watchdog records. Checking at 40s leaves
+ * the in-flight buyer room to finish and the cleanup room to run inside the
+ * 60s ceiling.
+ */
+const HARD_STOP_MS = 40_000;
+
+/**
  * How many of a buyer's pending checkouts get verified before giving up.
  * Multiple attempts by one person are normal (a declined card followed by a
  * retry); two covers a declined attempt plus the retry. Older rows than that
@@ -141,9 +154,15 @@ export async function GET(request: Request) {
   // the next run cannot email them twice.
   const byEmail = new Map<string, PendingRow[]>();
   for (const row of rows) {
-    const existing = byEmail.get(row.email);
+    // Group on the canonical form the checkout route and the webhook both
+    // write. Every stored email is trimmed and lowercased, but the grouping
+    // must not depend on writer discipline staying perfect: two spellings
+    // of one address would split one buyer into two map entries and email
+    // the same person twice in a single run.
+    const key = row.email.trim().toLowerCase();
+    const existing = byEmail.get(key);
     if (existing) existing.push(row);
-    else byEmail.set(row.email, [row]);
+    else byEmail.set(key, [row]);
   }
 
   const buyers = [...byEmail.entries()].slice(0, BATCH_LIMIT);
@@ -155,6 +174,16 @@ export async function GET(request: Request) {
   const failures: { reference: string; reason: string }[] = [];
 
   for (const [email, buyerRows] of buyers) {
+    // No new buyer once the run is old. Continuing rather than breaking
+    // keeps the loop draining to the 90-day cleanup below, with every
+    // remaining buyer counted in `skipped` so the response stays honest.
+    // `now` is the request start captured above, so the comparison also
+    // covers the time the SELECT spent.
+    if (Date.now() - now > HARD_STOP_MS) {
+      skipped += 1;
+      continue;
+    }
+
     // Verify before writing a word. A pending row whose Paystack transaction
     // actually succeeded is a buyer who paid and whose webhook was lost —
     // the worst possible recipient of a "finish your purchase" email.
