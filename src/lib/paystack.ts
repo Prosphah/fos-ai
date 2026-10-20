@@ -87,12 +87,16 @@ export async function initializeTransaction(params: {
 }
 
 export async function verifyTransaction(
-  reference: string
+  reference: string,
+  timeoutMs?: number
 ): Promise<PaystackVerifiedTransaction | null> {
   const response = await fetch(`${PAYSTACK_API}/transaction/verify/${reference}`, {
     method: "GET",
     headers: { Authorization: `Bearer ${secretKey()}` },
     cache: "no-store",
+    // Optional so the existing caller is unaffected. The cron sweeps pass one:
+    // a verify that hangs is a verify that eats the sweep's time budget.
+    signal: timeoutMs ? AbortSignal.timeout(timeoutMs) : undefined,
   });
 
   if (!response.ok) return null;

@@ -10,6 +10,10 @@ export const dynamic = "force-dynamic";
 const EXPECTED_JOBS = [
   { name: "send-reminders", maxSilentMinutes: 5 },
   { name: "process-recurring-transactions", maxSilentMinutes: 26 * 60 },
+  // Hourly, like resend-purchase-emails. 90 minutes of slack, because a
+  // silent recovery sweep does not strand a paying customer the way a silent
+  // confirmation sweep does — it just means abandoned checkouts go unchased.
+  { name: "abandoned-checkout-recovery", maxSilentMinutes: 90 },
 ];
 
 interface CronJobRow {
