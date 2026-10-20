@@ -137,6 +137,7 @@ export function TransactionForm({ onSuccess, defaultType = "expense", defaultDat
   const amountValue = useWatch({ control, name: "amount" });
   const isRecurring = useWatch({ control, name: "isRecurring" });
   const selectedCategoryId = useWatch({ control, name: "categoryId" });
+  const recurringEndError = errors.recurringConfig?.end_date?.message;
 
   useEffect(() => {
     async function loadData() {
@@ -434,25 +435,44 @@ export function TransactionForm({ onSuccess, defaultType = "expense", defaultDat
           </div>
         </label>
         {isRecurring && (
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <div className="relative">
-              <select
-                {...register("recurringConfig.frequency")}
-                style={{ ...inputStyle, appearance: "none", paddingRight: "32px", fontSize: "0.875rem" }}
-              >
-                {recurringOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown size={14} style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", color: "var(--text-3)", pointerEvents: "none" }} />
+          <div className="mt-3">
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label style={{ fontFamily: "var(--font-mono-family)", fontSize: "0.6875rem", fontWeight: 600, color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                  Repeats
+                </label>
+                <div className="relative mt-2">
+                  <select
+                    {...register("recurringConfig.frequency")}
+                    style={{ ...inputStyle, appearance: "none", paddingRight: "32px", fontSize: "0.875rem" }}
+                  >
+                    {recurringOptions.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown size={14} style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", color: "var(--text-3)", pointerEvents: "none" }} />
+                </div>
+              </div>
+              <div>
+                <label style={{ fontFamily: "var(--font-mono-family)", fontSize: "0.6875rem", fontWeight: 600, color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                  End date
+                </label>
+                <input
+                  type="date"
+                  {...register("recurringConfig.end_date")}
+                  style={{ ...inputStyle, fontSize: "0.875rem" }}
+                  className="mt-2"
+                />
+              </div>
             </div>
-            <input
-              type="date"
-              {...register("recurringConfig.end_date")}
-              style={{ ...inputStyle, fontSize: "0.875rem" }}
-            />
+            <p className="mt-1.5" style={{ fontSize: "0.6875rem", color: "var(--text-3)" }}>
+              Repeats automatically until the end date. Leave it empty and it runs forever.
+            </p>
+            {recurringEndError && (
+              <p className="mt-1.5" style={{ fontSize: "0.75rem", color: "var(--rose)" }}>{recurringEndError}</p>
+            )}
           </div>
         )}
       </div>
