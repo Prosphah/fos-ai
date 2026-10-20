@@ -272,17 +272,18 @@ export async function triggerAbandonedCheckoutEmail(
 export async function claimRemainingCheckoutsForEmail(
   email: string,
 ): Promise<void> {
+  const claimedAt = new Date().toISOString();
   try {
     const { error } = await createAdminClient()
       .from("enrollments")
       .update({
-        recovery_started_at: new Date().toISOString(),
+        recovery_started_at: claimedAt,
         recovery_attempts: 1,
         // Siblings of an emailed checkout are covered by that one email, not
         // mailed individually; the pair marks the buyer as contacted so a
         // glance at the table reads the same on every row of theirs.
         followup_step: 1,
-        followup_sent_at: new Date().toISOString(),
+        followup_sent_at: claimedAt,
       })
       .eq("email", email.trim().toLowerCase())
       .eq("status", "pending")

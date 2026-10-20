@@ -12,14 +12,28 @@
 -- contacted before that change - the first five deliveries - are visible
 -- there too.
 --
--- Run in the Supabase SQL Editor. Safe to re-run: it only touches rows
--- where followup_sent_at is still null.
+-- Pending rows only: a row that was contacted and then paid keeps
+-- recovery_started_at set, but the followup pair must read clean on every
+-- non-pending row, matching the reset-on-payment contract and the sweep's
+-- own writes. Non-pending rows are corrected explicitly below, which also
+-- undoes any stamp an earlier unrestricted draft of this backfill left on
+-- converted rows.
+--
+-- Run in the Supabase SQL Editor. Safe to re-run: both updates only touch
+-- rows that still disagree with the recovery state.
 
 update enrollments
    set followup_step = recovery_attempts,
        followup_sent_at = recovery_started_at
- where recovery_started_at is not null
+ where status = 'pending'
+   and recovery_started_at is not null
    and followup_sent_at is null;
+
+update enrollments
+   set followup_step = 0,
+       followup_sent_at = null
+ where status <> 'pending'
+   and (followup_step <> 0 or followup_sent_at is not null);
 
 comment on column enrollments.followup_sent_at is
   'When the abandoned-checkout recovery email was triggered for this buyer.
