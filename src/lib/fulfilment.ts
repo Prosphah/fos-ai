@@ -37,6 +37,11 @@ export async function fulfilEnrollment(params: {
         paystack_transaction_id: params.transactionId,
         course_access_url: getCourseAccessUrl(),
         source_variant: params.sourceVariant ?? null,
+        // A followed-up checkout that ends in a payment reads clean again —
+        // the checkout-intents migration's contract ("reset to 0 on
+        // payment"). These columns describe pending rows only.
+        followup_step: 0,
+        followup_sent_at: null,
       },
       { onConflict: "paystack_reference" }
     )

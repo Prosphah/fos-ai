@@ -85,15 +85,23 @@ function payloadFor(checkout: AbandonedCheckoutEmail) {
  * sale lost.
  */
 async function claim(reference: string): Promise<boolean> {
+  const claimedAt = new Date().toISOString();
   try {
     const { data, error } = await createAdminClient()
       .from("enrollments")
       .update({
-        recovery_started_at: new Date().toISOString(),
+        recovery_started_at: claimedAt,
         // One touch, by design. The column exists so a second touch at a
         // longer delay can be added without a migration; until then no path
         // increments it past 1.
         recovery_attempts: 1,
+        // The readable pair the checkout-intents migration added for this
+        // exact purpose, kept in lockstep with the recovery columns: set on
+        // claim, cleared on release, cleared again on payment by the fulfil
+        // upsert. Both stamps are the claim moment; the Make post follows
+        // within the 3s trigger timeout.
+        followup_step: 1,
+        followup_sent_at: claimedAt,
       })
       .eq("paystack_reference", reference)
       // A paid row must never be claimable. Between this sweep's SELECT and
@@ -145,7 +153,14 @@ async function release(reference: string): Promise<boolean> {
   const attempt = async (): Promise<boolean> => {
     const { error } = await createAdminClient()
       .from("enrollments")
-      .update({ recovery_started_at: null, recovery_attempts: 0 })
+      .update({
+        recovery_started_at: null,
+        recovery_attempts: 0,
+        // Released means nothing went out: the readable pair resets with the
+        // claim, so a failed send never looks like a delivered email.
+        followup_step: 0,
+        followup_sent_at: null,
+      })
       .eq("paystack_reference", reference);
 
     if (error) {
@@ -263,6 +278,11 @@ export async function claimRemainingCheckoutsForEmail(
       .update({
         recovery_started_at: new Date().toISOString(),
         recovery_attempts: 1,
+        // Siblings of an emailed checkout are covered by that one email, not
+        // mailed individually; the pair marks the buyer as contacted so a
+        // glance at the table reads the same on every row of theirs.
+        followup_step: 1,
+        followup_sent_at: new Date().toISOString(),
       })
       .eq("email", email.trim().toLowerCase())
       .eq("status", "pending")
