@@ -54,6 +54,14 @@ create table if not exists public.cron_http_requests (
 create index if not exists cron_http_requests_queued_idx
   on public.cron_http_requests (queued_at);
 
+-- No policies, deliberately. This table is cron-internal bookkeeping: the
+-- jobs write it as postgres (the table owner, which bypasses RLS) and
+-- cron_health reads it inside a SECURITY DEFINER function owned by the same
+-- role. Enabling RLS with zero policies makes the table fully opaque to
+-- every other role - so even if a future grant drift re-opens the privilege
+-- door, no anon or authenticated client can read a row through it.
+alter table public.cron_http_requests enable row level security;
+
 -- Internal bookkeeping, not app data. Keep it out of the API surface.
 revoke all on public.cron_http_requests from anon, authenticated;
 
