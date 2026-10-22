@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "emails": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "skillPath": "skills/emails/SKILL.md",
+      "computedHash": "f6e4b89f9e5f07f3cd2f47637d48f525ea3ca433a8cf43380be61c1e5f2b466b"
+    }
+  }
+}
