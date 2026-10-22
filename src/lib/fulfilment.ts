@@ -52,6 +52,70 @@ export async function fulfilEnrollment(params: {
     throw new Error(`Could not record enrollment: ${upsertError.message}`);
   }
 
+  // A payment is the end of the buyer's recovery story, not just of the row
+  // it belongs to. A buyer who attempts several checkouts and pays one of
+  // them leaves the others pending with a first-touch claim on them; the
+  // abandoned-checkout sweep would later select those rows (touch 1 looks
+  // for unclaimed pending rows, touch 2 looks for pending rows at step 1)
+  // and email someone whose payment already landed. The upsert above hushes
+  // the paid row itself — these two updates hush the other attempts, at the
+  // one place every payment truth passes through: the webhook's fulfil
+  // path and the recovery sweep's rescue path both call this function.
+  //
+  // followup_step 2 is the sweep's "no further touch" marker, and the pair
+  // keeps travelling with recovery_attempts, so rows read one story:
+  // contacted once, second touch closed by a payment, never further mail.
+  // followup_sent_at is cleared rather than kept — no second email was ever
+  // triggered for these rows — which also makes them invisible to the
+  // second-touch SELECT's age test on its own.
+  const hushedAt = new Date().toISOString();
+
+  // Rows the recovery sweep already claimed (the first email went out at
+  // touch-1 time and recovery_started_at records it): preserve that stamp.
+  const { error: claimedSiblingsError } = await admin
+    .from("enrollments")
+    .update({
+      recovery_attempts: 2,
+      followup_step: 2,
+      followup_sent_at: null,
+    })
+    .eq("email", normalizedEmail)
+    .eq("status", "pending")
+    .neq("paystack_reference", params.reference)
+    .not("recovery_started_at", "is", null);
+
+  if (claimedSiblingsError) {
+    console.error(
+      `[fulfilment] Could not hush claimed sibling checkouts for ${normalizedEmail}: ${claimedSiblingsError.message}`
+    );
+  }
+
+  // Rows the sweep never claimed: stamp them now. claimRemainingCheckoutsFor
+  // Email promises that once a buyer "has been contacted — or has paid",
+  // every pending row under their email is moot, but only payment carries a
+  // hook that fires even when no email ever went out, so the stamp is
+  // written here; without it, an hour-old unclaimed attempt would get a
+  // recovery email even though the buyer paid a different attempt minutes
+  // after starting it.
+  const { error: freshSiblingsError } = await admin
+    .from("enrollments")
+    .update({
+      recovery_started_at: hushedAt,
+      recovery_attempts: 2,
+      followup_step: 2,
+      followup_sent_at: null,
+    })
+    .eq("email", normalizedEmail)
+    .eq("status", "pending")
+    .neq("paystack_reference", params.reference)
+    .is("recovery_started_at", null);
+
+  if (freshSiblingsError) {
+    console.error(
+      `[fulfilment] Could not hush unclaimed sibling checkouts for ${normalizedEmail}: ${freshSiblingsError.message}`
+    );
+  }
+
   if (params.tier !== "course_fosai") {
     return { fosaiInvited: false, fosaiNote: "Course-only tier, no FOS*AI access." };
   }
