@@ -11,6 +11,7 @@ import {
 import { TestimonialsMmb } from "@/components/sales/testimonials-mmb";
 import { ViewContentTracker } from "@/components/sales/tiktok-events";
 import { COURSE_TIERS } from "@/lib/money-mastery";
+import { getPaymentProviderName } from "@/lib/payment-registry";
 
 /**
  * Money Mastery Code · variant B.
@@ -299,6 +300,10 @@ const faqs = [
 export default function MoneyMasteryCodeVariantB() {
   const course = COURSE_TIERS.find((t) => t.id === "course") ?? COURSE_TIERS[0];
   const bundle = COURSE_TIERS.find((t) => t.featured) ?? COURSE_TIERS[1];
+
+  // Read on the server and handed to the form, which shows the Flutterwave
+  // payment-method guide only when that is the provider checkout will use.
+  const provider = getPaymentProviderName();
 
   return (
     <div className="mmb-root">
@@ -831,6 +836,7 @@ export default function MoneyMasteryCodeVariantB() {
                   tone="light"
                   theme="mmb"
                   variant={VARIANT}
+                  provider={provider}
                 />
               </Reveal>
 
@@ -851,6 +857,7 @@ export default function MoneyMasteryCodeVariantB() {
                   label="GET THE COURSE + FOS·AI FOR ₦23,000"
                   theme="mmb"
                   variant={VARIANT}
+                  provider={provider}
                 />
               </Reveal>
             </div>

@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
-import { fulfilEnrollment } from "@/lib/fulfilment";
-import { asStorefrontVariant, getTier, type CourseTier } from "@/lib/money-mastery";
+import { finalizeVerifiedPurchase } from "@/lib/finalize-purchase";
 import { verifyWebhookSignature } from "@/lib/paystack";
-import { triggerPurchaseEmail } from "@/lib/purchase-email";
-import { sendTikTokPurchase } from "@/lib/tiktok-events-api";
-import { parseFullName } from "@/lib/validation/checkout";
+import { getPaymentProviderName } from "@/lib/payment-registry";
 
 type PaystackEvent = {
   event?: string;
@@ -17,7 +14,7 @@ type PaystackEvent = {
     customer?: { email?: string };
     paid_at?: string | null;
     id?: number;
-    metadata?: { tier?: string; source_variant?: string; full_name?: string };
+    metadata?: { tier?: string; source_variant?: string; full_name?: string; phone?: string };
   };
 };
 
@@ -42,91 +39,47 @@ export async function POST(request: Request) {
   }
 
   const data = event.data;
-  const email = (data?.email ?? data?.customer?.email ?? "").trim().toLowerCase();
   const reference = data?.reference;
-  const tier = getTier(data?.metadata?.tier);
+  const email = (data?.email ?? data?.customer?.email ?? "").trim().toLowerCase();
 
-  if (!email || !reference || !tier) {
+  // The checkout row is the authority for the email; the payload's copy is a
+  // fallback. Only the reference is required, because without it there is
+  // nothing to look up or fulfil.
+  if (!reference) {
     return NextResponse.json(
-      { error: "Webhook payload is missing email, reference or tier." },
+      { error: "Webhook payload is missing a reference." },
       { status: 400 }
     );
   }
 
-  // Normalised once here. The webhook is the only writer of the name column,
-  // so this is the last point at which a bad value can be caught before it
-  // becomes a row, and both fulfilment and the email need the same value.
-  const fullName = parseFullName(data?.metadata?.full_name);
-  // Same whitelist as the checkout route, for the same reason: the payload is
-  // signed by Paystack but still arrives over the network.
-  const variant = asStorefrontVariant(data?.metadata?.source_variant);
-
-  const result = await fulfilEnrollment({
-    email,
-    fullName,
-    tier: tier.id as CourseTier,
-    amount: data?.amount ?? tier.amount,
-    reference,
-    transactionId: data?.id ?? null,
-    sourceVariant: variant,
-  });
-
-  // After fulfilment, and deliberately unable to throw. If this raised, the
-  // webhook would answer non-2xx and Paystack would replay it, and the replay
-  // is what produces duplicate enrolment rows and duplicate invitations.
-  const emailResult = await triggerPurchaseEmail({
-    reference,
-    email,
-    fullName,
-    tier: tier.id,
-    amount: data?.amount ?? tier.amount,
-    variant,
-    paidAt: data?.paid_at ?? null,
-    isRetry: false,
-  });
-
-  if (!emailResult.triggered) {
-    // purchase_email_sent_at stays null, so the sweep picks this up.
-    console.error(
-      `[paystack] Purchase email not confirmed for ${reference}: ${emailResult.reason}`,
+  // When PAYMENT_PROVIDER=flutterwave this route can still be hit by a
+  // straggling Paystack webhook. Tag the sale with the provider that actually
+  // sent it, not whichever one is currently selected.
+  if (getPaymentProviderName() !== "paystack") {
+    console.warn(
+      `[paystack] Webhook for ${reference} arrived while PAYMENT_PROVIDER is not paystack; processing it as paystack.`,
     );
   }
 
-  /*
-   * The sale, reported to TikTok. This is the only place a completed purchase is
-   * guaranteed to be observed: the browser may never come back to the success
-   * page, and the pixel may have been blocked. Awaited rather than fired and
-   * forgotten, because a serverless function freezes the moment the response is
-   * sent and an in-flight request would not survive that. It cannot throw and
-   * carries its own timeout, so it cannot cost the replay that duplicates
-   * enrolments.
-   *
-   * The success page sends a second copy of this same event, joined on the
-   * reference below as event_id. If the Diagnostics tab reports one sale twice,
-   * drop the browser half rather than this one.
-   */
-  const tiktokResult = await sendTikTokPurchase({
-    eventId: reference,
-    amountInKobo: data?.amount ?? tier.amount,
-    contentId: tier.id,
-    contentName: tier.name,
-    sourceVariant: variant,
-    // Advanced Matching. The email is the only identifier this codebase holds
-    // that identifies a person rather than a purchase, and it is hashed inside
-    // the sender — no plaintext address crosses this boundary.
-    email,
-  });
-
-  if (!tiktokResult.sent) {
-    console.error(
-      `[tiktok] Purchase not reported for ${reference}: ${tiktokResult.reason}`,
-    );
-  }
+  const result = await finalizeVerifiedPurchase(
+    {
+      reference,
+      status: data?.status ?? "success",
+      amount: data?.amount ?? 0,
+      currency: data?.currency ?? "NGN",
+      email,
+      paidAt: data?.paid_at ?? null,
+      transactionId: data?.id ?? null,
+      metadata: data?.metadata ?? null,
+    },
+    "paystack",
+  );
 
   return NextResponse.json({
     received: true,
-    fosaiInvited: result.fosaiInvited,
-    purchaseEmailTriggered: emailResult.triggered,
-    tiktokPurchaseSent: tiktokResult.sent,
+    fulfilled: result.fulfilled,
+    reason: result.reason,
+    purchaseEmailTriggered: result.purchaseEmailTriggered,
+    tiktokPurchaseSent: result.tiktokPurchaseSent,
   });
 }

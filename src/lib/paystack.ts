@@ -13,6 +13,8 @@ export type PaystackVerifiedTransaction = {
   amount: number;
   currency: string;
   email: string;
+  /** Paystack does not carry a customer phone; kept for interface symmetry. */
+  phone: string | null;
   paidAt: string | null;
   transactionId: number | null;
   metadata: Record<string, unknown> | null;
@@ -54,6 +56,7 @@ export async function initializeTransaction(params: {
   reference: string;
   callbackUrl: string;
   metadata: Record<string, string | number | boolean>;
+  phone?: string | null;
 }): Promise<PaystackInitializeResult> {
   const response = await fetch(`${PAYSTACK_API}/transaction/initialize`, {
     method: "POST",
@@ -68,7 +71,12 @@ export async function initializeTransaction(params: {
       reference: params.reference,
       callback_url: params.callbackUrl,
       channels: ["card", "bank", "ussd", "bank_transfer"],
-      metadata: params.metadata,
+      metadata: {
+        ...params.metadata,
+        // Paystack has no customer.phone field on initialize, so the number
+        // rides in metadata and is read back by the webhook for TikTok.
+        ...(params.phone ? { phone: params.phone } : {}),
+      },
     }),
   });
 
@@ -111,6 +119,7 @@ export async function verifyTransaction(
     amount: data.amount,
     currency: data.currency ?? "NGN",
     email: data.customer?.email ?? data.email ?? "",
+    phone: null,
     paidAt: data.paid_at ?? null,
     transactionId: data.id ?? null,
     metadata: data.metadata ?? null,

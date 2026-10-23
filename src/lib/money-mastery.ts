@@ -88,6 +88,18 @@ export function majorUnits(amountInKobo: number): number {
 }
 
 /**
+ * The gift price: 20% off the list price, in kobo.
+ *
+ * Computed from the tier rather than stored as a second constant so the two
+ * prices cannot drift apart. The gift page renders it next to the original,
+ * the checkout route charges it, and the fulfilment guard expects it — all
+ * three read this one function.
+ */
+export function giftAmount(amountInKobo: number): number {
+  return Math.round(amountInKobo * 0.8);
+}
+
+/**
  * A client-supplied variant, whitelisted rather than passed through.
  *
  * The value lands in Paystack metadata and then in enrollments.source_variant,
@@ -188,4 +200,33 @@ export function getStorefrontVariantUrl(sourceVariant?: string): string {
   // is a real, shareable address. Pointing at the root instead would be
   // re-rolling the dice on whoever clicks it.
   return variant ? `https://${host}/${variant}` : `https://${host}/`;
+}
+
+/**
+ * The section of each variant that holds the checkout forms, for returning a
+ * buyer who did not complete a payment to the exact place they left from.
+ *
+ * v2 has no anchor because its pricing block does not carry an id; a variant
+ * whose page is later given one can be added here in a line.
+ */
+const VARIANT_RESUME_ANCHORS: Record<StorefrontVariant, string> = {
+  a: "#pricing",
+  b: "",
+  c: "#options",
+};
+
+/**
+ * Where to send a buyer who abandoned or cancelled a payment.
+ *
+ * The variant is preferred over the address the browser happens to be on: the
+ * buyer may have opened checkout from a forced /c link while carrying an older
+ * cookie, and the recorded purchase is the one they were shown. With no
+ * variant at all this falls back to the storefront root, which is the same
+ * place "Back to Money Mastery Code" goes.
+ */
+export function getStorefrontResumeUrl(sourceVariant?: string): string {
+  const variant = asStorefrontVariant(sourceVariant);
+  if (!variant) return getStorefrontUrl();
+
+  return `${getStorefrontVariantUrl(variant)}${VARIANT_RESUME_ANCHORS[variant]}`;
 }

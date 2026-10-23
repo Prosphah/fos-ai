@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ArrowRight, Loader2 } from "lucide-react";
+import { PaymentGuideModal } from "@/components/sales/payment-guide-modal";
 import { majorUnits, type TierConfig } from "@/lib/money-mastery";
 import { trackTikTokEvent } from "@/lib/tiktok";
 
@@ -10,8 +11,8 @@ type Status = "idle" | "loading" | "error";
 /**
  * v3 checkout.
  *
- * Same /api/checkout endpoint as the other two storefront variants, so
- * Paystack, the webhook and the enrollments table are untouched. Only the
+ * Same /api/checkout endpoint as the other two storefront variants, so the
+ * payment provider, the webhook and the enrollments table are untouched. Only the
  * surface is new: variant C's ground is forest green with a volt-lime
  * call to action, and neither the near-black palette of variant A nor
  * variant B's mint is available here to inherit.
@@ -30,20 +31,35 @@ export function CheckoutForm({
   tier,
   label,
   variant = "c",
+  provider,
 }: {
   tier: TierConfig;
   label: string;
   variant?: "a" | "b" | "c";
+  /**
+   * The payment provider the checkout route will use, decided on the server.
+   * The pre-checkout guide is Flutterwave-specific, so it is shown only when
+   * that is the active provider.
+   */
+  provider?: "paystack" | "flutterwave";
 }) {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState("");
+  const [guideOpen, setGuideOpen] = useState(false);
 
-  async function startCheckout(event: React.FormEvent) {
-    event.preventDefault();
+  const showPaymentGuide = provider === "flutterwave";
+
+  async function beginCheckout() {
     setStatus("loading");
     setError("");
+
+    // Fallback for previews and direct /v3 visits, where the proxy does not
+    // run and therefore never wrote the click id to a cookie.
+    const ttclid =
+      new URLSearchParams(window.location.search).get("ttclid") ?? undefined;
 
     // Fires here for the reason given in ../checkout-form.tsx: onSubmit only
     // runs on a valid submission, and the API round trip buys the pixel time to
@@ -63,7 +79,7 @@ export function CheckoutForm({
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tier: tier.id, email, fullName, variant }),
+        body: JSON.stringify({ tier: tier.id, email, fullName, phone, ttclid, variant }),
       });
 
       const payload = await response.json();
@@ -79,6 +95,28 @@ export function CheckoutForm({
         caught instanceof Error ? caught.message : "Checkout could not start.",
       );
     }
+  }
+
+  /**
+   * The submit handler opens the guide; the CTA is what starts checkout.
+   *
+   * See ../checkout-form.tsx for the reasoning: onSubmit only fires on a valid
+   * form, and closing the guide must leave no half-started payment behind.
+   */
+  function startCheckout(event: React.FormEvent) {
+    event.preventDefault();
+
+    if (showPaymentGuide) {
+      setGuideOpen(true);
+      return;
+    }
+
+    void beginCheckout();
+  }
+
+  function confirmGuide() {
+    setGuideOpen(false);
+    void beginCheckout();
   }
 
   return (
@@ -122,6 +160,27 @@ export function CheckoutForm({
         className="field"
       />
 
+      {/* Optional: see ../checkout-form.tsx for why this is not required. */}
+      <label
+        htmlFor={`v3-phone-${tier.id}`}
+        className="field-label"
+        style={{ marginTop: "0.9rem" }}
+      >
+        WhatsApp number{" "}
+        <span style={{ textTransform: "none", letterSpacing: 0 }}>(optional)</span>
+      </label>
+
+      <input
+        id={`v3-phone-${tier.id}`}
+        type="tel"
+        autoComplete="tel"
+        inputMode="tel"
+        placeholder="0803 123 4567"
+        value={phone}
+        onChange={(event) => setPhone(event.target.value)}
+        className="field"
+      />
+
       <button
         type="submit"
         disabled={status === "loading"}
@@ -151,6 +210,14 @@ export function CheckoutForm({
           your mind.
         </p>
       )}
+
+      {/* Fixed-positioned, so living inside the form costs nothing; see
+          ../payment-guide-modal.tsx. */}
+      <PaymentGuideModal
+        open={guideOpen}
+        onClose={() => setGuideOpen(false)}
+        onConfirm={confirmGuide}
+      />
     </form>
   );
 }

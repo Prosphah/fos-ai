@@ -2,8 +2,8 @@ import { getStorefrontVariantUrl, majorUnits } from "@/lib/money-mastery";
 import { isValidTikTokPixelId } from "@/lib/tiktok";
 import {
   hashEmailForTikTok,
-  hashForTikTok,
-  normalisePhoneForTikTok,
+  hashPhoneForTikTok,
+  hashVisitorIdForTikTok,
 } from "@/lib/tiktok-user-data";
 
 /**
@@ -17,9 +17,10 @@ import {
  * advertisers is to run both and deduplicate, which is what the `event_id`
  * below arranges.
  *
- * The Paystack webhook is the right place to send it from: it is the only place
+ * The payment webhook is the right place to send it from: it is the only place
  * that knows a payment actually settled, and it runs whether or not a human
- * ever comes back to the site.
+ * ever comes back to the site. The success page calls the same path as a
+ * fallback for a webhook that never arrived.
  *
  * Reads a secret. Server only — never import this from a client component.
  */
@@ -49,9 +50,9 @@ const TRACK_PATH = "/open_api/v1.3/event/track/";
 const TIMEOUT_MS = 5_000;
 
 export type TikTokPurchase = {
-  /** Paystack reference. The join key with the browser's copy of this event. */
+  /** Payment reference. The join key with the browser's copy of this event. */
   eventId: string;
-  /** Kobo, as Paystack reports it. */
+  /** Kobo. Both adapters normalise to kobo before this is called. */
   amountInKobo: number;
   contentId: string;
   contentName: string;
@@ -64,11 +65,29 @@ export type TikTokPurchase = {
    */
   email?: string | null;
   /**
-   * E.164, e.g. "+2348031234567". Optional because no part of this codebase
-   * collects a phone number yet — see normalisePhoneForTikTok for what adding
-   * one would have to guarantee.
+   * E.164 digits, e.g. "2348031234567". Optional because checkout asks for a
+   * number but does not require one.
    */
   phone?: string | null;
+  /**
+   * The anonymous mmc_vid cookie. Hashed here and sent as external_id, which
+   * is what ties the Purchase to the PageView TikTok already saw from this
+   * browser — the single largest matching gain available now that a stable
+   * per-person id exists.
+   */
+  externalId?: string | null;
+  /** Buyer IP captured at checkout start. Sent as-is; TikTok does not hash it. */
+  ip?: string | null;
+  /** Buyer user agent captured at checkout start. Sent as-is. */
+  userAgent?: string | null;
+  /** TikTok click id from the ad URL, captured by src/proxy.ts. */
+  ttclid?: string | null;
+  /**
+   * The `_ttp` cookie the TikTok pixel sets. Plain text, captured at checkout
+   * and sent as `user.ttp`, which gives TikTok a second browser-scoped key
+   * alongside ttclid when cookies are not blocked.
+   */
+  ttp?: string | null;
 };
 
 export type TikTokSendResult = {
@@ -113,24 +132,45 @@ export async function sendTikTokPurchase(
    * entire privacy argument for doing this at all, and it is why the hashing
    * cannot be skipped or swapped for plaintext.
    *
-   * `phone` is absent on purpose. No part of this codebase asks a buyer for a
-   * phone number — the checkout form collects a name and an email and nothing
-   * else — so there is nothing to send. Adding a required phone field to
-   * checkout to satisfy a diagnostic is a conversion cost paid for a matching
-   * improvement, and that is a decision about the product rather than about the
-   * pixel.
+   * Every identifier here is one TikTok's Event Match Quality panel asks for.
+   * Together they lift the score from "email only" to a matchable event:
+   *
+   *   - email (hashed) — the strongest identity signal available.
+   *   - phone (hashed) — collected optionally at checkout, E.164 normalised.
+   *   - external_id (hashed) — the anonymous mmc_vid cookie, which is the only
+   *     id TikTok has already seen on this same browser's PageView.
+   *   - ip / user_agent — captured from the checkout request, sent as-is.
+   *   - ttclid — the ad click id, captured by the proxy on landing.
+   *   - ttp — the pixel's own browser cookie, read at checkout when present.
    */
   const email = purchase.email?.trim();
   const phone = purchase.phone?.trim();
+  const externalId = purchase.externalId?.trim();
+  const ip = purchase.ip?.trim();
+  const userAgent = purchase.userAgent?.trim();
+  const ttclid = purchase.ttclid?.trim();
+  const ttp = purchase.ttp?.trim();
+
   const user = {
     ...(email ? { email: hashEmailForTikTok(email) } : {}),
-    ...(phone
-      ? {
-          phone_number: hashForTikTok(phone, (value) =>
-            `+${normalisePhoneForTikTok(value)}`,
-          ),
-        }
+    /*
+     * `phone`, not `phone_number`.
+     *
+     * The browser pixel's identify() call takes `phone_number`; the Events API
+     * takes `phone`. TikTok answers code 0 for an unknown key, so getting this
+     * backwards looks like a working integration while the phone match key is
+     * silently dropped — the exact reason the EMQ panel can stay at zero phone
+     * coverage after a number is collected.
+     */
+    ...(phone ? { phone: hashPhoneForTikTok(phone) } : {}),
+    ...(externalId
+      ? { external_id: hashVisitorIdForTikTok(externalId) }
       : {}),
+    // Not hashed: TikTok matches these against the network request itself.
+    ...(ip ? { ip } : {}),
+    ...(userAgent ? { user_agent: userAgent } : {}),
+    ...(ttclid ? { ttclid } : {}),
+    ...(ttp ? { ttp } : {}),
   };
 
   const payload = {
@@ -166,16 +206,11 @@ export async function sendTikTokPurchase(
         // route path is not one.
         ...(landingUrl.startsWith("http") ? { page: { url: landingUrl } } : {}),
         /*
-         * Advanced Matching, hashed. See the `user` block built above — the
-         * email is SHA-256'd and unsalted so that the same person matches across
-         * every device and browser they buy from, and the address itself never
-         * leaves this process.
-         *
-         * Note what is *not* here: no `external_id`. TikTok accepts one, and it
-         * would be the strongest key available, but this codebase has no stable
-         * per-customer identifier to put in it. The Paystack reference is unique
-         * per purchase, not per person, so hashing it would match exactly one
-         * sale and help nobody.
+         * Advanced Matching. See the `user` block built above: every identity
+         * field is SHA-256'd and unsalted so the same person matches across
+         * devices, while the raw value never leaves this process. IP, user
+         * agent and ttclid are the exception — TikTok matches those against
+         * the request itself and expects them unhashed.
          */
         ...(Object.keys(user).length > 0 ? { user } : {}),
         properties: {

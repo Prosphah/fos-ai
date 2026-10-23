@@ -106,11 +106,11 @@ export function ViewContentTracker({ variant }: { variant: StorefrontVariant }) 
 /**
  * Purchase, fired from the verified success page.
  *
- * This is one of two copies of the same sale. The Paystack webhook posts the
+ * This is one of two copies of the same sale. The payment webhook posts the
  * other through the Events API (see @/lib/tiktok-events-api), because the
  * browser is not a reliable witness to a payment: it may never arrive at the
  * success page, and it may have been blocked outright. Both copies carry the
- * Paystack reference as `event_id`, which is how TikTok tells them apart from
+ * payment reference as `event_id`, which is how TikTok tells them apart from
  * two separate sales.
  *
  * If the Diagnostics tab ever shows one sale counted twice, this component is
@@ -125,8 +125,10 @@ export function PurchaseTracker({
   contentName,
   variant,
   hashedEmail,
+  hashedPhone,
+  hashedExternalId,
 }: {
-  /** The Paystack reference. The join key with the server-side event. */
+  /** The payment reference. The join key with the server-side event. */
   eventId: string;
   amountInKobo: number;
   contentId: string;
@@ -143,6 +145,10 @@ export function PurchaseTracker({
    * existed. One hash, computed once, in the only place that has the address.
    */
   hashedEmail: string | null;
+  /** The buyer's E.164 phone, already SHA-256'd on the server. */
+  hashedPhone: string | null;
+  /** The anonymous visitor id, already SHA-256'd on the server. */
+  hashedExternalId: string | null;
 }) {
   const identified = useRef(false);
 
@@ -150,18 +156,33 @@ export function PurchaseTracker({
   // without the user block and the identification arrives too late to be
   // attached to it. Queued like everything else, so this is still safe if the
   // pixel has not finished loading.
+  //
+  // external_id is repeated here even though the layout identifies with it on
+  // every page: ttq.identify replaces the fields it is given, and the layout's
+  // call may have happened before this one. Repeating it keeps the browser
+  // Purchase carrying the same three keys as the server's copy.
   useEffect(() => {
-    if (identified.current || !hashedEmail) return;
+    if (
+      identified.current ||
+      (!hashedEmail && !hashedPhone && !hashedExternalId)
+    ) {
+      return;
+    }
     identified.current = true;
-    identifyTikTokUser({ email: hashedEmail });
-  }, [hashedEmail]);
+    identifyTikTokUser({
+      ...(hashedEmail ? { email: hashedEmail } : {}),
+      ...(hashedPhone ? { phone_number: hashedPhone } : {}),
+      ...(hashedExternalId ? { external_id: hashedExternalId } : {}),
+    });
+  }, [hashedEmail, hashedPhone, hashedExternalId]);
 
   useOnceEvent("Purchase", {
     event_id: eventId,
     currency: "NGN",
-    // What was actually paid, read back from Paystack rather than taken from
-    // the price printed on the page. A discount applied at the Paystack end
-    // would otherwise be reported at full price, and ROAS would be flattering.
+    // What was actually paid, read back from the provider rather than taken
+    // from the price printed on the page. A discount applied at the provider
+    // end would otherwise be reported at full price, and ROAS would be
+    // flattering.
     value: majorUnits(amountInKobo),
     content_type: "product",
     content_ids: [contentId],

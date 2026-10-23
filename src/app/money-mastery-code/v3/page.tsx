@@ -42,6 +42,7 @@ import {
 } from "@/components/sales/phone-mockups";
 import { ViewContentTracker } from "@/components/sales/tiktok-events";
 import { COURSE_TIERS } from "@/lib/money-mastery";
+import { getPaymentProviderName } from "@/lib/payment-registry";
 import { SITE_ORIGIN, storefrontMetadata } from "@/lib/seo";
 import { SALES_TESTIMONIALS } from "@/lib/sales-testimonials";
 
@@ -407,6 +408,10 @@ const FOS_PANELS: FosPanel[] = [
 export default function MoneyMasteryCodeVariantC() {
   const course = COURSE_TIERS.find((t) => t.id === "course") ?? COURSE_TIERS[0];
   const bundle = COURSE_TIERS.find((t) => t.featured) ?? COURSE_TIERS[1];
+
+  // Read on the server and handed to the form, which shows the Flutterwave
+  // payment-method guide only when that is the provider checkout will use.
+  const provider = getPaymentProviderName();
 
   return (
     <div className="v3-root">
@@ -1250,6 +1255,7 @@ export default function MoneyMasteryCodeVariantC() {
                   tier={course}
                   label="Get the workshop for ₦15,000"
                   variant={VARIANT}
+                  provider={provider}
                 />
               </Reveal>
 
@@ -1286,6 +1292,7 @@ export default function MoneyMasteryCodeVariantC() {
                   tier={bundle}
                   label="Get the complete bundle for ₦23,000"
                   variant={VARIANT}
+                  provider={provider}
                 />
                 <p className="plan__fine">
                   <strong>

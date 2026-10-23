@@ -4,16 +4,17 @@ import { createAdminClient } from "@/lib/supabase/admin";
 /**
  * Checkout intent capture.
  *
- * A pending row is written before Paystack is called, so that people who start
- * a checkout and do not finish are visible. Without it enrollments only ever
- * contains sales, and a storefront that converts 2% and one that converts 2%
- * out of ten visitors look identical.
+ * A pending row is written before the payment provider is called, so that
+ * people who start a checkout and do not finish are visible. Without it
+ * enrollments only ever contains sales, and a storefront that converts 2% and
+ * one that converts 2% out of ten visitors look identical.
  *
- * The row is written under the same paystack_reference the webhook upserts on,
- * so a completed purchase updates this row rather than adding another. That
- * also means the row is guaranteed to exist before Paystack could possibly call
- * back, which removes the race between "insert the intent" and "receive the
- * webhook".
+ * The row is written under the same reference the webhook upserts on (stored in
+ * the legacy paystack_reference column, which now holds either provider's
+ * reference), so a completed purchase updates this row rather than adding
+ * another. That also means the row is guaranteed to exist before the provider
+ * could possibly call back, which removes the race between "insert the intent"
+ * and "receive the webhook".
  *
  * Nothing in this file throws. Recording intent is bookkeeping; a sale that
  * completes without a pending row is still a sale, and losing the row only
@@ -26,7 +27,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
  *
  * PostgREST retries by default and backs off between attempts, so a database
  * that is slow rather than down can hold a request open for many seconds.
- * This runs in front of the Paystack call, so that stall is a stall in the
+ * This runs in front of the provider call, so that stall is a stall in the
  * buyer's checkout, and it is a stall caused entirely by bookkeeping.
  */
 const WRITE_TIMEOUT_MS = 2_000;
@@ -69,6 +70,27 @@ export type CheckoutIntent = {
   tier: CourseTier;
   amount: number;
   variant: "a" | "b" | "c" | null;
+  /** Which provider owns this reference, so the sweep verifies the right API. */
+  provider: "paystack" | "flutterwave";
+  /** Buyer identifiers captured at checkout, sent with the TikTok Purchase. */
+  clientIp: string | null;
+  userAgent: string | null;
+  ttclid: string | null;
+  visitorId: string | null;
+  /** E.164 digits, when the buyer supplied a number. */
+  phone: string | null;
+  /** The TikTok `_ttp` cookie, when the pixel has set one. */
+  ttp: string | null;
+  /**
+   * Gift purchases: on a gift row `email` and `fullName` above name the
+   * recipient, because that is whose access this is, and these columns record
+   * the payer. All null/false on a normal purchase.
+   */
+  isGift: boolean;
+  giftRecipientName: string | null;
+  giftRecipientEmail: string | null;
+  giftPurchaserName: string | null;
+  giftPurchaserEmail: string | null;
 };
 
 export async function recordCheckoutIntent(intent: CheckoutIntent): Promise<void> {
@@ -81,7 +103,8 @@ export async function recordCheckoutIntent(intent: CheckoutIntent): Promise<void
         tier: intent.tier,
         amount: intent.amount,
         status: "pending",
-        // Stored as null, not as the "control" that went to Paystack metadata.
+        payment_provider: intent.provider,
+        // Stored as null, not as the "control" that goes to payment metadata.
         // The webhook whitelists a/b/c and discards "control" before it writes,
         // so a null here is the same value the paid row will end up carrying.
         // Writing "control" instead would put an intent in one bucket and its
@@ -89,6 +112,17 @@ export async function recordCheckoutIntent(intent: CheckoutIntent): Promise<void
         // the very query this row exists to make possible.
         source_variant: intent.variant,
         course_access_url: getCourseAccessUrl(),
+        client_ip: intent.clientIp,
+        client_user_agent: intent.userAgent,
+        ttclid: intent.ttclid,
+        visitor_id: intent.visitorId,
+        customer_phone: intent.phone,
+        ttp: intent.ttp,
+        is_gift: intent.isGift,
+        gift_recipient_name: intent.giftRecipientName,
+        gift_recipient_email: intent.giftRecipientEmail,
+        gift_purchaser_name: intent.giftPurchaserName,
+        gift_purchaser_email: intent.giftPurchaserEmail,
       }),
       WRITE_TIMEOUT_MS,
     );

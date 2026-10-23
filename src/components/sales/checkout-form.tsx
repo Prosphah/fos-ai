@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ArrowRight, Loader2 } from "lucide-react";
+import { PaymentGuideModal } from "@/components/sales/payment-guide-modal";
 import { majorUnits, type TierConfig } from "@/lib/money-mastery";
 import { trackTikTokEvent } from "@/lib/tiktok";
 
@@ -13,6 +14,7 @@ export function CheckoutForm({
   tone = "dark",
   theme = "default",
   variant,
+  provider,
 }: {
   tier: TierConfig;
   label?: string;
@@ -26,16 +28,35 @@ export function CheckoutForm({
   theme?: "default" | "mmb";
   /** Which storefront page this purchase came from, for A/B attribution. */
   variant?: "a" | "b";
+  /**
+   * The payment provider the checkout route will use, decided on the server.
+   * The guide is Flutterwave-specific, so it is shown only when that is the
+   * active provider; switching the env var back to Paystack hides it with no
+   * client change.
+   */
+  provider?: "paystack" | "flutterwave";
 }) {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState("");
+  const [guideOpen, setGuideOpen] = useState(false);
 
-  async function startCheckout(event: React.FormEvent) {
-    event.preventDefault();
+  const showPaymentGuide = provider === "flutterwave";
+
+  async function beginCheckout() {
     setStatus("loading");
     setError("");
+
+    /*
+     * The proxy writes this into a cookie on the landing request, but the
+     * proxy only runs on the sales hostname. Reading it from the URL here is
+     * the fallback that keeps local previews and direct /v1 visits attributed
+     * too. The server prefers its own cookie over this value.
+     */
+    const ttclid =
+      new URLSearchParams(window.location.search).get("ttclid") ?? undefined;
 
     /*
      * InitiateCheckout, fired here rather than just before the redirect below.
@@ -61,7 +82,7 @@ export function CheckoutForm({
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tier: tier.id, email, fullName, variant }),
+        body: JSON.stringify({ tier: tier.id, email, fullName, phone, ttclid, variant }),
       });
 
       const payload = await response.json();
@@ -75,6 +96,29 @@ export function CheckoutForm({
       setStatus("error");
       setError(caught instanceof Error ? caught.message : "Checkout could not start.");
     }
+  }
+
+  /**
+   * The submit handler is the gate in front of the guide, not the request.
+   *
+   * onSubmit only fires once the browser is satisfied every required field is
+   * filled, so the guide is never opened over an unfinished form — and closing
+   * it leaves that form untouched, with no half-started checkout behind it.
+   */
+  function startCheckout(event: React.FormEvent) {
+    event.preventDefault();
+
+    if (showPaymentGuide) {
+      setGuideOpen(true);
+      return;
+    }
+
+    void beginCheckout();
+  }
+
+  function confirmGuide() {
+    setGuideOpen(false);
+    void beginCheckout();
   }
 
   const light = tone === "light";
@@ -155,6 +199,29 @@ export function CheckoutForm({
         style={inputStyle}
       />
 
+      {/* Optional on purpose. Every required field at checkout costs sales,
+          and the email already carries access. The number is used to reach the
+          buyer if email bounces and to improve TikTok's event matching, so it
+          is worth asking for but not worth blocking a payment over. */}
+      <label
+        htmlFor={`phone-${tier.id}`}
+        style={{ ...labelStyle, marginTop: "0.9rem" }}
+      >
+        WhatsApp number <span style={{ textTransform: "none", letterSpacing: 0 }}>(optional)</span>
+      </label>
+
+      <input
+        id={`phone-${tier.id}`}
+        type="tel"
+        autoComplete="tel"
+        inputMode="tel"
+        placeholder="0803 123 4567"
+        value={phone}
+        onChange={(event) => setPhone(event.target.value)}
+        className={inputClass}
+        style={inputStyle}
+      />
+
       <button
         type="submit"
         disabled={status === "loading"}
@@ -190,6 +257,15 @@ export function CheckoutForm({
           One payment by card, bank transfer or USSD. 180 days to change your mind.
         </p>
       )}
+
+      {/* Inside the form rather than beside it so the guide travels with the
+          component; it is fixed-positioned, so its DOM home does not affect
+          where it lands on screen. */}
+      <PaymentGuideModal
+        open={guideOpen}
+        onClose={() => setGuideOpen(false)}
+        onConfirm={confirmGuide}
+      />
     </form>
   );
 }

@@ -2,12 +2,12 @@
  * Checkout input validation.
  *
  * These run on values that arrive from a public form and then travel through
- * Paystack metadata before landing in the database, so they are used on both
+ * payment metadata before landing in the database, so they are used on both
  * sides of that journey: at /api/checkout to reject bad input up front, and
  * again in the webhook so an unrecognised value cannot reach the database.
  */
 
-/** Comfortably longer than any real name, and well inside Paystack's 500-character metadata value limit. */
+/** Comfortably longer than any real name, and well inside both providers' metadata limits. */
 export const FULL_NAME_MAX = 120;
 
 /**
@@ -41,4 +41,33 @@ export function parseFullName(value: unknown): string | null {
   if (cleaned.length > FULL_NAME_MAX) return null;
 
   return cleaned;
+}
+
+/**
+ * Normalises a phone number to E.164 digits, or returns null.
+ *
+ * Phone is optional — it exists for TikTok Advanced Matching and as a second
+ * way to reach a buyer about access — so an unusable value is dropped rather
+ * than failing the checkout.
+ *
+ * A leading 0 is read as Nigerian, which is the only market this storefront
+ * sells in: "0803 123 4567" and "+234 803 123 4567" must produce one digest,
+ * not two identities in TikTok's audience.
+ */
+export function parsePhoneForE164(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+
+  let digits = value.replace(/\D/g, "");
+  if (!digits) return null;
+
+  if (digits.startsWith("00")) digits = digits.slice(2);
+  if (digits.startsWith("0") && digits.length === 11) {
+    digits = `234${digits.slice(1)}`;
+  }
+
+  // E.164 allows 8-15 digits; 10 is the shortest real Nigerian number with a
+  // country code and guards against a partial entry being hashed as a person.
+  if (digits.length < 10 || digits.length > 15) return null;
+
+  return digits;
 }

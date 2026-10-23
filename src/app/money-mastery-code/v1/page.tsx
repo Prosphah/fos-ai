@@ -45,6 +45,7 @@ import { StickyEnrolBar } from "@/components/sales/sticky-enrol-bar";
 import { Testimonials } from "@/components/sales/testimonials";
 import { ViewContentTracker } from "@/components/sales/tiktok-events";
 import { COURSE_TIERS } from "@/lib/money-mastery";
+import { getPaymentProviderName } from "@/lib/payment-registry";
 import { SITE_ORIGIN, storefrontMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = storefrontMetadata();
@@ -545,6 +546,10 @@ function PhoneFigure({
 export default function MoneyMasteryCodePage() {
   const bundle = COURSE_TIERS.find((t) => t.featured) ?? COURSE_TIERS[0];
   const course = COURSE_TIERS.find((t) => !t.featured) ?? COURSE_TIERS[0];
+
+  // Read on the server and handed to the form, which shows the Flutterwave
+  // payment-method guide only when that is the provider checkout will use.
+  const provider = getPaymentProviderName();
 
   const muted = "#b8bcb1";
 
@@ -1416,6 +1421,7 @@ export default function MoneyMasteryCodePage() {
                   label="Get the workshop for ₦15,000"
                   tone="light"
                   variant={VARIANT}
+                  provider={provider}
                 />
               </article>
 
@@ -1462,6 +1468,7 @@ export default function MoneyMasteryCodePage() {
                   tier={bundle}
                   label="Get the workshop + FOS·AI for ₦23,000"
                   variant={VARIANT}
+                  provider={provider}
                 />
               </article>
             </div>

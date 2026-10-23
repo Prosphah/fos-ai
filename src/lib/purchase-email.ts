@@ -20,8 +20,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
  *    system would show that. Handled by leaving purchase_email_sent_at null
  *    and re-posting from the cron sweep.
  * 2. The post is slow or hangs. Every second spent waiting is a second the
- *    Paystack webhook has not answered, and Paystack retries the whole webhook
- *    when it does. Handled by a hard timeout well inside that window.
+ *    payment webhook has not answered, and the provider retries the whole
+ *    webhook when it does. Handled by a hard timeout well inside that window.
  *
  * Note what this does NOT prove. A 2xx from Make means Make received the
  * payload, not that a scenario ran or that Zoho accepted the message. A
@@ -54,12 +54,12 @@ const WEBHOOK_URL = process.env.PURCHASE_EMAIL_WEBHOOK_URL?.trim();
 const WEBHOOK_SECRET = process.env.PURCHASE_EMAIL_WEBHOOK_SECRET?.trim();
 
 /**
- * Well inside the Paystack webhook window.
+ * Well inside the payment webhook's response window.
  *
  * Two budgets depend on this number. In the webhook it is additive on top of
  * fulfilment's own Supabase call, because a slow post means a slow response and
- * Paystack replays a webhook that does not answer in time. In the sweep it is
- * multiplied by the batch size, which is why that is kept small.
+ * the provider replays a webhook that does not answer in time. In the sweep it
+ * is multiplied by the batch size, which is why that is kept small.
  */
 const TRIGGER_TIMEOUT_MS = 3_000;
 
@@ -74,6 +74,14 @@ export type PurchaseEmail = {
   paidAt: string | null;
   /** True when this is the cron sweep re-posting a missed confirmation. */
   isRetry: boolean;
+  /**
+   * Gift purchases. `email`/`fullName` above are already the recipient's;
+   * these let the scenario word the email as a gift and put the payer's name
+   * on it. Optional so callers with no gift context can omit them.
+   */
+  isGift?: boolean;
+  giftPurchaserName?: string | null;
+  giftPurchaserEmail?: string | null;
 };
 
 export type TriggerResult = {
@@ -104,6 +112,16 @@ function payloadFor(purchase: PurchaseEmail) {
     courseAccessUrl: getCourseAccessUrl(),
     includesFosai: purchase.tier === "course_fosai",
     isRetry: purchase.isRetry,
+    // A gift email is addressed to the recipient (email/fullName above) and
+    // names the payer so the scenario can word it as "a gift from …". The
+    // recipient name is repeated explicitly because the scenario may template
+    // it separately from fullName.
+    isGift: purchase.isGift ?? false,
+    giftRecipientName: purchase.isGift ? purchase.fullName : null,
+    giftPurchaserName: purchase.isGift ? purchase.giftPurchaserName ?? null : null,
+    giftPurchaserEmail: purchase.isGift
+      ? purchase.giftPurchaserEmail ?? null
+      : null,
   };
 }
 
@@ -116,7 +134,7 @@ function payloadFor(purchase: PurchaseEmail) {
  * the winner rather than the application.
  *
  * The timestamp is written before the post rather than after, because checking
- * for null after posting is not a lock. A Paystack replay and a sweep running
+ * for null after posting is not a lock. A webhook replay and a sweep running
  * at the same moment both read null, both post, and the buyer gets the
  * confirmation twice.
  */
@@ -177,9 +195,9 @@ async function release(reference: string): Promise<void> {
 /**
  * Posts a completed purchase to the Make scenario.
  *
- * Never throws and never rejects. The caller is the Paystack webhook, and an
- * exception escaping here would produce a non-2xx, which Paystack answers by
- * replaying the entire webhook.
+ * Never throws and never rejects. The caller is a payment webhook, and an
+ * exception escaping here would produce a non-2xx, which the provider answers
+ * by replaying the entire webhook.
  */
 export async function triggerPurchaseEmail(
   purchase: PurchaseEmail,

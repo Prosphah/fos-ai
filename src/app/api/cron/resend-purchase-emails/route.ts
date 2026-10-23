@@ -48,6 +48,9 @@ type UnconfirmedRow = {
   amount: number;
   source_variant: "a" | "b" | "c" | null;
   created_at: string;
+  is_gift: boolean | null;
+  gift_purchaser_name: string | null;
+  gift_purchaser_email: string | null;
 };
 
 export async function GET(request: Request) {
@@ -67,7 +70,9 @@ export async function GET(request: Request) {
 
   const { data, error } = await supabase
     .from("enrollments")
-    .select("paystack_reference,email,full_name,tier,amount,source_variant,created_at")
+    .select(
+      "paystack_reference,email,full_name,tier,amount,source_variant,created_at,is_gift,gift_purchaser_name,gift_purchaser_email"
+    )
     // The grandfathering backfill in 20261015000001 means historical purchases
     // are excluded by construction, not by a date window. Anything reaching
     // this query is a purchase made while the feature was live whose
@@ -123,6 +128,11 @@ export async function GET(request: Request) {
       // email, and the sweep is about reach, not about accounting.
       paidAt: row.created_at,
       isRetry: true,
+      // On a gift row, email/full_name are the recipient's; the payer's name
+      // rides along so the retirement keeps the gift wording.
+      isGift: row.is_gift ?? false,
+      giftPurchaserName: row.gift_purchaser_name,
+      giftPurchaserEmail: row.gift_purchaser_email,
     });
 
     if (result.triggered) {

@@ -54,18 +54,24 @@ export function hashVisitorIdForTikTok(visitorId: string): string {
 }
 
 /**
- * Phone, in the form TikTok hashes it: digits only, in E.164.
+ * Phone, reduced to the digits an E.164 value is built from.
  *
- * Kept for the day a phone number is collected. It is deliberately not wired to
- * anything today because no part of this codebase has ever asked a buyer for
- * one, and there is nothing to hash.
- *
- * If a phone field is added: strip everything that is not a digit, then treat
- * the result as needing a country code. A Nigerian number typed as
- * "0803 123 4567" and the same number as "+2348031234567" must produce one
- * digest, and only normalising to E.164 does that. Guessing the country from a
- * local prefix is how the same person ends up in the audience twice.
+ * Callers normalise to a full E.164 value first (see parsePhoneForE164); this
+ * step only removes the punctuation a buyer might type. A Nigerian number
+ * entered as "0803 123 4567" and the same number as "+2348031234567" must
+ * produce one digest, and only normalising to E.164 does that.
  */
 export function normalisePhoneForTikTok(phone: string): string {
   return phone.replace(/\D/g, "");
+}
+
+/**
+ * Phone, in the form TikTok hashes it: E.164 with the leading plus, hashed.
+ *
+ * The plus is included because that is the normalised form TikTok documents
+ * for `phone_number`; hashing the bare digits produces a digest that matches
+ * nothing and the coverage panel simply stays red.
+ */
+export function hashPhoneForTikTok(phone: string): string {
+  return hashForTikTok(phone, (value) => `+${normalisePhoneForTikTok(value)}`);
 }

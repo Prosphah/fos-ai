@@ -67,8 +67,32 @@ const VISITOR_COOKIE = "mmc_vid";
 /** Matches TikTok's own cookie lifetime, so the two expire together. */
 const VISITOR_MAX_AGE = 60 * 60 * 24 * 395;
 
+/**
+ * The TikTok click id from the ad URL, kept on our own first-party cookie.
+ *
+ * The pixel sets its own cookie, but that cookie is not readable by the
+ * server at checkout time on every browser (ITP and ad blockers are exactly
+ * the traffic this is meant to recover). Writing it here, before any client
+ * JavaScript runs, means the server-side Purchase can still carry it.
+ *
+ * 13 months, the lifetime the privacy policy states for ttclid.
+ */
+const TTCLID_COOKIE = "mmc_ttclid";
+const TTCLID_MAX_AGE = 60 * 60 * 24 * 395;
+
 function isVariant(value: unknown): value is Variant {
   return typeof value === "string" && value in VARIANT_ROUTES;
+}
+
+/**
+ * The only shape a TikTok click id is allowed to take before it becomes a
+ * cookie. TikTok ids are long opaque tokens; anything else in `?ttclid=` is
+ * either a mistake or an attempt to stuff a header, and neither belongs on
+ * every subsequent request.
+ */
+function cleanTtclid(value: string | null | undefined): string | null {
+  if (!value) return null;
+  return /^[A-Za-z0-9._~-]{10,200}$/.test(value) ? value : null;
 }
 
 /**
@@ -136,6 +160,13 @@ export function proxy(request: NextRequest) {
   const visitorId =
     request.cookies.get(VISITOR_COOKIE)?.value ?? crypto.randomUUID();
 
+  // Read on every storefront request, not just the first: an ad click that
+  // lands on /a carries it in the URL, and a later navigation drops the query
+  // but keeps the cookie.
+  const ttclid =
+    cleanTtclid(request.nextUrl.searchParams.get("ttclid")) ??
+    cleanTtclid(request.cookies.get(TTCLID_COOKIE)?.value);
+
   // Everything under /money-mastery-code/ is the app's own addressing and must
   // keep resolving on the sales hostname. That covers the Paystack callbackUrl,
   // which is built from the request origin plus /money-mastery-code/success,
@@ -148,7 +179,7 @@ export function proxy(request: NextRequest) {
   // It also keeps these requests out of the test, so a buyer is never
   // re-shuffled onto a different page after they pay.
   if (request.nextUrl.pathname.startsWith("/money-mastery-code/")) {
-    return withVisitorId(NextResponse.next(), request, visitorId);
+    return withStorefrontCookies(NextResponse.next(), request, visitorId, ttclid);
   }
 
   const { variant, shouldPin } = resolveVariant(request);
@@ -172,27 +203,37 @@ export function proxy(request: NextRequest) {
     });
   }
 
-  return withVisitorId(response, request, visitorId);
+  return withStorefrontCookies(response, request, visitorId, ttclid);
 }
 
 /**
- * Puts the anonymous visitor id on a response, but only when it is not already
- * there.
+ * Puts the anonymous visitor id and the TikTok click id on a response, but
+ * only where they are not already there.
  *
  * Rewriting an existing id would renumber a returning visitor on every request,
  * and TikTok would read that as a brand new person each time — destroying the
  * very history the id is kept for. Re-setting an unchanged cookie is also
  * pointless work on the hot path.
  */
-function withVisitorId(
+function withStorefrontCookies(
   response: NextResponse,
   request: NextRequest,
   visitorId: string,
+  ttclid: string | null,
 ): NextResponse {
   if (!request.cookies.get(VISITOR_COOKIE)) {
     response.cookies.set(VISITOR_COOKIE, visitorId, {
       path: "/",
       maxAge: VISITOR_MAX_AGE,
+      sameSite: "lax",
+      secure: true,
+    });
+  }
+
+  if (ttclid && request.cookies.get(TTCLID_COOKIE)?.value !== ttclid) {
+    response.cookies.set(TTCLID_COOKIE, ttclid, {
+      path: "/",
+      maxAge: TTCLID_MAX_AGE,
       sameSite: "lax",
       secure: true,
     });

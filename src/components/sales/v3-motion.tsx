@@ -826,7 +826,7 @@ export function StickyBar() {
     <div className={`bar dark${visible ? " is-on" : ""}`} aria-hidden={!visible}>
       <div className="bar__txt">
         <strong>Money Mastery Code</strong>
-        <span>From {naira(15_000)}</span>
+        <span>Earn, save and invest</span>
       </div>
       <a className="btn" href="#options" tabIndex={visible ? undefined : -1}>
         Choose option

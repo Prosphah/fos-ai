@@ -7,18 +7,15 @@ import {
   triggerAbandonedCheckoutSecondTouch,
 } from "@/lib/abandoned-checkout-email";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { finalizeVerifiedPurchase } from "@/lib/finalize-purchase";
 import {
-  asStorefrontVariant,
   formatNaira,
   getStorefrontVariantUrl,
   getTier,
 } from "@/lib/money-mastery";
-import { fulfilEnrollment } from "@/lib/fulfilment";
-import { triggerPurchaseEmail } from "@/lib/purchase-email";
-import { verifyTransaction } from "@/lib/paystack";
-import { parseFullName } from "@/lib/validation/checkout";
+import { getPaymentProviderByName } from "@/lib/payment-registry";
+import type { PaymentProvider, PaymentVerifiedTransaction } from "@/lib/payment-provider";
 import type { CourseTier } from "@/lib/money-mastery";
-import type { PaystackVerifiedTransaction } from "@/lib/paystack";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -112,7 +109,13 @@ type PendingRow = {
   tier: CourseTier;
   amount: number;
   source_variant: "a" | "b" | "c" | null;
+  payment_provider: "paystack" | "flutterwave" | null;
   created_at: string;
+  /**
+   * Gift rows carry the recipient's address in `email`, so they are excluded
+   * from recovery mail — see the loops below.
+   */
+  is_gift: boolean | null;
 };
 
 function firstNameOf(fullName: string | null): string | null {
@@ -143,26 +146,41 @@ function groupByBuyer(rows: PendingRow[]): Map<string, PendingRow[]> {
 }
 
 /**
- * Verify a buyer's attempts against Paystack before any email is drafted.
+ * Verify a buyer's attempts against the configured provider before any email is drafted.
  *
  * Verifies the newest attempts first: a later attempt is the likelier one to
  * carry a payment, and MAX_VERIFIES_PER_EMAIL bounds the cost.
  */
 async function verifyBeforeContact(
   buyerRows: PendingRow[]
-): Promise<{ rescue: PaystackVerifiedTransaction | null; unverifiable: boolean }> {
-  let rescue: PaystackVerifiedTransaction | null = null;
+): Promise<{
+  /** The transaction and the provider that can confirm it, or null. */
+  rescue: { transaction: PaymentVerifiedTransaction; provider: PaymentProvider } | null;
+  unverifiable: boolean;
+}> {
+  let rescue: {
+    transaction: PaymentVerifiedTransaction;
+    provider: PaymentProvider;
+  } | null = null;
   let unverifiable = false;
 
   for (const row of buyerRows.slice(0, MAX_VERIFIES_PER_EMAIL)) {
-    let transaction: PaystackVerifiedTransaction | null = null;
+    /**
+     * The provider recorded on the row, not the one currently selected. A
+     * checkout started before a switch is invisible to the new provider's
+     * API; verifying it there would return null forever and its buyer would
+     * never be emailed.
+     */
+    const providerName: PaymentProvider =
+      row.payment_provider === "flutterwave" ? "flutterwave" : "paystack";
+    let transaction: PaymentVerifiedTransaction | null = null;
     try {
-      transaction = await verifyTransaction(
+      transaction = await getPaymentProviderByName(providerName).verifyTransaction(
         row.paystack_reference,
         VERIFY_TIMEOUT_MS
       );
     } catch {
-      // verifyTransaction only guarantees null for HTTP-level refusal. A
+      // provider.verifyTransaction only guarantees null for HTTP-level refusal. A
       // network error, DNS failure, or the 4s abort timeout firing all
       // throw instead — and an unhandled throw here would kill the whole
       // sweep: the buyers behind this one unprocessed, the 90-day
@@ -180,7 +198,7 @@ async function verifyBeforeContact(
     }
 
     if (transaction.status === "success") {
-      rescue = transaction;
+      rescue = { transaction, provider: providerName };
       break;
     }
   }
@@ -189,65 +207,56 @@ async function verifyBeforeContact(
 }
 
 /**
- * A pending checkout whose Paystack transaction actually succeeded is a
- * buyer who paid and whose webhook was lost — the worst possible recipient
- * of either a "finish your purchase" email or a follow-up about it. Finishing
- * the purchase is the exact work the missed webhook would have done. Both
- * paths are idempotent, so a late webhook replay changes nothing.
+ * A pending checkout whose transaction actually succeeded is a buyer who
+ * paid and whose webhook was lost — the worst possible recipient of either a
+ * "finish your purchase" email or a follow-up about it. Finishing the
+ * purchase is the exact work the missed webhook would have done, so it is
+ * handed to the same finalizer the webhook uses: one path means a rescue
+ * cannot drift from what a delivered webhook would have written, gift
+ * handling included. Both paths are idempotent, so a late webhook replay
+ * changes nothing.
+ *
+ * The finalizer's refusal is a verdict, not a blip — an unreadable tier or
+ * email, a currency that is not naira, an amount below what the checkout
+ * promised. Retrying a verdict only re-burns the buyer's window, so it is
+ * recorded for a human and nothing under this email is claimed.
  *
  * Returns true when the rescue completed. Records its own failures.
  */
-async function rescuePaystackPayment(
+async function rescueVerifiedPayment(
   email: string,
-  rescue: PaystackVerifiedTransaction,
+  rescue: PaymentVerifiedTransaction,
+  provider: PaymentProvider,
   failures: { reference: string; reason: string }[]
 ): Promise<boolean> {
-  const tier = getTier(String(rescue.metadata?.tier ?? ""));
-  const fullName = parseFullName(rescue.metadata?.full_name);
-
-  if (!tier) {
-    // The checkout route always writes tier into Paystack metadata, so
-    // this means the payment predates it or was made by hand. Not
-    // something a sweep should guess its way out of; the row stays
-    // surfaced in the failures list, and no recovery email is sent.
-    console.error(
-      `[abandoned-checkout] Rescue for ${rescue.reference} skipped: no tier in Paystack metadata. Fulfil by hand.`
-    );
-    failures.push({ reference: rescue.reference, reason: "rescue-no-tier" });
-    return false;
-  }
-
   try {
-    await fulfilEnrollment({
-      email,
-      fullName,
-      tier: tier.id as CourseTier,
-      amount: rescue.amount ?? tier.amount,
-      reference: rescue.reference,
-      transactionId: rescue.transactionId,
-      sourceVariant: asStorefrontVariant(rescue.metadata?.source_variant),
+    const result = await finalizeVerifiedPurchase(rescue, provider, {
+      isRetry: true,
     });
+
+    if (!result.fulfilled) {
+      if (result.reason === "missing-email-or-tier") {
+        console.error(
+          `[abandoned-checkout] Rescue for ${rescue.reference} skipped: no tier or email in payment metadata. Fulfil by hand.`
+        );
+      }
+      failures.push({
+        reference: rescue.reference,
+        reason: `rescue-${result.reason ?? "not-fulfilled"}`,
+      });
+      return false;
+    }
+
+    // The purchase landed; every other pending attempt under this email is moot.
+    await claimRemainingCheckoutsForEmail(email);
+    return true;
   } catch (e) {
     failures.push({
       reference: rescue.reference,
-      reason: `rescue-fulfil-${e instanceof Error ? e.message : "error"}`,
+      reason: `rescue-${e instanceof Error ? e.message : "error"}`,
     });
     return false;
   }
-
-  await triggerPurchaseEmail({
-    reference: rescue.reference,
-    email,
-    fullName,
-    tier: tier.id,
-    amount: rescue.amount ?? tier.amount,
-    variant: asStorefrontVariant(rescue.metadata?.source_variant),
-    paidAt: rescue.paidAt,
-    isRetry: true,
-  });
-
-  await claimRemainingCheckoutsForEmail(email);
-  return true;
 }
 
 export async function GET(request: Request) {
@@ -274,7 +283,7 @@ export async function GET(request: Request) {
   const { data, error } = await supabase
     .from("enrollments")
     .select(
-      "paystack_reference,email,full_name,tier,amount,source_variant,created_at"
+      "paystack_reference,email,full_name,tier,amount,source_variant,payment_provider,created_at,is_gift"
     )
     // Only pending rows are eligible. A failed row is a buyer Paystack never
     // showed a payment page to — they saw the error and can retry on the spot,
@@ -319,7 +328,7 @@ export async function GET(request: Request) {
   const { data: secondData, error: secondError } = await supabase
     .from("enrollments")
     .select(
-      "paystack_reference,email,full_name,tier,amount,source_variant,created_at"
+      "paystack_reference,email,full_name,tier,amount,source_variant,payment_provider,created_at,is_gift"
     )
     .eq("status", "pending")
     .eq("followup_step", 1)
@@ -389,12 +398,26 @@ export async function GET(request: Request) {
       // The webhook died; this buyer paid and heard nothing. Fulfil and send
       // the purchase confirmation — the exact work the missed webhook would
       // have done.
-      const rescued = await rescuePaystackPayment(email, rescue, failures);
+      const rescued = await rescueVerifiedPayment(
+        email,
+        rescue.transaction,
+        rescue.provider,
+        failures
+      );
       if (rescued) recoveredPayments += 1;
       // A rescue that could not complete (no tier, write failed) is already
       // recorded in `failures`; in both cases this buyer gets no recovery
       // email this run — emailing after a failed fulfil risks the same
       // contradiction the verify step exists to prevent.
+      continue;
+    }
+
+    // A gift checkout is excluded from recovery mail. Its row carries the
+    // recipient's address, and a "finish your purchase" email would announce
+    // a gift the buyer may not have given yet. The verify above still ran, so
+    // an attempt that secretly paid was rescued; the rest fall silent.
+    if (buyerRows.some((row) => row.is_gift)) {
+      skipped += 1;
       continue;
     }
 
@@ -484,7 +507,12 @@ export async function GET(request: Request) {
     if (rescue) {
       // The buyer paid a pending attempt after the first email went out —
       // receiving the follow-up would tell them they hadn't. Fulfil instead.
-      const rescued = await rescuePaystackPayment(email, rescue, failures);
+      const rescued = await rescueVerifiedPayment(
+        email,
+        rescue.transaction,
+        rescue.provider,
+        failures
+      );
       if (rescued) recoveredPayments += 1;
       continue;
     }
@@ -492,6 +520,13 @@ export async function GET(request: Request) {
     // With payment ruled out and fulfilled above, the grace check now gates
     // the only thing left for this buyer: the email.
     if (graceViolated) {
+      skipped += 1;
+      continue;
+    }
+
+    // Same exclusion as the first touch: never mail a gift recipient about a
+    // checkout the payer has not finished.
+    if (attempts.some((row) => row.is_gift)) {
       skipped += 1;
       continue;
     }
